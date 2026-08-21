@@ -1,0 +1,12 @@
+# Dados pessoais — nunca commitar (o repositório é público para o GitHub Pages gratuito)
+*.xlsx
+*.xls
+data/
+backup/
+
+# Node
+node_modules/
+*.log
+
+# Build (se um dia houver)
+dist/

@@ -1,0 +1,13 @@
+{
+  "name": "alice-precificador",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Precificador de cerâmica da Alice — servidor Node puro + SQLite",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}
