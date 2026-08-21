@@ -54,6 +54,32 @@ Padrão internacional (Etsy): o **comprador paga frete à parte** (transparente,
 
 **Rateio na prática (padrão Etsy):** várias peças num só envio → app divide o frete real pelo nº de peças (1 peça = sem divisão). Não é um 4º método — é uma regra que se aplica a qualquer método pago.
 
+### 4.1 O que ateliês sólidos do Japão, Itália e EUA fazem (agosto/2026)
+
+Pesquisa direta nas políticas de frete de ateliês documentados. **Consenso absoluto nos 3 países:**
+
+1. **Frete é SEMPRE à parte, nunca embutido no preço da peça.** O preço do produto é "limpo"; o transporte é linha separada no checkout.
+   - EUA: East Fork (NC) repassa o custo exato sem margem ("exact calculations of what it will cost East Fork to ship"); Heath publica tabelas completas por faixa+região; A.MANO (Brooklyn) cobra por peso/destino.
+   - Itália: Bitossi cobra por peso/volume/destino; Ginori 1735 mostra frete no checkout, nunca embutido; Deruta/Torretti calcula no sistema e comunica extras antes de fechar.
+   - Japão: Fukagawa, Koransha, KIKOF, Bizen 星 — todos com taxa de envio à parte publicada em página de guia; peça única de ¥550.000 usa a MESMA regra de frete separado.
+
+2. **"Frete grátis acima de X" existe nos 3, com papéis diferentes:**
+   - **Japão: padrão quase universal** — limiar típico ¥11.000 (o valor que, com imposto de 10%, dá ¥10.000 líquido): Fukagawa, Koransha, Maruhiro, Tachikichi. KIKOF usa ¥15.000; MAARKET ¥10.000. É a norma, não promoção.
+   - **Itália: difundido por posicionamento** — €99 (Torretti/Deruta), €150 (Bitossi Home), €199 (F.lli Mari), €300 (Ginori Europa), €500 (Casola EUA/UK com seguro).
+   - **EUA: isca pontual, NÃO regra** — Jono Pandolfi fixo $100; Heath $175 só em promoção de dezembro; East Fork NÃO tem "free over X" (usa código de primeira compra).
+
+3. **Preço apresentado tax-inclusive** (Japão 税込 e Itália IVA incluso, por lei; EUA soma no checkout mas transparente). Frete nunca disfarçado.
+
+4. **Embalagem é custo técnico, não luxo:** EUA trata como investimento anti-quebra (papel honeycomb/Geami/ExpandOS em vez de isopor; breakage normalizado 3–5%; seguro ~$2–3/$100). Não existe linha "handling" separada — embalagem entra no custo do produto (COGS) e o frete é só o transporte (Craftybase).
+
+5. **Peça única/obra:** frete SEMPRE cotado/orçado à parte (Ginori Arte = "ENQUIRE"; Bizen 星 precifica por tamanho de caixa; casse de madeira + seguro em orçamento). Nunca embutido no preço da obra.
+
+6. **Ida até o correio (transporte do vendedor):** não é frete — é overhead do vendedor, diluído no custo-hora/custos fixos. Ateliês que fazem pickup local (A.MANO, Bridgetown Sparrow, Notary) oferecem como serviço; e-commerce de escala recusa pickup para simplificar (East Fork).
+
+7. **Segurança/retorno:** política de quebra clara (5–7 dias, foto + nº do pedido, reposição) e protocolo "accettazione con riserva" (recusar pacote danificado). East Fork vende *seconds* online a 30% — perda vira produto.
+
+**Padrão ouro consolidado (Japão+Itália+EUA):** preço limpo + frete à parte transparente + opção "grátis acima de X" como política (padrão japonês/italiano) ou promoção (americano) + embalagem no custo + ida ao correio no overhead + quebra monetizada. Nenhum ateliê sólido embute frete no preço da peça.
+
 ## 5. Canais de venda e comissões (Brasil 2026)
 
 > ⚠️ **Elo7 ENCERROU operações em 11/05/2026** (comprada pela Enjoei). Não é mais canal válido — substituir por Etsy/Shopee/ML no seletor, com aviso.
@@ -103,3 +129,4 @@ Nenhuma faz "foto → preço" mainstream. Estado da arte = **dados de mercado (c
 3. **Canais** → cards com comissões pré-preenchidas e editáveis; **Elo7 removido**; pergunta fiscal única (MEI/Simples/informal) puxa imposto.
 4. **Imposto** → default modo "líquido" (÷ (1−taxas)) já usado nos produtos; unificar convenção documentando a diferença peça (× (1+taxas)) vs produto (÷ (1−taxas)).
 5. **Embalagem** → grupos com ícones + ícone por grupo; permitir adicionar/remover itens; conectar visualmente com a futura aba de matérias-primas (a seção EMBALAGEM já existe em `MATERIAS_PRIMAS`).
+6. **Frete (R17, padrão ouro 3 países)** → preço limpo + frete à parte transparente; opção "grátis acima de X" como política; embalagem no custo da peça; ida ao correio diluída nos custos fixos; quebra monetizada (seconds). Decidir no app: "frete à parte" vs "embutir no preço" por peça.
