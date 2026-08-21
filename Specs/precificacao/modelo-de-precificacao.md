@@ -127,6 +127,7 @@ custoEmbalagem  = Σ (qtd × preco) dos itens de embalagem
 maoDeObra       = tempoHoras × custoHoraTotal × fatorDificuldade
 riscoRefacao    = taxaPerda × (custoMaterial + maoDeObra)
 custoTotal      = custoMaterial + custoAcessorios + custoEmbalagem + maoDeObra + riscoRefacao + rateioFrete
+rateioFrete     = valorFrete ÷ max(1, pecasNoEnvio)      ← divisão automática (métodos pagos)
 custoComTaxas   = custoTotal ÷ (1 − Σ taxas)      ← modo líquido (padrão Etsy; peças e produtos)
 precoPorLinha   = custoComTaxas ÷ (1 − margemDaLinha)   ← margem é % do preço de venda
 ```
@@ -240,14 +241,15 @@ precoPorLinha    = custoComTaxas × multiplicadorDaLinha
 
 ---
 
-## 8. Transporte / frete — 3 cenários (padrão Etsy 2026)
+## 8. Transporte / frete — método de entrega + divisão automática (padrão Etsy 2026)
 
-O frete da peça segue o padrão internacional (Etsy shipping): **o comprador paga o transporte**, modelado em 3 cenários escolhidos por chips na tela:
+O frete da peça segue o padrão internacional (Etsy shipping): **o comprador paga o transporte**, e o app pergunta o **método de entrega** em chips — o rateio não é um método separado, é uma regra automática:
 
-| Cenário          | Modelo padrão Etsy                    | Cálculo no app                                        |
-| ---------------- | ------------------------------------- | ----------------------------------------------------- |
-| **🚗 Eu levo**    | Local delivery (frete fixo local)     | `frete = valor digitado` (entrega própria)            |
-| **📮 Correios**   | Frete calculado (peso + dimensões + CEP) | `frete = valor estimado digitado` (ou integração futura) |
-| **📦 Rateio**     | "1º item cheio + adicionais"          | `frete = freteTotal ÷ nº de peças no mesmo envio`     |
+| Cenário                 | Modelo padrão Etsy           | Cálculo no app                                          |
+| ----------------------- | ---------------------------- | ------------------------------------------------------- |
+| **Entrego eu mesma**    | Local delivery (fixo local)  | `frete = valor digitado ÷ max(1, peças no envio)`       |
+| **Vai pelos Correios**  | Standard shipping            | `frete = valor estimado digitado ÷ max(1, peças no envio)` |
+| **Ela retira aqui**     | Local pickup                 | `frete = 0` (sem campo, sem peças)                      |
+| **Peças no mesmo envio**| Combined shipping automático | divide o frete entre as peças; 1 peça = sem divisão     |
 
-Regra: o frete entra em `custoTotal` (antes das taxas), como `rateioFrete`. O modo default é "🚗 Eu levo" (R$ 0 até digitar). Detalhes em `padrao-ouro-2026-pesquisa.md` §4.
+Regra: o frete entra em `custoTotal` (antes das taxas), como `rateioFrete`. O modo default é "Entrego eu mesma" (R$ 0 até digitar). Detalhes em `padrao-ouro-2026-pesquisa.md` §4.

@@ -41,17 +41,18 @@ Fonte: NN/g "Preventing User Errors: Avoiding Unconscious Slips" + progressive d
 6. **Assistente motivacional** (Duolingo) — pergunta por objetivo, não por configuração.
 7. **Feedback motivacional** — mostrar "quanto você ganha por hora" no preço escolhido.
 
-## 4. Frete / transporte (3 cenários da Alice)
+## 4. Frete / transporte (modelo Etsy: método de entrega + divisão automática)
 
-Padrão internacional: **comprador paga frete à parte** (transparente, checkout). Embutir no preço é anti-padrão (só "frete grátis acima de R$ X").
+Padrão internacional (Etsy): o **comprador paga frete à parte** (transparente, no checkout) e o vendedor escolhe o **método de entrega** (local pickup / local delivery / shipping). O rateio entre múltiplas peças é **automático** no checkout (combined shipping), não é um método separado — misturar "método" com "rateio" no mesmo seletor confunde.
 
-| Cenário da Alice                     | Modelo padrão (Etsy)                       | No app                                          |
-| ------------------------------------ | ------------------------------------------ | ----------------------------------------------- |
-| (a) Entrega própria (leva até pessoa) | "Local delivery" — frete fixo local        | campo valor fixo de entrega + "grátis acima de X" |
-| (b) Correios (1 ou várias peças)      | Frete calculado (peso + dimensões + CEP)   | produto com peso/dimensões; calcula por CEP ou faixa |
-| (c) Rateio (divide entre peças)       | Etsy "1º item cheio + adicionais"          | regra automática: 1ª peça cheia + menor por extra |
+| Cenário da Alice                     | Modelo padrão (Etsy)                                   | No app                                          |
+| ------------------------------------ | ------------------------------------------------------ | ----------------------------------------------- |
+| (a) Entrego eu mesma                 | "Local delivery" — frete fixo local                    | chip "Entrego eu mesma" + R$ por entrega        |
+| (b) Envio pelos Correios             | "Standard shipping" — frete calculado ou fixo          | chip "Vai pelos Correios" + R$ do frete         |
+| (c) Ela retira aqui                  | "Local pickup" — sem custo, sem campo                  | chip "Ela retira aqui" → R$ 0, sem campos       |
+| Várias peças num envio               | Combined shipping automático (1º item + adicionais)    | campo "peças no mesmo envio" → app divide o frete sozinho |
 
-**Rateio na prática:** várias peças num só envio → app soma custo real do frete ÷ nº de peças e rateia no preço de cada item. É o único "rateio" com padrão consolidado (Etsy).
+**Rateio na prática (padrão Etsy):** várias peças num só envio → app divide o frete real pelo nº de peças (1 peça = sem divisão). Não é um 4º método — é uma regra que se aplica a qualquer método pago.
 
 ## 5. Canais de venda e comissões (Brasil 2026)
 

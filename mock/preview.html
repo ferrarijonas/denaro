@@ -1092,6 +1092,14 @@
         <circle cx="12" cy="12.9" r="3.2"/>
       </g>
     </symbol>
+    <symbol id="i-retirada" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4.2 10.5 12 4l7.8 6.5"/>
+        <path d="M6.2 9.4V20h11.6V9.4"/>
+        <path d="M10 20v-6h4v6"/>
+        <path d="M8 14h1.6M14.4 14H16"/>
+      </g>
+    </symbol>
   </svg>
   <div class="app">
 
@@ -1255,36 +1263,43 @@
             <div class="sec-titulo"><span class="chev">▼</span> <span class="sec-num">3.</span> Embalagem</div>
             <div class="sec-corpo">
               <div id="lista-embalagem-peca"></div>
+            </div>
+          </div>
+
+          <div class="sec" data-sec>
+            <div class="sec-titulo"><span class="chev">▼</span> <span class="sec-num">4.</span> Entrega</div>
+            <div class="sec-corpo">
               <div class="field">
-                <label>Como a peça sai? <span class="dica">(transporte)</span></label>
+                <label>Como a peça chega até a cliente?</label>
                 <div class="chips" id="chips-frete-peca">
-                  <button type="button" class="chip flex-linha" data-frete="entrega"><svg class="icone chip-icone"><use href="#i-entrega"></use></svg><span class="n">Eu levo</span></button>
-                  <button type="button" class="chip flex-linha" data-frete="correios"><svg class="icone chip-icone"><use href="#i-correios"></use></svg><span class="n">Correios</span></button>
-                  <button type="button" class="chip flex-linha" data-frete="rateio"><svg class="icone chip-icone"><use href="#i-rateio"></use></svg><span class="n">Rateio</span></button>
+                  <button type="button" class="chip flex-linha" data-frete="entrega"><svg class="icone chip-icone"><use href="#i-entrega"></use></svg><span class="n">Entrego eu mesma</span></button>
+                  <button type="button" class="chip flex-linha" data-frete="correios"><svg class="icone chip-icone"><use href="#i-correios"></use></svg><span class="n">Vai pelos Correios</span></button>
+                  <button type="button" class="chip flex-linha" data-frete="retirada"><svg class="icone chip-icone"><use href="#i-retirada"></use></svg><span class="n">Ela retira aqui</span></button>
                 </div>
                 <div class="frete-campo" id="frete-campo-entrega" data-frete-campo="entrega">
                   <div class="suffix">
                     <input type="number" id="frete-entrega" value="0" min="0" step="1" inputmode="decimal" />
-                    <span>R$ entrega</span>
+                    <span>R$ por entrega</span>
                   </div>
+                  <p class="frete-dica">Deixe 0 se você leva de graça.</p>
                 </div>
                 <div class="frete-campo escondido" id="frete-campo-correios" data-frete-campo="correios">
                   <div class="suffix">
                     <input type="number" id="frete-correios" value="0" min="0" step="1" inputmode="decimal" />
-                    <span>R$ frete estimado</span>
+                    <span>R$ do frete</span>
                   </div>
-                  <p class="frete-dica">Peso + dimensões + CEP definem o valor nos Correios.</p>
+                  <p class="frete-dica">Quem compra paga o frete — aqui é só pra saber quanto sobra pra você.</p>
                 </div>
-                <div class="frete-campo escondido" id="frete-campo-rateio" data-frete-campo="rateio">
-                  <div class="suffix">
-                    <input type="number" id="frete-rateio-total" value="0" min="0" step="1" inputmode="decimal" />
-                    <span>R$ frete total</span>
-                  </div>
+                <div class="frete-campo escondido" id="frete-campo-retirada" data-frete-campo="retirada">
+                  <p class="frete-dica">Sem custo de entrega — ela busca aqui no ateliê.</p>
+                </div>
+                <div class="field" id="frete-pecas-bloco" style="margin-top:12px">
+                  <label>Quantas peças vão juntas no mesmo envio?</label>
                   <div class="suffix">
                     <input type="number" id="frete-rateio-pecas" value="1" min="1" step="1" inputmode="numeric" />
-                    <span>peças no envio</span>
+                    <span>peças</span>
                   </div>
-                  <p class="frete-dica">Divide o frete entre as peças do mesmo envio.</p>
+                  <p class="frete-dica">Com mais de uma, o app divide o frete entre elas sozinho.</p>
                 </div>
               </div>
             </div>
@@ -1316,7 +1331,7 @@
             <div class="custo-det"><span>Embalagem</span><span class="v" id="r-embalagem"></span></div>
             <div class="custo-det"><span>Mão de obra</span><span class="v" id="r-mao"></span></div>
             <div class="custo-det sub"><span>Risco / refação (perda)</span><span class="v" id="r-risco"></span></div>
-            <div class="custo-det"><span>Rateio frete</span><span class="v" id="r-frete"></span></div>
+            <div class="custo-det"><span>Frete / entrega</span><span class="v" id="r-frete"></span></div>
             <div class="linha-sep"></div>
             <div class="custo-total"><span class="rotulo">Custo total</span><span class="valor" id="r-custo"></span></div>
             <div class="custo-total c-taxas"><span class="rotulo">Custo c/ taxas</span><span class="valor" id="r-custo-taxas"></span></div>
@@ -2086,14 +2101,17 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
   atualizarDescCanal("canal-desc-peca");
   atualizarDescCanal("canal-desc-produto");
 
-  /* ===== frete: 3 cenários (entrega própria, correios, rateio) ===== */
+  /* ===== entrega: como a peça chega (Etsy) + divisão automática ===== */
   function fretePeca() {
     const modo = estado.freteModo;
-    if (modo === "entrega") return Number(document.getElementById("frete-entrega").value) || 0;
-    if (modo === "correios") return Number(document.getElementById("frete-correios").value) || 0;
-    const total = Number(document.getElementById("frete-rateio-total").value) || 0;
     const pecas = Math.max(1, Number(document.getElementById("frete-rateio-pecas").value) || 1);
-    return total / pecas;
+    if (modo === "retirada") return 0;
+    if (modo === "correios") {
+      const total = Number(document.getElementById("frete-correios").value) || 0;
+      return total / pecas;
+    }
+    const entrega = Number(document.getElementById("frete-entrega").value) || 0;
+    return entrega / pecas;
   }
   function setFreteModo(modo) {
     estado.freteModo = modo;
@@ -2101,6 +2119,8 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     document.querySelectorAll("#chips-frete-peca + .frete-campo, [data-frete-campo]").forEach((el) => {
       el.classList.toggle("escondido", el.dataset.freteCampo !== modo);
     });
+    const blocoPecas = document.getElementById("frete-pecas-bloco");
+    if (blocoPecas) blocoPecas.classList.toggle("escondido", modo === "retirada");
   }
   document.querySelectorAll("#chips-frete-peca .chip").forEach((c) => c.addEventListener("click", () => {
     setFreteModo(c.dataset.frete);
