@@ -1,12 +1,66 @@
-# Dados pessoais — nunca commitar (o repositório é público para o GitHub Pages gratuito)
+# ============================================================
+# .gitignore — Denário (repositório PÚBLICO no GitHub)
+# Poka-yoke: qualquer coisa aqui é PROIBIDA de ir para o ar.
+# A mesmos padrões também são reforçados em .githooks/ e no
+# workflow .github/workflows/pages.yml (guarda no deploy).
+# ============================================================
+
+# ---------- Dados pessoais / financeiros do ateliê ----------
 *.xlsx
 *.xls
+*.csv
+*.ods
+*.numbers
 data/
 backup/
+*dados*real*
+*orcamentos*
+*planilha*
 
-# Node
+# ---------- Bancos de dados e dumps ----------
+*.db
+*.sqlite
+*.sqlite3
+*.db3
+*.dump
+*.dmp
+*.backup
+
+# ---------- Segredos e credenciais ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.p8
+id_rsa
+id_ed25519
+*.credentials
+
+# ---------- Coordenação interna (não deve ir público) ----------
+COORDENACAO-AGENTE-MOCK.md
+
+# ---------- Node / ferramentas ----------
 node_modules/
 *.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
 
-# Build (se um dia houver)
+# ---------- Build / geração ----------
 dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# ---------- Sistema / editor ----------
+Thumbs.db
+Desktop.ini
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.tmp
+tmp/

@@ -1,0 +1,16 @@
+#!/bin/sh
+# Denário — poka-yoke de pré-push.
+# Bloqueia push se a árvore versionada contiver arquivos proibidos.
+# Defesa extra caso um commit tenha passado por outra máquina.
+# Ativado via: git config core.hooksPath .githooks
+
+FORBIDDEN='\.(xlsx|xls|csv|ods|numbers|db|sqlite|sqlite3|db3|dump|dmp|pem|key|p12|pfx|p8)$|(^|/)(data|backup)/|(^|/)\.env(\..*)?$|(^|/)id_(rsa|ed25519)$'
+
+BAD=$(git ls-files | grep -E "$FORBIDDEN" || true)
+if [ -n "$BAD" ]; then
+  echo "POKA-YOKE: push bloqueado — arquivos proibidos versionados:" >&2
+  echo "$BAD" >&2
+  exit 1
+fi
+
+exit 0

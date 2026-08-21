@@ -1,0 +1,22 @@
+#!/bin/sh
+# Denário — poka-yoke de pré-commit.
+# Bloqueia commits que tentem incluir dados pessoais, segredos ou arquivos
+# que não devem ir para o repositório público (GitHub Pages).
+# Ativado via: git config core.hooksPath .githooks
+
+FORBIDDEN='\.(xlsx|xls|csv|ods|numbers|db|sqlite|sqlite3|db3|dump|dmp|pem|key|p12|pfx|p8)$|(^|/)(data|backup)/|(^|/)\.env(\..*)?$|(^|/)id_(rsa|ed25519)$'
+SECRETS='AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----'
+
+BAD=$(git diff --cached --name-only | grep -E "$FORBIDDEN" || true)
+if [ -n "$BAD" ]; then
+  echo "POKA-YOKE: commit bloqueado — arquivos proibidos na staging:" >&2
+  echo "$BAD" >&2
+  exit 1
+fi
+
+if git diff --cached | grep -E "$SECRETS" >/dev/null 2>&1; then
+  echo "POKA-YOKE: commit bloqueado — possível segredo/token no conteudo staged." >&2
+  exit 1
+fi
+
+exit 0

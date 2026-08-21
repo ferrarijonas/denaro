@@ -24,6 +24,19 @@ jobs:
         run: |
           mkdir -p _site
           cp -R mock/. _site/
+      - name: Poka-yoke — bloqueia dados sensiveis
+        run: |
+          set -e
+          forbidden='\.(xlsx|xls|csv|ods|numbers|db|sqlite|sqlite3|db3|dump|dmp|pem|key|p12|pfx|p8)$|(^|/)(data|backup)/|(^|/)\.env(\..*)?$|(^|/)id_(rsa|ed25519)$'
+          if git ls-files | grep -E "$forbidden"; then
+            echo "::error::POKA-YOKE: arquivos sensiveis versionados no repositorio. Deploy abortado."
+            exit 1
+          fi
+          if find _site -type f | grep -E "$forbidden"; then
+            echo "::error::POKA-YOKE: arquivos sensiveis no artefato publicavel. Deploy abortado."
+            exit 1
+          fi
+          echo "Poka-yoke OK: nenhum arquivo proibido."
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload artefato
