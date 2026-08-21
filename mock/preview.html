@@ -1270,11 +1270,11 @@
             <div class="sec-titulo"><span class="chev">▼</span> <span class="sec-num">4.</span> Entrega</div>
             <div class="sec-corpo">
               <div class="field">
-                <label>Como a peça chega até a cliente?</label>
+                <label>Como a peça chega até quem compra?</label>
                 <div class="chips" id="chips-frete-peca">
-                  <button type="button" class="chip flex-linha" data-frete="entrega"><svg class="icone chip-icone"><use href="#i-entrega"></use></svg><span class="n">Entrego eu mesma</span></button>
+                  <button type="button" class="chip flex-linha" data-frete="entrega"><svg class="icone chip-icone"><use href="#i-entrega"></use></svg><span class="n">Eu entrego</span></button>
                   <button type="button" class="chip flex-linha" data-frete="correios"><svg class="icone chip-icone"><use href="#i-correios"></use></svg><span class="n">Vai pelos Correios</span></button>
-                  <button type="button" class="chip flex-linha" data-frete="retirada"><svg class="icone chip-icone"><use href="#i-retirada"></use></svg><span class="n">Ela retira aqui</span></button>
+                  <button type="button" class="chip flex-linha" data-frete="retirada"><svg class="icone chip-icone"><use href="#i-retirada"></use></svg><span class="n">Retira no ateliê</span></button>
                 </div>
                 <div class="frete-campo" id="frete-campo-entrega" data-frete-campo="entrega">
                   <div class="suffix">
@@ -1294,10 +1294,10 @@
                   <p class="frete-dica">Sem custo de entrega — ela busca aqui no ateliê.</p>
                 </div>
                 <div class="field" id="frete-pagante-bloco">
-                  <label>Quem paga o caminho até ela?</label>
+                  <label>Quem paga o frete?</label>
                   <div class="chips" id="chips-frete-pagante">
-                    <button type="button" class="chip flex-linha" data-pagante="cliente"><span class="n">A cliente paga à parte</span></button>
-                    <button type="button" class="chip flex-linha" data-pagante="atele"><span class="n">Frete grátis pra ela</span></button>
+                    <button type="button" class="chip flex-linha" data-pagante="cliente"><span class="n">Quem compra paga</span></button>
+                    <button type="button" class="chip flex-linha" data-pagante="atele"><span class="n">Frete grátis</span></button>
                   </div>
                   <div class="dificuldade-desc" id="frete-pagante-desc"></div>
                 </div>
@@ -2124,8 +2124,8 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     return entrega / pecas;
   }
   const PAGANTE_DESC = {
-    cliente: "O frete não entra no preço — você repassa o valor pra ela.",
-    atele: "O frete entra no preço e ela vê “frete grátis”. Você absorve.",
+    cliente: "O frete não entra no preço — você repassa o valor.",
+    atele: "O frete entra no preço e aparece como “frete grátis”. Você absorve.",
   };
   function renderPagante() {
     document.querySelectorAll("#chips-frete-pagante .chip").forEach((c) => c.classList.toggle("selecionado", c.dataset.pagante === estado.fretePagante));
@@ -2502,8 +2502,8 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     const rFreteDica = document.getElementById("r-frete-dica");
     if (rFreteRotulo) {
       if (estado.freteModo === "retirada") rFreteRotulo.textContent = "Retirada no ateliê";
-      else if (freteEmbutido) rFreteRotulo.textContent = "Frete grátis pra ela";
-      else rFreteRotulo.textContent = "Frete a cobrar à parte";
+      else if (freteEmbutido) rFreteRotulo.textContent = "Frete grátis";
+      else rFreteRotulo.textContent = "Frete a cobrar";
     }
     if (rFreteDica) {
       if (estado.freteModo === "retirada") rFreteDica.textContent = "Sem custo de entrega.";
