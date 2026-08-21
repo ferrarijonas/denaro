@@ -127,9 +127,11 @@ custoEmbalagem  = Σ (qtd × preco) dos itens de embalagem
 maoDeObra       = tempoHoras × custoHoraTotal × fatorDificuldade
 riscoRefacao    = taxaPerda × (custoMaterial + maoDeObra)
 custoTotal      = custoMaterial + custoAcessorios + custoEmbalagem + maoDeObra + riscoRefacao + rateioFrete
-custoComTaxas   = custoTotal × (1 + Σ taxas)      ← multiplicativo (convenção das peças)
+custoComTaxas   = custoTotal ÷ (1 − Σ taxas)      ← modo líquido (padrão Etsy; peças e produtos)
 precoPorLinha   = custoComTaxas ÷ (1 − margemDaLinha)   ← margem é % do preço de venda
 ```
+
+> **Escala de perda (R14):** `taxaPerda` é uma escala de 3 níveis (`CONFIG.perdas`): **Baixa 15%**, **Média 30%** (default), **Alta 45%**. Justificativa internacional: a perda real de ateliê soma **alocação de matéria-prima (15–20%)** + **quebra/refação (10–20%)** + **promocionais e seconds monetizados com desconto** (East Fork vende a 30%), que a literatura internacional trata separadamente mas o ateliê sente junto. A escala usa o valor do nível selecionado (`CONFIG.perdaNivel`).
 
 ### 3.4 Verificação contra os custos fixos pré-cadastrados
 
@@ -139,9 +141,9 @@ Com os 20 itens pré-cadastrados (§2.1): `totalCustosFixos=5.980`, `salario=3.5
 - custoMaterial = 2,80 + 5,00 = 7,80
 - custoEmbalagem = 2,00 + 1,00 = 3,00
 - maoDeObra = 0,5 × 33,98 × 1,0 = 16,99
-- riscoRefacao = taxaPerda(0,3) × (7,80 + 16,99) = 7,44
+- riscoRefacao = taxaPerda(média 0,3) × (7,80 + 16,99) = 7,44
 - custoTotal = 7,80 + 3,00 + 16,99 + 7,44 = 35,23
-- custoComTaxas = 35,23 × 1,05 = 36,99 (imposto 5%)
+- custoComTaxas = 35,23 ÷ 0,95 = 37,08 (imposto 5%)
 - exclusiva = 36,99 ÷ 0,40 = 92,48 | padrão = 36,99 ÷ 0,55 = 67,26 | revenda = 36,99 ÷ 0,70 = 52,84
 
 **Conferência contra a planilha:** a mesma fórmula com o config da aba `Alice_Custos_FUNCIONA` (total 6.880 → hora total 39,09) reproduz os valores dela: custo 38,55 ✓, c/taxas 40,48 ✓, revenda 57,83 ✓, padrão 73,60 ✓, exclusiva 101,20 ✓. A fórmula é 1:1; muda apenas o config de custos fixos.
@@ -209,7 +211,7 @@ precoPorLinha    = custoComTaxas × multiplicadorDaLinha
 | ----------------------- | ---------------------------------- | --------------------- |
 | `imposto (regime)`      | Informal 0% · MEI 0%/venda (DAS fixo mensal) · Simples 4,5% (Anexo II indústria) | Peças e produtos |
 | `taxa do canal`         | soma das comissões do canal escolhido (Pix 0,99%, cartão 3,29–5,69%, ML 10–19%, Etsy 6,5%) | Peças e produtos |
-| `taxaPerda` (risco)     | 20–30%                             | Peças (risco/refação) |
+| `taxaPerda` (risco)     | Escala: Baixa 15% · **Média 30%** · Alta 45% | Peças e produtos (R14) |
 | `rateioFrete`           | R$ 0–5 (ou cenário de transporte, ver §7) | Peças          |
 
 **Canais pré-salvos (fichas editáveis em `costsPanel`):** Direto/Pix (Pix 0,99%), Site/NuvemShop (cartão 4,99% + TPV 2%), Feira/maquininha (cartão 3,5% + Pix 0,99%), Mercado Livre (comissão 13% + cartão 4,99%), Etsy (comissão 6,5% + taxa de pagamento 4%).
