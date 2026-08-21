@@ -80,6 +80,19 @@ Pesquisa direta nas políticas de frete de ateliês documentados. **Consenso abs
 
 **Padrão ouro consolidado (Japão+Itália+EUA):** preço limpo + frete à parte transparente + opção "grátis acima de X" como política (padrão japonês/italiano) ou promoção (americano) + embalagem no custo + ida ao correio no overhead + quebra monetizada. Nenhum ateliê sólido embute frete no preço da peça.
 
+### 4.2 Simulação de consenso (3 agentes: Japão, Itália, EUA) — R18
+
+Cruzei 3 agentes personificando os ateliês estudados. **Consenso unânime:**
+
+1. **"Frete não é preço."** O frete é serviço à parte. "À parte" = repasse exato sem margem (East Fork). "Embutido" = absorção consciente, **nunca escondida** — o custo absorvido fica sempre documentado (Japão cede a precisão, EUA a transparência).
+2. **Separar físico de dinheiro em 2 perguntas:** (A) "Como a peça chega?" → método; (B) "Quem paga o caminho?" → à parte / frete grátis. O bug do mock era misturar os dois num seletor e dizer "quem compra paga" enquanto o cálculo embutia.
+3. **Uma pergunta por vez, poka-yoke:** retirada pula B e o rateio; ML/Etsy travam "à parte" (plataforma cobra do comprador); impossível criar estado contraditório.
+4. **Resultado em um número só:** à parte → linha "Frete a cobrar à parte" (informativa, fora do preço); embutido → badge "Frete grátis pra ela" (custo absorvido no expansor); retirada → "sem frete".
+5. **Rateio automático** por peças no mesmo envio (default 1), divisão escondida.
+6. **Pergunta B default "à parte"** e "grátis" exige intenção consciente (anti-regra americano: frete grátis é presente, não padrão).
+
+**Decisões por país:** Japão quer regra "grátis acima de X" (¥11.000) + recap chip; Itália quer preço da peça sagrado + escolha por tamanho de caixa (estimativa) e trava de canal; EUA quer custo real sempre visível + "grátis" como isca justificada. Implementado o núcleo comum (perguntas A+B + linha de frete por estado). Pendências futuras: escolha por tamanho de caixa (pré-API), regra global "grátis acima de X", recap chip por peça.
+
 ## 5. Canais de venda e comissões (Brasil 2026)
 
 > ⚠️ **Elo7 ENCERROU operações em 11/05/2026** (comprada pela Enjoei). Não é mais canal válido — substituir por Etsy/Shopee/ML no seletor, com aviso.

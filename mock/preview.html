@@ -1288,12 +1288,20 @@
                     <input type="number" id="frete-correios" value="0" min="0" step="1" inputmode="decimal" />
                     <span>R$ do frete</span>
                   </div>
-                  <p class="frete-dica">Quem compra paga o frete — aqui é só pra saber quanto sobra pra você.</p>
+                  <p class="frete-dica">Futuramente o app busca esse valor sozinho.</p>
                 </div>
                 <div class="frete-campo escondido" id="frete-campo-retirada" data-frete-campo="retirada">
                   <p class="frete-dica">Sem custo de entrega — ela busca aqui no ateliê.</p>
                 </div>
-                <div class="field" id="frete-pecas-bloco" style="margin-top:12px">
+                <div class="field" id="frete-pagante-bloco">
+                  <label>Quem paga o caminho até ela?</label>
+                  <div class="chips" id="chips-frete-pagante">
+                    <button type="button" class="chip flex-linha" data-pagante="cliente"><span class="n">A cliente paga à parte</span></button>
+                    <button type="button" class="chip flex-linha" data-pagante="atele"><span class="n">Frete grátis pra ela</span></button>
+                  </div>
+                  <div class="dificuldade-desc" id="frete-pagante-desc"></div>
+                </div>
+                <div class="field" id="frete-pecas-bloco">
                   <label>Quantas peças vão juntas no mesmo envio?</label>
                   <div class="suffix">
                     <input type="number" id="frete-rateio-pecas" value="1" min="1" step="1" inputmode="numeric" />
@@ -1331,7 +1339,8 @@
             <div class="custo-det"><span>Embalagem</span><span class="v" id="r-embalagem"></span></div>
             <div class="custo-det"><span>Mão de obra</span><span class="v" id="r-mao"></span></div>
             <div class="custo-det sub"><span>Risco / refação (perda)</span><span class="v" id="r-risco"></span></div>
-            <div class="custo-det"><span>Frete / entrega</span><span class="v" id="r-frete"></span></div>
+            <div class="custo-det sub"><span id="r-frete-rotulo">Frete / entrega</span><span class="v" id="r-frete"></span></div>
+            <p class="frete-dica" id="r-frete-dica"></p>
             <div class="linha-sep"></div>
             <div class="custo-total"><span class="rotulo">Custo total</span><span class="valor" id="r-custo"></span></div>
             <div class="custo-total c-taxas"><span class="rotulo">Custo c/ taxas</span><span class="valor" id="r-custo-taxas"></span></div>
@@ -1907,6 +1916,7 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     cliente: "",
     canal: "direto",
     freteModo: "entrega",
+    fretePagante: "cliente",
     argilaSelecionada: "Argila Comum",
     dificuldade: 1,
     etapas: { projeto: 15, preparacao: 10, modelagem: 30, esmaltacao: 15, decoracao: 0, forno: 15 },
@@ -2101,7 +2111,7 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
   atualizarDescCanal("canal-desc-peca");
   atualizarDescCanal("canal-desc-produto");
 
-  /* ===== entrega: como a peça chega (Etsy) + divisão automática ===== */
+  /* ===== entrega: como a peça chega (Etsy) + quem paga + divisão automática ===== */
   function fretePeca() {
     const modo = estado.freteModo;
     const pecas = Math.max(1, Number(document.getElementById("frete-rateio-pecas").value) || 1);
@@ -2113,14 +2123,33 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     const entrega = Number(document.getElementById("frete-entrega").value) || 0;
     return entrega / pecas;
   }
+  const PAGANTE_DESC = {
+    cliente: "O frete não entra no preço — você repassa o valor pra ela.",
+    atele: "O frete entra no preço e ela vê “frete grátis”. Você absorve.",
+  };
+  function renderPagante() {
+    document.querySelectorAll("#chips-frete-pagante .chip").forEach((c) => c.classList.toggle("selecionado", c.dataset.pagante === estado.fretePagante));
+    const el = document.getElementById("frete-pagante-desc");
+    if (el) el.textContent = PAGANTE_DESC[estado.fretePagante] || "";
+  }
+  function setPagante(p) {
+    estado.fretePagante = p;
+    renderPagante();
+    calcularPeca();
+  }
+  document.querySelectorAll("#chips-frete-pagante .chip").forEach((c) => c.addEventListener("click", () => setPagante(c.dataset.pagante)));
+  renderPagante();
   function setFreteModo(modo) {
     estado.freteModo = modo;
     document.querySelectorAll("#chips-frete-peca .chip").forEach((c) => c.classList.toggle("selecionado", c.dataset.frete === modo));
     document.querySelectorAll("#chips-frete-peca + .frete-campo, [data-frete-campo]").forEach((el) => {
       el.classList.toggle("escondido", el.dataset.freteCampo !== modo);
     });
+    const ehRetirada = modo === "retirada";
     const blocoPecas = document.getElementById("frete-pecas-bloco");
-    if (blocoPecas) blocoPecas.classList.toggle("escondido", modo === "retirada");
+    if (blocoPecas) blocoPecas.classList.toggle("escondido", ehRetirada);
+    const blocoPagante = document.getElementById("frete-pagante-bloco");
+    if (blocoPagante) blocoPagante.classList.toggle("escondido", ehRetirada);
   }
   document.querySelectorAll("#chips-frete-peca .chip").forEach((c) => c.addEventListener("click", () => {
     setFreteModo(c.dataset.frete);
@@ -2453,7 +2482,9 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     const custoEmbalagem = embalagem.reduce((s, i) => s + i.qtd * i.preco, 0);
     const maoDeObra = tempoH * custoHoraTotal() * fator;
     const risco = taxaPerda() * (custoMaterial + maoDeObra);
-    const custoTotal = custoMaterial + custoAcessorios + custoEmbalagem + maoDeObra + risco + frete;
+    const freteEmbutido = estado.fretePagante === "atele";
+    const freteNaConta = freteEmbutido ? frete : 0;
+    const custoTotal = custoMaterial + custoAcessorios + custoEmbalagem + maoDeObra + risco + freteNaConta;
     const taxas = impostoPorRegime() + canalTotal(estado.canal);
     const custoComTaxas = custoTotal / (1 - taxas);
 
@@ -2466,6 +2497,19 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     document.getElementById("r-frete").textContent = fmt(frete);
     document.getElementById("r-custo").textContent = fmt(custoTotal);
     document.getElementById("r-custo-taxas").textContent = fmt(custoComTaxas);
+
+    const rFreteRotulo = document.getElementById("r-frete-rotulo");
+    const rFreteDica = document.getElementById("r-frete-dica");
+    if (rFreteRotulo) {
+      if (estado.freteModo === "retirada") rFreteRotulo.textContent = "Retirada no ateliê";
+      else if (freteEmbutido) rFreteRotulo.textContent = "Frete grátis pra ela";
+      else rFreteRotulo.textContent = "Frete a cobrar à parte";
+    }
+    if (rFreteDica) {
+      if (estado.freteModo === "retirada") rFreteDica.textContent = "Sem custo de entrega.";
+      else if (freteEmbutido) rFreteDica.textContent = "Você absorve — já está no preço.";
+      else rFreteDica.textContent = "Repasse sem margem — não entra no preço.";
+    }
 
     const cont = document.getElementById("r-linhas-peca");
     cont.innerHTML = "";
