@@ -62,7 +62,7 @@ O modelo exato de cálculo vive em `Specs/precificacao/modelo-de-precificacao.md
   Salva, lista, atualiza e apaga **produtos** (receitas) no banco local.  
   `Entrada: Product | query. Saída: Product | lista.`
 
-> **Nota de implantação (v1):** a persistência real vive no **Firestore** (doc único `alice/estado`, plano Spark grátis) — custos de referência + histórico de peças/produtos salvos, sincronizados entre aparelhos. O `localStorage` (`LS_KEY`) é o cache/fallback quando a nuvem está fora, e guarda também as **fotos** das peças (base64, não sobem para a nuvem). O backup **exportar/importar** permanece como portabilidade. O `server.js` (SQLite) é o modo local **legado**, sem uso no mock.
+> **Nota de implantação (v1):** a persistência real vive no **Firestore** (doc único `alice/estado`, plano Spark grátis) — custos de referência + histórico de peças/produtos salvos, sincronizados entre aparelhos. As **fotos** sobem para o **Firebase Storage** (`alice-fotos/`, mesmo projeto) e o doc guarda a URL; o `localStorage` (`LS_KEY`) é o cache/fallback quando a nuvem está fora e mantém a base64 como garantia local. O `server.js` (SQLite) é o modo local **legado**, sem uso no mock.
 
 ### 3.3 API (servidor)
 
@@ -215,7 +215,7 @@ Regra: toda situação de erro listada é rastreável a um componente ou estado 
 
 ## 9. Distribuição e uso
 
-- **Formato (v1):** app web estático publicado no **GitHub Pages** (HTTPS, gratuito); acesso pelo navegador em `https://<usuário>.github.io/<repositorio>/`. Dados sincronizados no **Firestore** (doc `alice/estado`), com `localStorage` como cache e backup exportar/importar.
+- **Formato (v1):** app web estático publicado no **GitHub Pages** (HTTPS, gratuito); acesso pelo navegador em `https://<usuário>.github.io/<repositorio>/`. Dados sincronizados no **Firestore** (doc `alice/estado`) + **Storage** para fotos, com `localStorage` como cache local.
 - **Formato (modo local legado, opcional):** processo Node (`server.js`) na rede de casa via `pm2`; serve a mesma UI com API `/api/costs`. Não é usado pelo mock.
 - **Jornada mínima:** abrir o link → cadastrar custos de referência → precificar a primeira peça.
 - **Pré-requisitos:** repositório público no GitHub + projeto Firebase (Spark) com Firestore criado e regras publicadas.
@@ -226,7 +226,7 @@ Regra: toda situação de erro listada é rastreável a um componente ou estado 
 
 - Multi-tenancy, autenticação por usuário e permissões (o Firestore hoje usa regras que restringem ao doc `alice/estado`; auth entra numa versão futura).  
 - Conflitos de edição simultânea real-time (o Firestore sincroniza por documento; editar ao mesmo tempo em dois aparelhos pode sobrescrever).  
-- Fotos das peças na nuvem (base64 fica só no aparelho por tamanho; um dia, Storage do Firebase).  
+- Controle de quais fotos podem ser apagadas no Storage (hoje o arquivo é mantido mesmo se o orçamento for apagado, por segurança).  
 - Importação das planilhas atuais (fica no escopo futuro do conceito; os valores de referência do v1 vêm de `modelo-de-precificacao.md`).  
 - Custos de queima por peça individual (entram no custo fixo via `custoHoraTotal`).  
 - Cálculos de lucro por mês, relatórios e dashboards.

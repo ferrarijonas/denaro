@@ -20,8 +20,8 @@ Adicionei **itens sugeridos (valor 0)** nas categorias de custo fixo (R9): Alugu
   ↳ tabela `kv(key TEXT PRIMARY KEY, value TEXT)` criada na 1ª execução; escrita atômica
 - [ ] T31b — Mock conectado ao servidor  #fase3
   ↳ `salvarLocalStorage` → também `PUT /api/costs`; `carregarLocalStorage` → `GET /api/costs` com fallback offline
-- [ ] T34b — Botão "Exportar backup"  #fase3
-  ↳ baixa `alice-backup.json` com todos os custos; funciona offline
+- [x] ~~T34b — Botão "Exportar backup"~~ **removido (R20)** — nuvem (Firestore + Storage) grava em tempo real; sem backup manual
+  ↳ export/import foi retirado da UI; portabilidade é automática entre aparelhos
 - [ ] T35b — Subir com pm2  #fase3
   ↳ `pm2 start server.js --name alice` mantém de pé; teste de reinício
 

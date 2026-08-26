@@ -48,8 +48,8 @@ Este documento segue o template de `ZenStackSpec.md` e é derivado de `AliceConc
 | -------------- | ------------------------------ | -------------------------------------- |
 | GitHub Pages   | Nuvem (hospedagem estática)    | Serve `mock/` (HTML/JS/CSS) com HTTPS gratuito. |
 | Firestore      | Nuvem (projeto Firebase, plano Spark) | Doc `alice/estado` com custos + histórico de preços; sincroniza entre aparelhos (Alice + ajudante). |
-| `localStorage` | Navegador (celular/desktop)    | Cache local/offline (fonte quando a nuvem falha) + fotos das peças (base64, ficam só no aparelho). |
-| Backup exportável | Botão "Exportar/Importar backup" na tela Custos | Portabilidade e recuperação; o JSON exportado é a ponte para migrar dados no futuro. |
+| `localStorage` | Navegador (celular/desktop)    | Cache local/offline (fonte quando a nuvem falha) + guarda a base64 das fotos. |
+| Firebase Storage | Nuvem (mesmo projeto, Spark grátis) | Fotos dos orçamentos em `alice-fotos/` (a nuvem guarda a URL; base64 fica como cache no aparelho). |
 
 ### 4.2 Modo local (legado, opcional — `server.js`)
 
@@ -84,7 +84,7 @@ Sem build, sem linter, sem framework no v1. Testes manuais via navegador + cená
 ├── .firebaserc        # Aponta o projeto Firebase padrão
 ├── specs/             # Spec de módulo + ZenSpecs filhas
 ├── data/              # SQLite local (alice.db) — legado; ignorado no git
-├── backup/            # Exports manuais (alice-backup.json) — ignorado no git
+├── backup/            # Exports manuais antigos (legado, sem uso) — ignorado no git
 └── .github/workflows/ # Workflow que publica mock/ no GitHub Pages
 ```
 
@@ -127,4 +127,4 @@ Repositório no GitHub. Para o GitHub Pages ser gratuito o repositório é **pú
 
 - **Nunca commitar dados pessoais:** `data/`, `backup/` e os `.xlsx` de custos estão no `.gitignore` — qualquer coisa com preços reais fica fora do repositório público.
 - **Dados na nuvem:** custos e histórico de preços vivem no Firestore (doc `alice/estado`) e sincronizam entre aparelhos; `localStorage` é o cache offline. As regras do Firestore limitam leitura/escrita ao doc `alice/estado`.
-- **Fotos:** ficam só no aparelho (`localStorage`), não sobem para a nuvem (tamanho).
+- **Fotos:** sobem para o Firebase Storage (`alice-fotos/`, mesmo projeto) e sincronizam entre aparelhos; a base64 continua no aparelho como cache/garantia local. O doc do Firestore fica leve (guardam URLs, nunca base64).

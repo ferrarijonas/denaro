@@ -1,0 +1,15 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Fotos dos orçamentos (upload + leitura). Sem auth por enquanto — mesma
+    // lógica do Firestore: a proteção é o caminho fixo alice-fotos/.
+    match /alice-fotos/{file} {
+      allow read, write: if true;
+    }
+
+    // Tudo o resto do bucket fica bloqueado.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

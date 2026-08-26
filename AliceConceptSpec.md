@@ -86,7 +86,7 @@ Metáfora: começa como uma **etiquetadora de preços**, evolui para um **cadern
 - **Mobile-first.** A Alice usa no celular; o desktop é opcional.  
   Metáfora: o ateliê anda, o sistema anda junto.
 
-- **Grátis e em qualquer lugar.** Hospedagem estática gratuita (GitHub Pages) + dados na nuvem gratuita (Firestore Spark), com cache no aparelho e backup exportável/importável.  
+- **Grátis e em qualquer lugar.** Hospedagem estática gratuita (GitHub Pages) + dados e fotos na nuvem gratuita (Firestore + Storage Spark), com cache no aparelho.  
   Metáfora: uma **etiquetadora que cabe no bolso** — sem máquina para manter.
 
 - **Preço auditável.** Dá pra ver exatamente **de onde veio cada valor** do preço final.  
@@ -120,7 +120,7 @@ Metáfora: é o **cérebro do preço**, não o **corpo da empresa**.
 
 - **Foco em precificação** → porque é a dor imediata da Alice, e o resto (estoque, vendas) fica para depois.  
 - **Web app acessível de qualquer lugar** → porque a Alice quer abrir o precificador no celular com o link, sem depender de rede local ou servidor ligado.  
-- **Hospedagem estática gratuita (GitHub Pages) + dados na nuvem (Firestore Spark)** → porque coloca o app no ar com custo zero e sincroniza os custos e o histórico de preços entre os aparelhos de Alice e da ajudante, com backup exportável como garantia de portabilidade.
+- **Hospedagem estática gratuita (GitHub Pages) + dados na nuvem (Firestore + Storage)** → porque coloca o app no ar com custo zero e sincroniza os custos, o histórico de preços e as fotos entre os aparelhos de Alice e da ajudante, sem nada se perder.
 - **Custo = material + mão de obra** → material vem de argila e esmalte; mão de obra vem de tempo × valor da hora (ajustado pela dificuldade).  
 - **Margem exibida como múltiplos preços** → porque a Alice quer comparar e escolher quanto cobrar, não ser presa a uma única margem.  
 - **Custos de referência centralizados** → porque argila e esmaltes mudam de preço e precisam ser atualizados num lugar só.  
@@ -132,9 +132,9 @@ Metáfora: é o **cérebro do preço**, não o **corpo da empresa**.
 
 ### Mapa de contexto
 
-`Alice / Ajudante` → **celular (navegador)** → `GitHub Pages (UI)` → `Firestore (dados na nuvem)` + `localStorage (cache/fotos)` + backup exportável
+`Alice / Ajudante` → **celular (navegador)** → `GitHub Pages (UI)` → `Firestore (dados na nuvem)` + `Storage (fotos)` + `localStorage (cache)`
 
-Metáfora: o celular é o **balcão**; a nuvem é a **gaveta de arquivos** que Alice e a ajudante dividem; o backup exportado é a cópia de segurança.
+Metáfora: o celular é o **balcão**; a nuvem é a **gaveta de arquivos** que Alice e a ajudante dividem, com as fotos na mesma gaveta.
 
 ### Origem
 

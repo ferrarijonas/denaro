@@ -844,6 +844,7 @@
     justify-content: space-between;
     align-items: center;
     gap: 12px;
+    position: relative;
   }
 
   .item-salvo:active { transform: scale(0.98); }
@@ -853,6 +854,19 @@
   .item-salvo .badge-tipo { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 6px; border-radius: 5px; background: var(--papel); color: var(--tinta-suave); margin-right: 6px; }
   .item-salvo .preco { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
   .item-salvo .thumb { width: 46px; height: 46px; border-radius: 8px; object-fit: cover; flex: 0 0 46px; border: 1px solid var(--linha); }
+  .item-salvo .preco-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .item-salvo .del-salvo {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--terracota);
+    background: var(--papel);
+    border: 1px solid var(--linha);
+    border-radius: 6px;
+    padding: 3px 9px;
+    cursor: pointer;
+  }
+  .item-salvo .del-salvo:active { opacity: 0.6; }
+
 
   .filter { display: flex; gap: 6px; margin-bottom: 14px; }
 
@@ -978,6 +992,7 @@
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 <script src="firebase-config.js"></script>
 </head>
 <body>
@@ -1473,7 +1488,7 @@
           </div>
           <span class="mock-tag">v3</span>
         </div>
-        <h1>Meus itens</h1>
+        <h1>Orçamentos</h1>
       </header>
       <main>
         <div class="filter">
@@ -1482,7 +1497,7 @@
           <button type="button" data-filtro="produto">Produtos</button>
         </div>
         <div id="lista-salvos"></div>
-        <div class="sem-nota escondido" id="vazio-salvos">Nenhum item ainda. Precifique o primeiro.</div>
+        <div class="sem-nota escondido" id="vazio-salvos">Nenhum orçamento ainda. Precifique o primeiro.</div>
       </main>
     </section>
 
@@ -1528,11 +1543,6 @@
             <div class="linha-sep"></div>
             <div class="custo-det"><span>TOTAL GASTOS</span><b class="v" id="f-total-gastos"></b></div>
             <div class="custo-det"><span>Hora total (c/ fixos)</span><b class="v" id="f-hora-total"></b></div>
-            <button type="button" class="btn secundario" id="btn-exportar" style="margin-top:14px">Exportar backup</button>
-            <button type="button" class="btn secundario" id="btn-importar" style="margin-top:8px">Importar backup</button>
-            <input type="file" id="file-importar" accept="application/json,.json" class="escondido" />
-            <div class="feedback vazio" id="fb-exportar"></div>
-            <div class="feedback vazio" id="fb-importar"></div>
           </div>
         </div>
 
@@ -1598,7 +1608,7 @@
 
     <nav>
       <button type="button" class="nav-item ativo" data-tela="precificar">Precificar<span class="dot"></span></button>
-      <button type="button" class="nav-item" data-tela="salvos">Itens<span class="dot"></span></button>
+      <button type="button" class="nav-item" data-tela="salvos">Orçamentos<span class="dot"></span></button>
       <button type="button" class="nav-item" data-tela="custos">Custos<span class="dot"></span></button>
     </nav>
   </div>
@@ -1811,6 +1821,7 @@
 
   let firestoreDisponivel = false;
   let fsDoc = null;
+  let fbStorage = null;
 
   function initFirestore() {
     try {
@@ -1818,6 +1829,7 @@
       if (window.ALICE_FIREBASE.apiKey.indexOf("COLE_AQUI") === 0) return;
       firebase.initializeApp(window.ALICE_FIREBASE);
       fsDoc = firebase.firestore().collection("alice").doc("estado");
+      if (window.firebase.storage) fbStorage = firebase.storage();
       firestoreDisponivel = true;
     } catch (e) { firestoreDisponivel = false; }
   }
@@ -1830,11 +1842,45 @@
     el.textContent = "nuvem off"; el.className = "sync-tag off";
   }
 
-  /* fotos (base64, pesadas) não sobem para a nuvem — ficam só no aparelho, via localStorage */
+  /* fotos: base64 sobe para o Firebase Storage (alice-fotos/) e vira URL na nuvem;
+     a base64 continua no aparelho (localStorage) como garantia. */
+  const fotoUploadCache = new Map();
+  function dataURLtoBlob(dataURL) {
+    const parts = dataURL.split(",");
+    const mime = (parts[0].match(/data:([^;]+)/) || [])[1] || "image/jpeg";
+    const bin = atob(parts[1]);
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return new Blob([arr], { type: mime });
+  }
+  async function subirFoto(base64) {
+    if (fotoUploadCache.has(base64)) return fotoUploadCache.get(base64);
+    const id = "foto-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+    const ref = fbStorage.ref("alice-fotos/" + id + ".jpg");
+    await ref.put(dataURLtoBlob(base64));
+    const url = await ref.getDownloadURL();
+    fotoUploadCache.set(base64, url);
+    return url;
+  }
+  async function normalizarFotosParaNuvem(dados) {
+    if (!fbStorage) return;
+    const trata = async (item) => {
+      if (item && item.foto && item.foto.indexOf("data:") === 0) {
+        try { item.foto = await subirFoto(item.foto); }
+        catch (e) { /* fica base64; paraNuvem corta; reanexarFotos devolve do aparelho */ }
+      }
+    };
+    const itens = Array.isArray(dados.salvos) ? dados.salvos : [];
+    for (const s of itens) await trata(s);
+    if (dados.rascunho) await trata(dados.rascunho);
+  }
+
+  /* paraNuvem: corta base64 (não pode ir pro doc do Firestore — limite 1MB); mantém URLs */
   function paraNuvem(d) {
     const c = JSON.parse(JSON.stringify(d));
-    if (Array.isArray(c.salvos)) c.salvos.forEach((s) => { if (s && s.foto) s.foto = null; });
-    if (c.rascunho && c.rascunho.foto) c.rascunho.foto = null;
+    const limpa = (f) => (f && f.indexOf("data:") === 0 ? null : f || null);
+    if (Array.isArray(c.salvos)) c.salvos.forEach((s) => { if (s) s.foto = limpa(s.foto); });
+    if (c.rascunho) c.rascunho.foto = limpa(c.rascunho.foto);
     return c;
   }
 
@@ -1843,14 +1889,12 @@
       const raw = localStorage.getItem(LS_KEY);
       if (!raw) return d;
       const local = JSON.parse(raw);
-      if (local.rascunho && local.rascunho.foto && d.rascunho) d.rascunho.foto = local.rascunho.foto;
-      if (Array.isArray(local.salvos)) {
-        if (Array.isArray(d.salvos)) {
-          d.salvos.forEach((s) => {
-            const l = local.salvos.find((x) => x.tipo === s.tipo && x.nome === s.nome && x.data === s.data);
-            if (l && l.foto) s.foto = l.foto;
-          });
-        }
+      if (local.rascunho && d.rascunho && !d.rascunho.foto && local.rascunho.foto) d.rascunho.foto = local.rascunho.foto;
+      if (Array.isArray(local.salvos) && Array.isArray(d.salvos)) {
+        d.salvos.forEach((s) => {
+          const l = local.salvos.find((x) => x.tipo === s.tipo && x.nome === s.nome && x.data === s.data);
+          if (l && !s.foto && l.foto) s.foto = l.foto;
+        });
       }
     } catch (e) { /* segue sem fotos */ }
     return d;
@@ -1859,7 +1903,9 @@
   async function salvarFirestore() {
     if (!firestoreDisponivel) return false;
     try {
-      await fsDoc.set(paraNuvem(dadosParaSalvar()));
+      const dados = JSON.parse(JSON.stringify(dadosParaSalvar()));
+      await normalizarFotosParaNuvem(dados);
+      await fsDoc.set(paraNuvem(dados));
       setStatusNuvem(true);
       return true;
     } catch (e) { setStatusNuvem(false); return false; }
@@ -2083,11 +2129,7 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     5: "Tensão técnica alta — escultura grande, peça com múltiplas queimas, pintura detalhada.",
   };
 
-  let salvos = [
-    { tipo: "peca", nome: "Prato médio Entrelinhas", preco: 101.19, meta: "0,4kg · dif 1 · 30min · exclusiva", data: "12/08/2026" },
-    { tipo: "produto", nome: "Caixa aquarela 7 cores", preco: 131.20, meta: "receita 7 cores · 20 un", data: "10/08/2026" },
-    { tipo: "peca", nome: "Caneca florida", preco: 74.60, meta: "0,5kg · dif 2 · 45min · padrão", data: "08/08/2026" },
-  ];
+  let salvos = [];
 
   const estado = {
     tipo: "peca",
@@ -2842,7 +2884,20 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
       card.innerHTML =
         (s.foto ? '<img class="thumb" src="' + s.foto + '" alt="" />' : "") +
         '<div><div class="nome"><span class="badge-tipo">' + (s.tipo === "peca" ? "peça" : "produto") + "</span>" + s.nome + '</div><div class="meta">' + s.meta + " · " + s.data + "</div></div>" +
-        '<div class="preco">' + fmt(s.preco) + "</div>";
+        '<div class="preco-wrap"><div class="preco">' + fmt(s.preco) + "</div></div>";
+      const del = document.createElement("button");
+      del.type = "button";
+      del.className = "del-salvo";
+      del.textContent = "✕ apagar";
+      del.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        if (confirm("Apagar este orçamento?\n" + s.nome)) {
+          salvos = salvos.filter((x) => !(x.tipo === s.tipo && x.nome === s.nome && x.data === s.data));
+          salvarLocalStorage();
+          renderSalvos();
+        }
+      });
+      card.querySelector(".preco-wrap").appendChild(del);
       el.appendChild(card);
     });
   }
@@ -3230,60 +3285,6 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     renderCustosDerivados();
     salvarLocalStorage();
     salvarFeedback("fb-custos", "Custos salvos");
-  });
-
-  document.getElementById("btn-exportar").addEventListener("click", () => {
-    try {
-      const blob = new Blob([JSON.stringify(dadosParaSalvar(), null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      const hoje = new Date().toISOString().slice(0, 10);
-      a.href = URL.createObjectURL(blob);
-      a.download = "alice-backup-" + hoje + ".json";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(a.href);
-      const fb = document.getElementById("fb-exportar");
-      fb.textContent = "Backup baixado";
-      fb.classList.remove("vazio");
-      setTimeout(() => { fb.classList.add("vazio"); fb.textContent = ""; }, 2000);
-    } catch (e) {
-      const fb = document.getElementById("fb-exportar");
-      fb.textContent = "Não foi possível exportar";
-      fb.style.color = "var(--terracota)";
-      fb.classList.remove("vazio");
-    }
-  });
-
-  document.getElementById("btn-importar").addEventListener("click", () => document.getElementById("file-importar").click());
-  document.getElementById("file-importar").addEventListener("change", async (ev) => {
-    const fb = document.getElementById("fb-importar");
-    const arquivo = ev.target.files && ev.target.files[0];
-    ev.target.value = "";
-    if (!arquivo) return;
-    try {
-      const dados = JSON.parse(await arquivo.text());
-      if (!dados || typeof dados !== "object") throw new Error("inválido");
-      aplicarDados(dados);
-      salvarLocalStorage();
-      sincronizarCamposCustos();
-      renderCustos();
-      renderCustosDerivados();
-      calcularPeca();
-      calcularProduto();
-      renderRegime();
-      renderCanais("chips-canal-peca", "canal-desc-peca");
-      renderCanais("chips-canal-produto", "canal-desc-produto");
-      fb.textContent = "Backup importado";
-      fb.style.color = "var(--tinta)";
-      fb.classList.remove("vazio");
-      setTimeout(() => { fb.classList.add("vazio"); fb.textContent = ""; }, 2000);
-    } catch (e) {
-      fb.textContent = "Arquivo inválido";
-      fb.style.color = "var(--terracota)";
-      fb.classList.remove("vazio");
-      setTimeout(() => { fb.classList.add("vazio"); fb.textContent = ""; }, 2000);
-    }
   });
 
   /* carrega dados salvos (servidor ou cache local) antes de renderizar */
