@@ -215,6 +215,34 @@ Cabe no forno ~ 30 peças            ← estimativa automática
 - **Peça comum** → estima por peso (capacidade ÷ kgsArgila), nenhuma pergunta nova.
 - **Peça larga** (prato/travessa) → o app pergunta `diâmetro [25] cm` e `altura [5] cm` e estima por área × níveis. Mostra o raciocínio em linguagem natural: "1 prateleira cabe ~7 · o forno tem 4 níveis → ~28".
 
+### Ilustração do forno (padrão ouro de visual)
+
+A vista da peça no forno é **SVG puro gerado por JavaScript** — sem imagens externas, sem bibliotecas, determinístico. É o estilo de ilustração do Alice daqui pra frente: **belo, delicado, preciso**.
+
+**Tecnologia:** função `renderFornoSVG()` injeta `<svg>` inline no DOM (`host.innerHTML`), redesenhado ao vivo ao mudar medidas/formato.
+
+**Regras do padrão:**
+
+1. **Duas mini-visualizações lado a lado** (`render-duplo`), cada uma com rótulo + legenda que **declara o cálculo**:
+   - **Biscoito** — peças empilhadas em **colunas simétricas e delicadas**, bem dentro do forno; legenda "~N no forno · empilhado com delicadeza".
+   - **Esmalte** — **prateleiras tracejadas** com peças ordenadas e espaçadas; legenda "~N no forno · X por prateleira × Y prateleiras".
+2. **Forno**: cilindro em vista lateral-corte (elipse no topo + corpo com base em arco + linha do piso); quadrado = caixa com topo em paralelogramo. Fundo claro `rgba(247,244,239,0.96)`, contorno `#ab9881`.
+3. **Peças em 3D isométrico**:
+   - `pecaRedonda` (cilíndrica) — boca em elipse + corpo com base arredondada, lê como "copo".
+   - `pecaQuadrado` (caixa) — 3 faces (frente retângulo, topo e lateral em paralelogramo), base plana.
+4. **Estados da peça**:
+
+   | Estado | Visual |
+   |---|---|
+   | `main` | preenchida `rgba(91,68,50,0.92)`, contorno `#5b4432` — a peça em destaque |
+   | `copy` | preenchimento fraco `rgba(91,68,50,0.22)` — as demais da fornada |
+   | `ghost` | só contorno tracejado `#ab9881` — as repetições da pilha |
+
+5. **Escala proporcional real**: o tamanho na tela é proporcional ao tamanho real (peça ÷ forno) — a peça ocupa na tela o que ocupa no forno.
+6. **Determinístico**: posições calculadas, sem aleatoriedade — mesmo render a cada carga.
+7. **Precisão (nada sai do forno)**: clamps horizontais e verticais; `halfW` inclui as faces isométricas da peça quadrada; margem de 2px das bordas internas.
+8. **Cálculo declarado**: `estimarCabem(tipo, forno, medidas)` devolve `{ total, porNivel, niveis }`; biscoito empilha (peça plana em colunas: porNivel × empilhamento), esmalte por prateleira × níveis (folga 8cm). A conta aparece na legenda, nunca escondida.
+
 ### Hierarquia visual
 
 - Cabeçalhos de bloco: `tinta-suave`, 13px, peso 600, uppercase, com `▼/▶` colapsável.
