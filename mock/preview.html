@@ -2680,8 +2680,8 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
       else if (pecaShape === "redonda" && ratio >= U.pecaEncaixe) mode = "encaixa";
     }
     const niveis = calcNiveis(tipo, alt, pieceAlt, mode);
-    if (porNivel <= 0 || niveis <= 0) return { total: 0, porNivel, niveis };
-    return { total: porNivel * niveis, porNivel, niveis };
+    if (porNivel <= 0 || niveis <= 0) return { total: 0, porNivel, niveis, mode };
+    return { total: porNivel * niveis, porNivel, niveis, mode };
   }
 
   function renderFornoSVG() {
@@ -2782,8 +2782,12 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
           leg = "<b>não cabe</b><span class=\"render-det\">peça maior que o forno</span>";
         } else {
           const num = est.total > 12 ? "12+" : est.total;
-          if (tipo === "biscoito") leg = "~<b>" + num + "</b> no forno<span class=\"render-det\">empilhado com delicadeza</span>";
-          else leg = "~<b>" + num + "</b> no forno<span class=\"render-det\">" + est.porNivel + " por prateleira × " + est.niveis + " prateleiras</span>";
+          const detalhe = tipo === "esmalte"
+            ? est.porNivel + " por prateleira × " + est.niveis + " prateleiras"
+            : est.mode === "empilha" ? "empilhado em coluna"
+              : est.mode === "encaixa" ? "tigelas encaixadas"
+                : est.porNivel + " por prateleira × " + est.niveis + " níveis";
+          leg = "~<b>" + num + "</b> no forno<span class=\"render-det\">" + detalhe + "</span>";
         }
       }
       return '<div class="render-item"><div class="render-item-rotulo">' + rotulo + "</div>" + s + '<div class="render-legenda">' + leg + "</div></div>";
