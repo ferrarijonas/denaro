@@ -1765,8 +1765,12 @@
       <button type="button" class="nav-item" data-tela="fornos">Fornos<span class="dot"></span></button>
       <button type="button" class="nav-item" data-tela="custos">Custos<span class="dot"></span></button>
     </nav>
-  </div>
+</div>
 
+<script type="module">
+  import { pack2D } from "https://esm.sh/binpackingjs@4/2d";
+  window.__pack2D = pack2D;
+</script>
 <script>
   /* ===== catálogos (valores reais das planilhas) ===== */
   const ARGILAS = [
@@ -2559,28 +2563,87 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     return RADII.length - 1;
   }
 
+  /* --- Empacotamento por piso: forno (redondo/quadrado) × peça (redonda/retangular) --- */
+  function circulosEmDisco(r, discR) {
+    return getNCircles(r, discR);
+  }
+  function circulosEmRetangulo(r, compr, larg) {
+    if (r <= 0 || compr <= 0 || larg <= 0) return 0;
+    const d = 2 * r;
+    if (d > Math.min(compr, larg)) return 0;
+    const cols = Math.max(1, Math.floor((compr - 2 * r) / d) + 1);
+    let count = 0, y = r;
+    const dy = Math.sqrt(3) * r;
+    while (y <= larg - r) {
+      count += cols;
+      y += dy;
+      if (y <= larg - r) {
+        count += cols;
+        y += dy;
+      }
+    }
+    return count;
+  }
+  function rectsEmRetangulo(w, h, compr, larg) {
+    if (w <= 0 || h <= 0 || compr <= 0 || larg <= 0) return 0;
+    const a = Math.floor(compr / w) * Math.floor(larg / h);
+    const b = Math.floor(compr / h) * Math.floor(larg / w);
+    return Math.max(0, a, b);
+  }
+  function rectsEmDisco(w, h, discD) {
+    const lado = discD / Math.SQRT2;
+    if (typeof window.__pack2D === "function") {
+      try {
+        const res = window.__pack2D({
+          bins: [{ width: lado, height: lado }],
+          boxes: Array.from({ length: 200 }, () => ({ width: w, height: h })),
+        });
+        const boxes = (res.packedBins && res.packedBins[0] && res.packedBins[0].boxes) || [];
+        return Math.max(0, boxes.length);
+      } catch (e) { /* cai no fallback */ }
+    }
+    return Math.max(0, Math.floor(lado / Math.max(1, w)) * Math.floor(lado / Math.max(1, h)),
+      Math.floor(lado / Math.max(1, h)) * Math.floor(lado / Math.max(1, w)));
+  }
+  function porNivelNoPiso(kilnShape, dims, pecaShape, pW, pH, folgaLat) {
+    const w = pW + folgaLat, h = pH + folgaLat;
+    if (kilnShape === "quadrada") {
+      const L = (dims.L || 0) * 0.9, P = (dims.P || 0) * 0.9;
+      if (pecaShape === "quadrada") return rectsEmRetangulo(w, h, L, P);
+      return circulosEmRetangulo(Math.max(w, h) / 2, Math.max(L, P), Math.min(L, P));
+    }
+    const discD = (dims.D || 0) * 0.9;
+    if (pecaShape === "quadrada") return rectsEmDisco(w, h, discD);
+    return circulosEmDisco(Math.max(w, h) / 2, discD / 2);
+  }
+  function calcNiveis(tipo, alt, pieceAlt, empilha) {
+    const bottomGap = 4, topGap = 4, shelfTh = 2;
+    const usable = alt - bottomGap - topGap;
+    if (empilha) return Math.max(1, Math.floor(usable / Math.max(1, pieceAlt)));
+    const folgaVert = tipo === "esmalte" ? 8 : 2;
+    const slot = shelfTh + pieceAlt + folgaVert;
+    return Math.max(1, Math.floor(usable / Math.max(1, slot)));
+  }
   function estimarCabem(tipo, forno, m) {
-    const quadF = forno && forno.formato === "quadrada";
-    const d = quadF ? Math.max(forno.larguraCm || 0, forno.profundidadeCm || 0) : ((forno && forno.diametroCm) || 0);
+    const kilnShape = forno && forno.formato === "quadrada" ? "quadrada" : "cilindrico";
+    const dims = kilnShape === "quadrada"
+      ? { L: (forno && forno.larguraCm) || 0, P: (forno && forno.profundidadeCm) || 0 }
+      : { D: (forno && forno.diametroCm) || 0 };
     const alt = (forno && forno.alturaCm) || 0;
-    const pieceD = m.formato === "quadrada" ? Math.max(m.largura, m.profundidade) : m.diametro;
-    const pieceAlt = m.formato === "quadrada" ? m.alturaQ : m.altura;
-    if (!d || !alt || !pieceD || !pieceAlt) return null;
-    const usaAlt = alt * 0.85;
-    let porNivel;
-    if (m.formato === "quadrada") {
-      const lado = d * 0.9;
-      porNivel = Math.max(1, Math.floor(lado / Math.max(1, m.largura)) * Math.floor(lado / Math.max(1, m.profundidade)));
-    } else {
-      porNivel = getNCircles(pieceD / 2, (d * 0.9) / 2);
-    }
-    if (tipo === "biscoito" && pieceD >= pieceAlt * 2.5) {
-      const niveis = Math.max(1, Math.floor(usaAlt / Math.max(1, pieceAlt)));
-      return { total: porNivel * niveis, porNivel, niveis };
-    }
-    const folga = tipo === "biscoito" ? 2 : 8;
-    const niveis = Math.max(1, Math.floor(usaAlt / Math.max(1, pieceAlt + folga)));
-    return { total: porNivel * niveis, porNivel, niveis };
+    const pecaShape = m.formato === "quadrada" ? "quadrada" : "redonda";
+    const pW = pecaShape === "quadrada" ? m.largura : m.diametro;
+    const pH = pecaShape === "quadrada" ? m.profundidade : m.diametro;
+    const pieceAlt = pecaShape === "quadrada" ? m.alturaQ : m.altura;
+    if (!alt || !pW || !pH || !pieceAlt) return null;
+    if (kilnShape === "quadrada" && (!dims.L || !dims.P)) return null;
+    if (kilnShape === "cilindrico" && !dims.D) return null;
+    const folgaLat = tipo === "esmalte" ? 2 : 1;
+    const porNivel = porNivelNoPiso(kilnShape, dims, pecaShape, pW, pH, folgaLat);
+    const empilha = tipo === "biscoito"
+      ? (pecaShape === "quadrada" ? Math.max(pW, pH) : pW) >= pieceAlt * 2.5
+      : false;
+    const niveis = calcNiveis(tipo, alt, pieceAlt, empilha);
+    return { total: Math.max(1, porNivel) * niveis, porNivel: Math.max(1, porNivel), niveis };
   }
 
   function renderFornoSVG() {
@@ -2631,8 +2694,13 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
       const topE = (m.formato === "quadrada" ? pW * 0.11 : 0);
       const maxOff = Math.max(0, rx - halfW - 2);
       let s = '<svg viewBox="0 0 ' + W + " " + H + '" aria-hidden="true">';
-      s += '<ellipse cx="' + cx + '" cy="' + topoY + '" rx="' + rx + '" ry="' + (rx * 0.22) + '" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.4"/>';
-      s += '<path d="M' + (cx - rx) + ' ' + topoY + ' L' + (cx - rx) + ' ' + chaoY + ' a' + rx + ',' + (rx * 0.22) + ' 0 0 0 ' + (2 * rx) + ',0 L' + (cx + rx) + ' ' + topoY + '" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.4"/>';
+      if (forno && forno.formato === "quadrada") {
+        s += '<path d="M' + (cx - rx) + ' ' + topoY + ' L' + (cx - rx + 8) + ' ' + (topoY - 6) + ' L' + (cx + rx + 8) + ' ' + (topoY - 6) + ' L' + (cx + rx) + ' ' + topoY + ' Z" fill="rgba(171,152,129,0.22)" stroke="#ab9881" stroke-width="1.4"/>';
+        s += '<rect x="' + (cx - rx) + '" y="' + topoY + '" width="' + (2 * rx) + '" height="' + (chaoY - topoY) + '" rx="3" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.4"/>';
+      } else {
+        s += '<ellipse cx="' + cx + '" cy="' + topoY + '" rx="' + rx + '" ry="' + (rx * 0.22) + '" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.4"/>';
+        s += '<path d="M' + (cx - rx) + ' ' + topoY + ' L' + (cx - rx) + ' ' + chaoY + ' a' + rx + ',' + (rx * 0.22) + ' 0 0 0 ' + (2 * rx) + ',0 L' + (cx + rx) + ' ' + topoY + '" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.4"/>';
+      }
       s += '<line x1="' + (cx - rx) + '" y1="' + chaoY + '" x2="' + (cx + rx) + '" y2="' + chaoY + '" stroke="#ab9881" stroke-width="1.2" opacity="0.6"/>';
       function dentroY(yBase) { return (yBase - pH - topE) >= topoY + 4; }
       if (tipo === "biscoito") {
