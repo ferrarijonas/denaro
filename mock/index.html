@@ -2529,6 +2529,28 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     document.querySelectorAll("#chips-formato .chip").forEach((c) => c.classList.toggle("selecionado", c.dataset.formato === estado.formatoPeca));
     renderFornoSVG();
   }
+  function estimarCabem(tipo, forno, m) {
+    const quadF = forno && forno.formato === "quadrada";
+    const d = quadF ? Math.max(forno.larguraCm || 0, forno.profundidadeCm || 0) : ((forno && forno.diametroCm) || 0);
+    const alt = (forno && forno.alturaCm) || 0;
+    const pieceD = m.formato === "quadrada" ? Math.max(m.largura, m.profundidade) : m.diametro;
+    const pieceAlt = m.formato === "quadrada" ? m.alturaQ : m.altura;
+    if (!d || !alt || !pieceD || !pieceAlt) return null;
+    const areaForno = quadF ? d * d : Math.PI * Math.pow(d / 2, 2);
+    const footprint = m.formato === "quadrada" ? m.largura * m.profundidade : Math.PI * Math.pow(pieceD / 2, 2);
+    const usadoAlt = alt * 0.85;
+    const empilha = tipo === "biscoito" && pieceD >= pieceAlt * 1.4;
+    if (empilha) {
+      const colunas = Math.max(1, Math.floor((areaForno * 0.8) / Math.max(1, footprint)));
+      const porColuna = Math.max(1, Math.floor(usadoAlt / Math.max(1, pieceAlt)));
+      return colunas * porColuna;
+    }
+    const porNivel = Math.max(1, Math.floor((areaForno * 0.7) / Math.max(1, footprint)));
+    const folga = tipo === "biscoito" ? 3 : 7;
+    const niveis = Math.max(1, Math.floor(usadoAlt / Math.max(1, pieceAlt + folga)));
+    return porNivel * niveis;
+  }
+
   function renderFornoSVG() {
     const host = document.getElementById("render-forno");
     if (!host) return;
@@ -2540,24 +2562,24 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     const fornoAlt = (forno && forno.alturaCm) || 60;
     const pieceD = m.formato === "quadrada" ? Math.max(m.largura, m.profundidade) : m.diametro;
     const pieceAlt = m.formato === "quadrada" ? m.alturaQ : m.altura;
+    const floorY = 132, topY = 24;
+    const pH = Math.min(88, Math.max(14, ((pieceAlt || 1) / Math.max(1, fornoAlt)) * (floorY - topY - 4)));
+    const pW = Math.min(60, Math.max(14, ((pieceD || 1) / Math.max(1, fornoDiam)) * 92));
 
-    const pW = Math.min(34, Math.max(12, ((pieceD || 0) / fornoDiam) * 58));
-    const pH = Math.min(64, Math.max(10, ((pieceAlt || 0) / fornoAlt) * 120));
-    const porNivel = pW <= 20 ? 3 : 2;
-    const cabem = Math.max(1, Math.round((fornoDiam / Math.max(2, pieceD || 2)) * (fornoAlt / Math.max(5, (pieceAlt || 2) + 6))));
-
-    function pecaRedonda(x, y, w, h, opac, destaque) {
+    function pecaRedonda(x, baseY, w, h, opac, destaque) {
       const rx = w / 2, ry = Math.max(2, w * 0.09);
-      const fill = destaque ? "rgba(91,68,50,0.9)" : "rgba(91,68,50,0.28)";
+      const y = baseY - h - ry;
+      const fill = destaque ? "rgba(91,68,50,0.92)" : "rgba(91,68,50,0.26)";
       const stroke = destaque ? "#5b4432" : "none";
       return '<g opacity="' + opac + '">' +
         '<path d="M' + (x - rx) + ' ' + (y + ry) + ' L' + (x - rx) + ' ' + (y + h) + ' a' + rx + ',' + ry + ' 0 0 0 ' + (2 * rx) + ',0 L' + (x + rx) + ' ' + (y + ry) + ' Z" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.2"/>' +
         '<ellipse cx="' + x + '" cy="' + y + '" rx="' + rx + '" ry="' + ry + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.2"/>' +
         "</g>";
     }
-    function pecaQuadrado(x, y, w, h, opac, destaque) {
+    function pecaQuadrado(x, baseY, w, h, opac, destaque) {
       const ry = Math.max(2, w * 0.09);
-      const fill = destaque ? "rgba(91,68,50,0.9)" : "rgba(91,68,50,0.28)";
+      const y = baseY - h;
+      const fill = destaque ? "rgba(91,68,50,0.92)" : "rgba(91,68,50,0.26)";
       const stroke = destaque ? "#5b4432" : "none";
       return '<g opacity="' + opac + '">' +
         '<path d="M' + (x - w / 2) + ' ' + (y + ry) + ' L' + (x - w / 2) + ' ' + (y + h) + ' Q' + x + ' ' + (y + h + ry) + ' ' + (x + w / 2) + ' ' + (y + h) + ' L' + (x + w / 2) + ' ' + (y + ry) + ' Z" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.2"/>' +
@@ -2568,27 +2590,25 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     let s = '<svg viewBox="0 0 120 150" aria-hidden="true">';
     if (forno && forno.formato === "quadrada") {
       s += '<path d="M14 22 L26 12 L118 12 L106 22 Z" fill="rgba(171,152,129,0.22)" stroke="#ab9881" stroke-width="1.5"/>';
-      s += '<rect x="14" y="22" width="92" height="114" rx="4" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.5"/>';
+      s += '<rect x="14" y="22" width="92" height="112" rx="4" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.5"/>';
     } else {
-      s += '<ellipse cx="60" cy="20" rx="50" ry="11" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.5"/>';
-      s += '<path d="M10 20 L10 130 a50,11 0 0 0 100,0 L110 20" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.5"/>';
+      s += '<ellipse cx="60" cy="22" rx="50" ry="11" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.5"/>';
+      s += '<path d="M10 22 L10 130 a50,11 0 0 0 100,0 L110 22" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.5"/>';
     }
-    for (let i = 1; i <= 2; i++) {
-      const y = 22 + i * 38;
-      s += '<line x1="16" y1="' + y + '" x2="104" y2="' + y + '" stroke="#ab9881" stroke-width="1" stroke-dasharray="3 4" opacity="0.5"/>';
-    }
-    const yBase = [34, 72, 110];
-    for (let lvl = 0; lvl < 3; lvl++) {
-      const qtd = porNivel;
-      for (let k = 0; k < qtd; k++) {
-        const x = qtd === 3 ? (42 + k * 18) : (k === 0 ? 42 : 78);
-        const destaque = (lvl === 1 && k === Math.floor(qtd / 2));
-        const opac = destaque ? 1 : 0.35;
-        s += m.formato === "quadrada" ? pecaQuadrado(x, yBase[lvl], pW, pH, opac, destaque) : pecaRedonda(x, yBase[lvl], pW, pH, opac, destaque);
+    s += '<line x1="14" y1="132" x2="106" y2="132" stroke="#ab9881" stroke-width="1.5" opacity="0.6"/>';
+    const cols = pW <= 30 ? 3 : (pW <= 48 ? 2 : 1);
+    const colX = cols === 1 ? [60] : cols === 2 ? [46, 74] : [38, 60, 82];
+    colX.forEach((x, k) => {
+      const destaque = (k === Math.floor(cols / 2));
+      const opac = destaque ? 1 : 0.35;
+      s += m.formato === "quadrada" ? pecaQuadrado(x, floorY, pW, pH, opac, destaque) : pecaRedonda(x, floorY, pW, pH, opac, destaque);
+      if (pH * 2 + 6 <= floorY - topY) {
+        s += m.formato === "quadrada" ? pecaQuadrado(x, floorY - pH - 6, pW, pH, 0.22, false) : pecaRedonda(x, floorY - pH - 6, pW, pH, 0.22, false);
       }
-    }
+    });
     s += "</svg>";
-    host.innerHTML = s + '<div class="render-legenda">cabe <b>~' + (cabem > 12 ? "12+" : cabem) + "</b> no forno</div>";
+    const cabem = estimarCabem("biscoito", forno, m);
+    host.innerHTML = s + '<div class="render-legenda">biscoito: <b>~' + (cabem ? (cabem > 12 ? "12+" : cabem) : "—") + '</b> no forno</div>';
   }
   document.querySelectorAll("#chips-formato .chip").forEach((c) => c.addEventListener("click", () => { estado.formatoPeca = c.dataset.formato; renderTamanho(); }));
   ["t-diametro", "t-altura", "t-largura", "t-profundidade", "t-altura-q"].forEach((id) => {
@@ -2620,7 +2640,8 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     const f = acharForno(q.forno);
     if (!f) return 0;
     if (f.unidade === "carga") {
-      const pecas = Math.max(1, Math.round((f.capacidadeKg || 10) / Math.max(pesoPeca(), 0.1)));
+      const cabem = estimarCabem(q.tipo, f, lerMedidas());
+      const pecas = cabem || Math.max(1, Math.round((f.capacidadeKg || 10) / Math.max(pesoPeca(), 0.1)));
       return (f.custos[q.tipo] || 0) / pecas;
     }
     let precoUnidade = f.custos[q.tipo] || 0;
@@ -2689,7 +2710,9 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
       topo.appendChild(del);
       const custo = document.createElement("div");
       custo.className = "custo";
-      custo.textContent = fmt(custoQueimaLinha(q));
+      const fQ = acharForno(q.forno);
+      const cabemQ = fQ ? estimarCabem(q.tipo, fQ, lerMedidas()) : null;
+      custo.textContent = fmt(custoQueimaLinha(q)) + (cabemQ ? " · ~" + (cabemQ > 12 ? "12+" : cabemQ) + " pç" : "");
       linha.appendChild(topo);
       linha.appendChild(custo);
       lista.appendChild(linha);
