@@ -1834,6 +1834,7 @@
   function paraNuvem(d) {
     const c = JSON.parse(JSON.stringify(d));
     if (Array.isArray(c.salvos)) c.salvos.forEach((s) => { if (s && s.foto) s.foto = null; });
+    if (c.rascunho && c.rascunho.foto) c.rascunho.foto = null;
     return c;
   }
 
@@ -1842,12 +1843,14 @@
       const raw = localStorage.getItem(LS_KEY);
       if (!raw) return d;
       const local = JSON.parse(raw);
-      if (!Array.isArray(local.salvos)) return d;
-      if (Array.isArray(d.salvos)) {
-        d.salvos.forEach((s) => {
-          const l = local.salvos.find((x) => x.tipo === s.tipo && x.nome === s.nome && x.data === s.data);
-          if (l && l.foto) s.foto = l.foto;
-        });
+      if (local.rascunho && local.rascunho.foto && d.rascunho) d.rascunho.foto = local.rascunho.foto;
+      if (Array.isArray(local.salvos)) {
+        if (Array.isArray(d.salvos)) {
+          d.salvos.forEach((s) => {
+            const l = local.salvos.find((x) => x.tipo === s.tipo && x.nome === s.nome && x.data === s.data);
+            if (l && l.foto) s.foto = l.foto;
+          });
+        }
       }
     } catch (e) { /* segue sem fotos */ }
     return d;
@@ -1869,7 +1872,124 @@
     salvarFirestore();
   }
 
+  /* ===== autosave: grava sozinho após cada mudança (debounce 700ms) ===== */
+  let autosaveTimer = null;
+  let suprimindoAutosave = false;
+  function sincronizarCustosDoForm() {
+    const h = document.getElementById("f-horas-dia");
+    const d = document.getElementById("f-dias-mes");
+    const t = document.getElementById("t-imposto");
+    if (h) CONFIG.horasDia = Number(h.value) || 8;
+    if (d) CONFIG.diasMes = Number(d.value) || 22;
+    if (t) CONFIG.imposto = (Number(t.value) || 0) / 100;
+  }
+  function agendarAutosave() {
+    if (suprimindoAutosave) return;
+    if (autosaveTimer) clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(() => {
+      autosaveTimer = null;
+      sincronizarCustosDoForm();
+      salvarLocalStorage();
+    }, 700);
+  }
+  document.addEventListener("input", agendarAutosave);
+  document.addEventListener("change", agendarAutosave);
+  document.addEventListener("click", (e) => { if (e.target.closest(".app")) agendarAutosave(); });
+  window.addEventListener("pagehide", () => {
+    if (!suprimindoAutosave) {
+      if (autosaveTimer) clearTimeout(autosaveTimer);
+      sincronizarCustosDoForm();
+      salvarLocalStorage();
+    }
+  });
+
+  /* rascunho dos formulários (peça/produto) — captura o estado atual */
+  function capturarRascunho() {
+    const g = (id) => { const el = document.getElementById(id); return el ? el.value : ""; };
+    return {
+      estado: {
+        tipo: estado.tipo,
+        categoria: estado.categoria,
+        foto: null,
+        nomePeca: g("nome-peca"),
+        cliente: g("cliente-peca"),
+        canal: estado.canal,
+        freteModo: estado.freteModo,
+        fretePagante: estado.fretePagante,
+        argilaSelecionada: estado.argilaSelecionada,
+        dificuldade: estado.dificuldade,
+        etapas: estado.etapas,
+        padraoEtapas: estado.padraoEtapas,
+        tempoTotalMin: estado.tempoTotalMin,
+        prodH: estado.prodH,
+        prodM: estado.prodM,
+        receita: estado.receita,
+        unProduto: estado.unProduto,
+        precoSelecionado: estado.precoSelecionado,
+      },
+      inputs: {
+        "peso": g("peso"), "esmalte": g("esmalte"),
+        "frete-entrega": g("frete-entrega"), "frete-correios": g("frete-correios"),
+        "frete-rateio-pecas": g("frete-rateio-pecas"),
+        "nome-produto": g("nome-produto"), "unidades": g("unidades"),
+      },
+      selAcessorios: selAcessorios,
+      selPeca: selPeca,
+      selProd: selProd,
+      foto: estado.foto,
+    };
+  }
+
+  function restaurarRascunho(r) {
+    if (!r) return;
+    const e = r.estado || {};
+    Object.keys(e).forEach((k) => { if (k !== "selecionadaLinha") estado[k] = e[k]; });
+    const setv = (id, v) => {
+      const el = document.getElementById(id);
+      if (el && v !== undefined && v !== null && v !== "") el.value = v;
+    };
+    const inp = r.inputs || {};
+    ["peso", "esmalte", "frete-entrega", "frete-correios", "frete-rateio-pecas", "nome-produto", "unidades"].forEach((id) => setv(id, inp[id]));
+    if (r.selAcessorios) Object.keys(r.selAcessorios).forEach((k) => { selAcessorios[k] = r.selAcessorios[k]; });
+    if (r.selPeca) Object.keys(r.selPeca).forEach((k) => { selPeca[k] = r.selPeca[k]; });
+    if (r.selProd) Object.keys(r.selProd).forEach((k) => { selProd[k] = r.selProd[k]; });
+    if (r.foto) {
+      estado.foto = r.foto;
+      const p = document.getElementById("foto-preview");
+      const bt = document.getElementById("btn-foto-peca");
+      if (p && bt) { p.src = r.foto; p.classList.remove("escondido"); bt.classList.add("escondido"); }
+    }
+    /* re-render com o estado restaurado */
+    const selArg = document.getElementById("argila-select");
+    if (selArg) selArg.value = estado.argilaSelecionada;
+    if (typeof atualizarArgilaInfo === "function") atualizarArgilaInfo();
+    if (typeof renderEtapas === "function") renderEtapas();
+    if (typeof atualizarTempoTotal === "function") atualizarTempoTotal();
+    if (typeof setDificuldade === "function") setDificuldade(estado.dificuldade);
+    if (typeof setFreteModo === "function") setFreteModo(estado.freteModo);
+    if (typeof renderPagante === "function") renderPagante();
+    if (typeof renderCanais === "function") {
+      renderCanais("chips-canal-peca", "canal-desc-peca");
+      renderCanais("chips-canal-produto", "canal-desc-produto");
+      atualizarDescCanal("canal-desc-peca");
+      atualizarDescCanal("canal-desc-produto");
+    }
+    if (typeof renderPerda === "function") renderPerda();
+    if (typeof renderRegime === "function") renderRegime();
+    document.querySelectorAll("#chips-categoria .chip").forEach((c) => c.classList.toggle("selecionado", c.dataset.cat === estado.categoria));
+    if (typeof renderAcessorios === "function") renderAcessorios();
+    if (typeof atualizarAcessoriosInfo === "function") atualizarAcessoriosInfo();
+    if (typeof renderEmbalagem === "function") {
+      renderEmbalagem("lista-embalagem-peca", selPeca);
+      renderEmbalagem("lista-embalagem-produto", selProd);
+    }
+    if (typeof renderReceita === "function") renderReceita();
+    const ph = document.getElementById("p-h"); if (ph) ph.textContent = estado.prodH;
+    const pm = document.getElementById("p-m"); if (pm) pm.textContent = estado.prodM;
+  }
+
   async function carregarLocalStorage() {
+    suprimindoAutosave = true;
     let nuvemOk = false;
     if (firestoreDisponivel) {
       try {
@@ -1907,6 +2027,7 @@ function dadosParaSalvar() {
       custosFixos: CONFIG.custosFixos,
       maoDeObra: CONFIG.maoDeObra,
       salvos: salvos,
+      rascunho: capturarRascunho(),
     };
   }
 
@@ -1925,6 +2046,7 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     if (d.maoDeObra && d.maoDeObra.itens) CONFIG.maoDeObra = d.maoDeObra;
     if (Array.isArray(d.salvos)) salvos = d.salvos;
     mergeItensSugeridos();
+    if (d.rascunho) restaurarRascunho(d.rascunho);
   }
 
   /* Itens padrão por categoria (valor 0) — preenchidos se ainda não existirem, sem sobrescrever valores salvos */
@@ -3170,6 +3292,7 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     renderCustos();
     calcularPeca();
     calcularProduto();
+    suprimindoAutosave = false;
   });
 
   /* reflete o CONFIG nos campos de entrada */
