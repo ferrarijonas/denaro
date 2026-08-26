@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
@@ -1895,7 +1895,7 @@ fatores: { 1: 1.0, 2: 1.2, 3: 1.4, 4: 1.6, 5: 1.8 },
     fornos: [
       { id: "forno1", nome: "Meu forno", formato: "cilindrico", diametroCm: 40, alturaCm: 60, larguraCm: 0, profundidadeCm: 0,
         capacidadeKg: 15, unidade: "cm3", modoCusto: "digitar", potenciaKw: 7.2,
-        custos: { biscoito: 0.04, baixa: 0.05, alta: 0.06, "3fogo": 0.02 } },
+        custos: { biscoito: 0.01, baixa: 0.012, alta: 0.015, "3fogo": 0.004 } },
     ],
     servicosFora: [
       { id: "serv1", nome: "Forno da vizinha", unidade: "kg", minimo: 10,
@@ -2538,17 +2538,20 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     const pieceD = m.formato === "quadrada" ? Math.max(m.largura, m.profundidade) : m.diametro;
     const pieceAlt = m.formato === "quadrada" ? m.alturaQ : m.altura;
     if (!d || !alt || !pieceD || !pieceAlt) return null;
-    const areaForno = quadF ? d * d : Math.PI * Math.pow(d / 2, 2);
-    const footprint = m.formato === "quadrada" ? m.largura * m.profundidade : Math.PI * Math.pow(pieceD / 2, 2);
     const usadoAlt = alt * 0.85;
+    let porNivel;
+    if (m.formato === "quadrada") {
+      porNivel = Math.max(1, Math.floor((d * 0.9) / Math.max(1, m.largura)) * Math.floor((d * 0.9) / Math.max(1, m.profundidade)));
+    } else {
+      const f = d / Math.max(1, pieceD);
+      porNivel = Math.max(1, Math.floor(f * f * 0.7));
+    }
     const empilha = tipo === "biscoito" && pieceD >= pieceAlt * 1.4;
     if (empilha) {
-      const colunas = Math.max(1, Math.floor((areaForno * 0.8) / Math.max(1, footprint)));
       const porColuna = Math.max(1, Math.floor(usadoAlt / Math.max(1, pieceAlt)));
-      return colunas * porColuna;
+      return porNivel * porColuna;
     }
-    const porNivel = Math.max(1, Math.floor((areaForno * 0.7) / Math.max(1, footprint)));
-    const folga = tipo === "biscoito" ? 3 : 7;
+    const folga = tipo === "biscoito" ? 2 : 7;
     const niveis = Math.max(1, Math.floor(usadoAlt / Math.max(1, pieceAlt + folga)));
     return porNivel * niveis;
   }
@@ -2597,23 +2600,18 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
       const pH = Math.min(50, Math.max(10, (((m.formato === "quadrada" ? m.alturaQ : m.altura) || 1) / Math.max(1, fornoAlt)) * 78));
       const cabem = estimarCabem(tipo, forno, m);
       const draw = (m.formato === "quadrada" ? pecaQuadrado : pecaRedonda);
+      const gap = tipo === "biscoito" ? 2 : Math.min(7, Math.round(pH * 0.25));
+      const tracos = Math.min(cabem ? Math.max(0, cabem - 1) : 3, tipo === "biscoito" ? 4 : 3);
       let s = '<svg viewBox="0 0 ' + W + " " + H + '" aria-hidden="true">';
       s += '<ellipse cx="' + cx + '" cy="' + topoY + '" rx="' + rx + '" ry="' + (rx * 0.22) + '" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.4"/>';
       s += '<path d="M' + (cx - rx) + ' ' + topoY + ' L' + (cx - rx) + ' ' + chaoY + ' a' + rx + ',' + (rx * 0.22) + ' 0 0 0 ' + (2 * rx) + ',0 L' + (cx + rx) + ' ' + topoY + '" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.4"/>';
       s += '<line x1="' + (cx - rx) + '" y1="' + chaoY + '" x2="' + (cx + rx) + '" y2="' + chaoY + '" stroke="#ab9881" stroke-width="1.2" opacity="0.6"/>';
-      const gap = tipo === "biscoito" ? 0 : Math.min(6, Math.round(pH * 0.22));
       s += draw(cx, chaoY, pW, pH, "main");
       let yB = chaoY - pH - gap;
-      let n = 0;
-      const maxN = tipo === "biscoito" ? 5 : 3;
-      while (n < maxN && yB - pH >= topoY + 5) {
+      for (let i = 0; i < tracos; i++) {
+        if (yB - pH < topoY + 5) break;
         s += draw(cx, yB, pW, pH, "ghost");
-        n++;
-        yB = yB - pH - gap;
-      }
-      if (pW * 2.8 <= rx * 2) {
-        s += draw(cx - rx * 0.55, chaoY, pW * 0.78, pH * 0.78, "copy");
-        s += draw(cx + rx * 0.55, chaoY, pW * 0.78, pH * 0.78, "copy");
+        yB -= (pH + gap);
       }
       s += "</svg>";
       const rotulo = tipo === "biscoito" ? "Biscoito" : "Esmalte";
@@ -3810,7 +3808,7 @@ document.getElementById("btn-salvar-custos").addEventListener("click", () => {
 
   document.getElementById("btn-add-forno").addEventListener("click", () => {
     const id = "forno" + Date.now();
-    CONFIG.fornos.push({ id, nome: "Novo forno", formato: "cilindrico", diametroCm: 30, alturaCm: 30, larguraCm: 0, profundidadeCm: 0, capacidadeKg: 10, unidade: "cm3", modoCusto: "digitar", potenciaKw: 7.2, custos: { biscoito: 0.04, baixa: 0.05, alta: 0.06, "3fogo": 0.02 } });
+    CONFIG.fornos.push({ id, nome: "Novo forno", formato: "cilindrico", diametroCm: 30, alturaCm: 30, larguraCm: 0, profundidadeCm: 0, capacidadeKg: 10, unidade: "cm3", modoCusto: "digitar", potenciaKw: 7.2, custos: { biscoito: 0.01, baixa: 0.012, alta: 0.015, "3fogo": 0.004 } });
     renderFornos();
   });
   document.getElementById("btn-add-servico").addEventListener("click", () => {
