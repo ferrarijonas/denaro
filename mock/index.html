@@ -2601,23 +2601,27 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
       const pH = Math.min(50, Math.max(10, (((m.formato === "quadrada" ? m.alturaQ : m.altura) || 1) / Math.max(1, fornoAlt)) * 78));
       const est = estimarCabem(tipo, forno, m);
       const draw = (m.formato === "quadrada" ? pecaQuadrado : pecaRedonda);
+      const halfW = pW / 2 + (m.formato === "quadrada" ? pW * 0.22 : 0);
+      const topE = (m.formato === "quadrada" ? pW * 0.11 : 0);
+      const maxOff = Math.max(0, rx - halfW - 2);
       let s = '<svg viewBox="0 0 ' + W + " " + H + '" aria-hidden="true">';
       s += '<ellipse cx="' + cx + '" cy="' + topoY + '" rx="' + rx + '" ry="' + (rx * 0.22) + '" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.4"/>';
       s += '<path d="M' + (cx - rx) + ' ' + topoY + ' L' + (cx - rx) + ' ' + chaoY + ' a' + rx + ',' + (rx * 0.22) + ' 0 0 0 ' + (2 * rx) + ',0 L' + (cx + rx) + ' ' + topoY + '" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.4"/>';
       s += '<line x1="' + (cx - rx) + '" y1="' + chaoY + '" x2="' + (cx + rx) + '" y2="' + chaoY + '" stroke="#ab9881" stroke-width="1.2" opacity="0.6"/>';
+      function dentroY(yBase) { return (yBase - pH - topE) >= topoY + 4; }
       if (tipo === "biscoito") {
-        const nCol = 3;
+        const cols = pW * 3 <= rx * 2 ? 3 : (pW * 2 <= rx * 2 ? 2 : 1);
+        const offs = cols === 3 ? [-maxOff * 0.85, 0, maxOff * 0.85] : cols === 2 ? [-maxOff * 0.55, maxOff * 0.55] : [0];
         const step = pH * 0.9 + 2;
-        const camadas = Math.min(5, Math.floor((chaoY - topoY - 6) / step));
-        for (let r = 0; r < camadas; r++) {
-          const yBase = chaoY - 6 - r * step;
-          if (yBase - pH * 0.9 < topoY + 4) break;
-          const shift = (r % 2 === 1 ? 1 : -1) * rx * 0.16;
-          for (let c = 0; c < nCol; c++) {
-            const jitter = ((r * 7 + c * 13) % 5) - 2;
-            const x = cx + (c - 1) * (rx * 1.6 / nCol) + shift + jitter;
-            const main = (r === 0 && c === 1);
-            s += draw(x, yBase, pW * 0.85, pH * 0.85, main ? "main" : "copy");
+        const camadas = Math.min(5, Math.floor((chaoY - topoY - 10) / step));
+        const centro = Math.floor(cols / 2);
+        for (let c = 0; c < cols; c++) {
+          const x = cx + offs[c];
+          for (let r = 0; r < camadas; r++) {
+            const yBase = chaoY - r * step;
+            if (!dentroY(yBase)) break;
+            const main = (c === centro && r === 0);
+            s += draw(x, yBase, pW, pH, main ? "main" : "copy");
           }
         }
       } else {
@@ -2626,12 +2630,12 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
         const porV = Math.max(1, Math.min(est ? est.porNivel : 2, 3));
         for (let i = 0; i < shV; i++) {
           const yBase = chaoY - 6 - i * slotH;
-          if (yBase - pH < topoY + 4) break;
+          if (!dentroY(yBase)) break;
           s += '<line x1="' + (cx - rx) + '" y1="' + yBase + '" x2="' + (cx + rx) + '" y2="' + yBase + '" stroke="#ab9881" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>';
           for (let k = 0; k < porV; k++) {
-            const x = cx + (k - (porV - 1) / 2) * (rx * 1.5 / Math.max(1, porV));
+            const x = porV === 1 ? cx : (cx - maxOff) + (k / (porV - 1)) * 2 * maxOff;
             const main = (i === Math.floor(shV / 2) && k === Math.floor(porV / 2));
-            s += draw(x, yBase, pW * 0.9, pH * 0.9, main ? "main" : "copy");
+            s += draw(x, yBase, pW * 0.92, pH * 0.92, main ? "main" : "copy");
           }
         }
       }
@@ -2640,7 +2644,7 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
       let leg = "—";
       if (est) {
         const num = est.total > 12 ? "12+" : est.total;
-        if (tipo === "biscoito") leg = "~<b>" + num + "</b> no forno<span class=\"render-det\">entulhado, sem ordem</span>";
+        if (tipo === "biscoito") leg = "~<b>" + num + "</b> no forno<span class=\"render-det\">empilhado com delicadeza</span>";
         else leg = "~<b>" + num + "</b> no forno<span class=\"render-det\">" + est.porNivel + " por prateleira × " + est.niveis + " prateleiras</span>";
       }
       return '<div class="render-item"><div class="render-item-rotulo">' + rotulo + "</div>" + s + '<div class="render-legenda">' + leg + "</div></div>";
