@@ -643,6 +643,7 @@
   .render-item-rotulo { font-size: 10px; font-weight: 700; color: var(--argila); text-transform: uppercase; letter-spacing: 0.04em; }
   .render-legenda { font-size: 9px; color: var(--tinta-suave); text-align: center; line-height: 1.25; }
   .render-legenda b { color: var(--argila); }
+  .render-det { display: block; font-size: 8px; opacity: 0.9; margin-top: 1px; }
   .medidas-linha { display: flex; gap: 8px; margin-top: 8px; }
   .medidas-linha .suffix { flex: 1; }
 
@@ -2538,22 +2539,22 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     const pieceD = m.formato === "quadrada" ? Math.max(m.largura, m.profundidade) : m.diametro;
     const pieceAlt = m.formato === "quadrada" ? m.alturaQ : m.altura;
     if (!d || !alt || !pieceD || !pieceAlt) return null;
-    const usadoAlt = alt * 0.85;
+    const usaAlt = alt * 0.85;
     let porNivel;
     if (m.formato === "quadrada") {
-      porNivel = Math.max(1, Math.floor((d * 0.9) / Math.max(1, m.largura)) * Math.floor((d * 0.9) / Math.max(1, m.profundidade)));
+      const lado = d * 0.9;
+      porNivel = Math.max(1, Math.floor(lado / Math.max(1, m.largura)) * Math.floor(lado / Math.max(1, m.profundidade)));
     } else {
-      const f = d / Math.max(1, pieceD);
+      const f = (d * 0.9) / Math.max(1, pieceD);
       porNivel = Math.max(1, Math.floor(f * f * 0.7));
     }
-    const empilha = tipo === "biscoito" && pieceD >= pieceAlt * 1.4;
-    if (empilha) {
-      const porColuna = Math.max(1, Math.floor(usadoAlt / Math.max(1, pieceAlt)));
-      return porNivel * porColuna;
+    if (tipo === "biscoito" && pieceD >= pieceAlt * 1.4) {
+      const niveis = Math.max(1, Math.floor(usaAlt / Math.max(1, pieceAlt)));
+      return { total: porNivel * niveis, porNivel, niveis };
     }
-    const folga = tipo === "biscoito" ? 2 : 7;
-    const niveis = Math.max(1, Math.floor(usadoAlt / Math.max(1, pieceAlt + folga)));
-    return porNivel * niveis;
+    const folga = tipo === "biscoito" ? 2 : 8;
+    const niveis = Math.max(1, Math.floor(usaAlt / Math.max(1, pieceAlt + folga)));
+    return { total: porNivel * niveis, porNivel, niveis };
   }
 
   function renderFornoSVG() {
@@ -2598,25 +2599,51 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
       const cx = W / 2, rx = W / 2 - 6;
       const pW = Math.min(34, Math.max(10, (((m.formato === "quadrada" ? Math.max(m.largura, m.profundidade) : m.diametro) || 1) / Math.max(1, fornoDiam)) * 60));
       const pH = Math.min(50, Math.max(10, (((m.formato === "quadrada" ? m.alturaQ : m.altura) || 1) / Math.max(1, fornoAlt)) * 78));
-      const cabem = estimarCabem(tipo, forno, m);
+      const est = estimarCabem(tipo, forno, m);
       const draw = (m.formato === "quadrada" ? pecaQuadrado : pecaRedonda);
-      const gap = tipo === "biscoito" ? 2 : Math.min(7, Math.round(pH * 0.25));
-      const tracos = Math.min(cabem ? Math.max(0, cabem - 1) : 3, tipo === "biscoito" ? 4 : 3);
       let s = '<svg viewBox="0 0 ' + W + " " + H + '" aria-hidden="true">';
       s += '<ellipse cx="' + cx + '" cy="' + topoY + '" rx="' + rx + '" ry="' + (rx * 0.22) + '" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.4"/>';
       s += '<path d="M' + (cx - rx) + ' ' + topoY + ' L' + (cx - rx) + ' ' + chaoY + ' a' + rx + ',' + (rx * 0.22) + ' 0 0 0 ' + (2 * rx) + ',0 L' + (cx + rx) + ' ' + topoY + '" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.4"/>';
       s += '<line x1="' + (cx - rx) + '" y1="' + chaoY + '" x2="' + (cx + rx) + '" y2="' + chaoY + '" stroke="#ab9881" stroke-width="1.2" opacity="0.6"/>';
-      s += draw(cx, chaoY, pW, pH, "main");
-      let yB = chaoY - pH - gap;
-      for (let i = 0; i < tracos; i++) {
-        if (yB - pH < topoY + 5) break;
-        s += draw(cx, yB, pW, pH, "ghost");
-        yB -= (pH + gap);
+      if (tipo === "biscoito") {
+        const nCol = 3;
+        const step = pH * 0.9 + 2;
+        const camadas = Math.min(5, Math.floor((chaoY - topoY - 6) / step));
+        for (let r = 0; r < camadas; r++) {
+          const yBase = chaoY - 6 - r * step;
+          if (yBase - pH * 0.9 < topoY + 4) break;
+          const shift = (r % 2 === 1 ? 1 : -1) * rx * 0.16;
+          for (let c = 0; c < nCol; c++) {
+            const jitter = ((r * 7 + c * 13) % 5) - 2;
+            const x = cx + (c - 1) * (rx * 1.6 / nCol) + shift + jitter;
+            const main = (r === 0 && c === 1);
+            s += draw(x, yBase, pW * 0.85, pH * 0.85, main ? "main" : "copy");
+          }
+        }
+      } else {
+        const shV = Math.max(1, Math.min(est ? est.niveis : 3, 3));
+        const slotH = (chaoY - topoY - 8) / shV;
+        const porV = Math.max(1, Math.min(est ? est.porNivel : 2, 3));
+        for (let i = 0; i < shV; i++) {
+          const yBase = chaoY - 6 - i * slotH;
+          if (yBase - pH < topoY + 4) break;
+          s += '<line x1="' + (cx - rx) + '" y1="' + yBase + '" x2="' + (cx + rx) + '" y2="' + yBase + '" stroke="#ab9881" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>';
+          for (let k = 0; k < porV; k++) {
+            const x = cx + (k - (porV - 1) / 2) * (rx * 1.5 / Math.max(1, porV));
+            const main = (i === Math.floor(shV / 2) && k === Math.floor(porV / 2));
+            s += draw(x, yBase, pW * 0.9, pH * 0.9, main ? "main" : "copy");
+          }
+        }
       }
       s += "</svg>";
       const rotulo = tipo === "biscoito" ? "Biscoito" : "Esmalte";
-      const leg = cabem ? (cabem > 12 ? "12+" : cabem) : "—";
-      return '<div class="render-item"><div class="render-item-rotulo">' + rotulo + "</div>" + s + '<div class="render-legenda">~<b>' + leg + "</b> no forno</div></div>";
+      let leg = "—";
+      if (est) {
+        const num = est.total > 12 ? "12+" : est.total;
+        if (tipo === "biscoito") leg = "~<b>" + num + "</b> no forno<span class=\"render-det\">entulhado, sem ordem</span>";
+        else leg = "~<b>" + num + "</b> no forno<span class=\"render-det\">" + est.porNivel + " por prateleira × " + est.niveis + " prateleiras</span>";
+      }
+      return '<div class="render-item"><div class="render-item-rotulo">' + rotulo + "</div>" + s + '<div class="render-legenda">' + leg + "</div></div>";
     }
 
     host.innerHTML = '<div class="render-duplo">' + umRender("biscoito", 96, 118, 16, 106) + umRender("esmalte", 96, 118, 16, 106) + "</div>";
@@ -2652,7 +2679,7 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     if (!f) return 0;
     if (f.unidade === "carga") {
       const cabem = estimarCabem(q.tipo, f, lerMedidas());
-      const pecas = cabem || Math.max(1, Math.round((f.capacidadeKg || 10) / Math.max(pesoPeca(), 0.1)));
+      const pecas = (cabem && cabem.total) || Math.max(1, Math.round((f.capacidadeKg || 10) / Math.max(pesoPeca(), 0.1)));
       return (f.custos[q.tipo] || 0) / pecas;
     }
     let precoUnidade = f.custos[q.tipo] || 0;
@@ -2723,7 +2750,7 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
       custo.className = "custo";
       const fQ = acharForno(q.forno);
       const cabemQ = fQ ? estimarCabem(q.tipo, fQ, lerMedidas()) : null;
-      custo.textContent = fmt(custoQueimaLinha(q)) + (cabemQ ? " · ~" + (cabemQ > 12 ? "12+" : cabemQ) + " pç" : "");
+      custo.textContent = fmt(custoQueimaLinha(q)) + (cabemQ ? " · ~" + (cabemQ.total > 12 ? "12+" : cabemQ.total) + " pç" : "");
       linha.appendChild(topo);
       linha.appendChild(custo);
       lista.appendChild(linha);
