@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Único documento usado pelo app: config (custos) + histórico de preços.
+    // Sem autenticação por enquanto — a "proteção" é o caminho fixo alice/estado.
+    match /alice/estado {
+      allow read, write: if true;
+    }
+
+    // Tudo o resto fica bloqueado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

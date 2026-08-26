@@ -1,9 +1,9 @@
-?<!doctype html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Alice — Precificador (mock)</title>
+<title>Denaro — Precificador</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -961,7 +961,24 @@
   .sheet .row-acoes { display: flex; gap: 10px; margin-top: 16px; }
   .sheet .btn { margin: 0; flex: 1; }
   .sheet .btn.ghost { background: var(--cartao); border: 1px solid var(--linha); color: var(--tinta); }
+  .sync-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-radius: 6px;
+    padding: 2px 6px;
+    border: 1px solid var(--linha);
+    color: var(--tinta-suave);
+    background: var(--cartao);
+  }
+  .sync-tag.ok { color: var(--verde); border-color: var(--verde); background: #f2f5ef; }
+  .sync-tag.off { color: var(--terracota); border-color: var(--terracota); background: #faf1ed; }
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
 </head>
 <body>
         <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
@@ -1109,8 +1126,9 @@
         <div class="marca">
           <div class="marca-esquerda">
             <img class="logo" src="logo.webp" alt="Alice" />
-            <span class="nome-app">Precificador</span>
+            <span class="nome-app">Denaro</span>
           </div>
+          <span class="sync-tag" id="sync-status" title="Status de sincronização dos dados">…</span>
           <span class="mock-tag">v3</span>
         </div>
         <h1>Precificar</h1>
@@ -1451,7 +1469,7 @@
         <div class="marca">
           <div class="marca-esquerda">
             <img class="logo" src="logo.webp" alt="Alice" />
-            <span class="nome-app">Precificador</span>
+            <span class="nome-app">Denaro</span>
           </div>
           <span class="mock-tag">v3</span>
         </div>
@@ -1474,7 +1492,7 @@
         <div class="marca">
           <div class="marca-esquerda">
             <img class="logo" src="logo.webp" alt="Alice" />
-            <span class="nome-app">Precificador</span>
+            <span class="nome-app">Denaro</span>
           </div>
           <span class="mock-tag">v3</span>
         </div>
@@ -1788,9 +1806,91 @@
     info.innerHTML = "Usando <b>" + a.nome + "</b> a <b>R$ " + a.preco.toFixed(2).replace(".", ",") + "/kg</b>" + (a.fornecedor ? " (" + a.fornecedor + ")" : "");
   }
 
-  /* ===== persistência: GitHub Pages (localStorage) + backend opcional (SQLite local) ===== */
-  const BACKEND_URL = "";
+  /* ===== persistência: Firestore (nuvem, gratuito) + localStorage (cache local) ===== */
   const LS_KEY = "alice-mock-custos-v3";
+
+  let firestoreDisponivel = false;
+  let fsDoc = null;
+
+  function initFirestore() {
+    try {
+      if (!window.firebase || !window.ALICE_FIREBASE || !window.ALICE_FIREBASE.apiKey) return;
+      if (window.ALICE_FIREBASE.apiKey.indexOf("COLE_AQUI") === 0) return;
+      firebase.initializeApp(window.ALICE_FIREBASE);
+      fsDoc = firebase.firestore().collection("alice").doc("estado");
+      firestoreDisponivel = true;
+    } catch (e) { firestoreDisponivel = false; }
+  }
+
+  function setStatusNuvem(ok) {
+    const el = document.getElementById("sync-status");
+    if (!el) return;
+    if (!firestoreDisponivel) { el.textContent = "só local"; el.className = "sync-tag"; return; }
+    if (ok) { el.textContent = "nuvem ok"; el.className = "sync-tag ok"; return; }
+    el.textContent = "nuvem off"; el.className = "sync-tag off";
+  }
+
+  /* fotos (base64, pesadas) não sobem para a nuvem — ficam só no aparelho, via localStorage */
+  function paraNuvem(d) {
+    const c = JSON.parse(JSON.stringify(d));
+    if (Array.isArray(c.salvos)) c.salvos.forEach((s) => { if (s && s.foto) s.foto = null; });
+    return c;
+  }
+
+  function reanexarFotos(d) {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return d;
+      const local = JSON.parse(raw);
+      if (!Array.isArray(local.salvos)) return d;
+      if (Array.isArray(d.salvos)) {
+        d.salvos.forEach((s) => {
+          const l = local.salvos.find((x) => x.tipo === s.tipo && x.nome === s.nome && x.data === s.data);
+          if (l && l.foto) s.foto = l.foto;
+        });
+      }
+    } catch (e) { /* segue sem fotos */ }
+    return d;
+  }
+
+  async function salvarFirestore() {
+    if (!firestoreDisponivel) return false;
+    try {
+      await fsDoc.set(paraNuvem(dadosParaSalvar()));
+      setStatusNuvem(true);
+      return true;
+    } catch (e) { setStatusNuvem(false); return false; }
+  }
+
+  function salvarLocalStorage() {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(dadosParaSalvar()));
+    } catch (e) { /* storage indisponível — segue em memória */ }
+    salvarFirestore();
+  }
+
+  async function carregarLocalStorage() {
+    let nuvemOk = false;
+    if (firestoreDisponivel) {
+      try {
+        const snap = await fsDoc.get();
+        if (snap.exists && snap.data()) {
+          aplicarDados(reanexarFotos(snap.data()));
+          nuvemOk = true;
+          setStatusNuvem(true);
+        }
+      } catch (e) { setStatusNuvem(false); }
+    }
+    if (!nuvemOk) {
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (raw) aplicarDados(JSON.parse(raw));
+      } catch (e) { /* segue com padrões */ }
+    }
+  }
+
+  initFirestore();
+  setStatusNuvem(false);
 
 function dadosParaSalvar() {
     return {
@@ -1850,47 +1950,6 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
       sugestoes.pessoal.forEach((nome) => {
         if (!nomes.includes(nome)) CONFIG.maoDeObra.itens.push({ nome, valor: 0 });
       });
-    }
-  }
-
-  async function salvarNoServidor() {
-    if (!BACKEND_URL) return false;
-    try {
-      const r = await fetch(BACKEND_URL + "/api/costs", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dadosParaSalvar()),
-      });
-      return r.ok;
-    } catch (e) { return false; }
-  }
-
-  function salvarLocalStorage() {
-    try {
-      localStorage.setItem(LS_KEY, JSON.stringify(dadosParaSalvar()));
-    } catch (e) { /* storage indisponível — segue em memória */ }
-    salvarNoServidor();
-  }
-
-  async function carregarLocalStorage() {
-    let servidorOk = false;
-    if (BACKEND_URL) {
-      try {
-        const r = await fetch(BACKEND_URL + "/api/costs");
-        if (r.ok) {
-          const j = await r.json();
-          if (j.data) {
-            aplicarDados(j.data);
-            servidorOk = true;
-          }
-        }
-      } catch (e) { /* servidor fora — usa localStorage */ }
-    }
-    if (!servidorOk) {
-      try {
-        const raw = localStorage.getItem(LS_KEY);
-        if (raw) aplicarDados(JSON.parse(raw));
-      } catch (e) { /* segue com padrões */ }
     }
   }
 

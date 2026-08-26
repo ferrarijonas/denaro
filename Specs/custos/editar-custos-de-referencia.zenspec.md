@@ -77,7 +77,7 @@ costsPanel  →  (⇄ mover item)  →  desloca entre Mão de obra e categorias
 - **Hora pessoa = só o item Salário ÷ horasMes**. Impostos do salário (INSS, IR) e freelas **não** entram na hora pessoa — entram no total gastos (hora total).
 - **Não existe mais rateio nem faturamento médio na tela**: `custoHoraTotal` já embute os custos fixos por hora; faturamento médio não participa de cálculo.
 - **Preço da argila não é cadastrado na aba Fixos**: ele vem do catálogo de **insumos** (item "Argila Comum"), editado na aba Insumos. A aba Fixos não tem campo de argila.
-- **Todo item adicionado ou movido é persistido automaticamente** (mock: `localStorage`; produção: `storage`/SQLite via `costReferenceStore`). Nada de custo digitado fica só na memória.
+- **Todo item adicionado ou movido é persistido automaticamente** (nuvem: Firestore doc `alice/estado`; cache/offline: `localStorage`). Nada de custo digitado fica só na memória.
 - **Mover item**: o item é deslocado entre Mão de obra e categorias preservando nome e valor; subtotais dos dois blocos recalculam na hora.
 - **"+ nova categoria"** (em Despesas fixas): cria uma categoria de despesa vazia, que já aparece como card e persiste.
 - **"⋯" na categoria**: abre folha para **renomear** ou **excluir** a categoria. Excluir pede confirmação e apaga a categoria com todos os itens. A Mão de obra **não** é excluível nem renomeável via "⋯" (é o bloco fixo).
@@ -217,7 +217,7 @@ Erros:
 - Cabeçalho de bloco/categoria colapsável (abrir/fechar não altera valores).
 - Horas trabalhadas por dia e dias/mês editáveis no bloco Mão de obra; derivados atualizam e persistem ao vivo.
 - Teclado numérico em todos os campos monetários/percentuais.
-- **Persistência:** toda alteração (adicionar, mover, editar valor, remover, parâmetros) é gravada imediatamente — no mock em `localStorage`, em produção no SQLite via `costReferenceStore`. O botão "Salvar" confirma e dá o feedback, mas nenhum dado depende dele para não se perder.
+- **Persistência:** toda alteração (adicionar, mover, editar valor, remover, parâmetros) é gravada imediatamente — no Firestore (`alice/estado`), com `localStorage` como cache/offline. O botão "Salvar" confirma e dá o feedback, mas nenhum dado depende dele para não se perder.
 
 ### Acessibilidade
 

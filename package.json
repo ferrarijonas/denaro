@@ -1,11 +1,16 @@
 {
-  "name": "alice-precificador",
+  "name": "denaro",
   "version": "0.1.0",
   "private": true,
-  "description": "Precificador de cerâmica da Alice — servidor Node puro + SQLite",
+  "description": "Denaro — precificador de cerâmica (site estático GitHub Pages + Firestore Spark)",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "firebase:login": "firebase login",
+    "deploy:rules": "firebase deploy --only firestore:rules"
+  },
+  "devDependencies": {
+    "firebase-tools": "^13.15.0"
   },
   "engines": {
     "node": ">=22.5.0"

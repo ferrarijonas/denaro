@@ -19,7 +19,7 @@ Este documento segue o template de `ZenStackSpec.md` e é derivado de `AliceConc
 | Acesso pelo celular no navegador        | Conceito (`mobile-first`)       | UI responsiva; PWA leve opcional; sem instalar app nativo.                   |
 | Dois usuários no máximo (v1)            | Conceito (`Alice + ajudante`)   | Sem auth complexa no v1; sem multi-tenant.                                   |
 | Ambiente atual: Windows + Node 22 + npm | Máquina do desenvolvedor        | Comandos compatíveis com Windows PowerShell e scripts cross-platform.        |
-| Custo zero de infraestrutura externa    | Conceito (grátis)               | GitHub Pages (gratuito) + armazenamento no navegador (`localStorage`); sem banco remoto no v1. |
+| Custo zero de infraestrutura externa    | Conceito (grátis)               | GitHub Pages (gratuito) + Firebase Firestore (Spark, gratuito) + `localStorage` (cache). Sem servidor para manter. |
 
 ---
 
@@ -27,16 +27,16 @@ Este documento segue o template de `ZenStackSpec.md` e é derivado de `AliceConc
 
 | Categoria    | Decisão                                          | Alternativa descartada                    | Motivo                                                              |
 | ------------ | ------------------------------------------------ | ----------------------------------------- | ------------------------------------------------------------------- |
-| Linguagem    | `JavaScript` (Node) para o servidor opcional + HTML/JS da UI | `TypeScript` estrito em todo o stack      | O v1 reusa o mock aprovado como UI; servidor é pequeno e sem framework. |
-| Servidor     | `Node.js` puro (`node:http`), sem framework (opcional, para uso local) | Fastify, Express, Hono                    | Persistência mínima (2 rotas); zero dependência instalada.              |
-| Persistência | `localStorage` do navegador (fonte de verdade no v1) | `node:sqlite` no servidor, PostgreSQL, JSON em arquivo | GitHub Pages não tem backend; custos sobrevivem no aparelho e o backup exportável garante portabilidade. |
+| Linguagem    | `JavaScript` (Node) para ferramentas + HTML/JS da UI | `TypeScript` estrito em todo o stack      | O v1 reusa o mock aprovado como UI; servidor é pequeno e sem framework. |
+| Servidor     | Nenhum no v1 (site 100% estático no GitHub Pages). `server.js` (Node puro) fica como legado opcional | Fastify, Express, Hono                    | GitHub Pages não executa servidor; o Firestore cobre a persistência.   |
+| Persistência | `Firestore` (Spark, grátis) — doc `alice/estado` — com `localStorage` como cache/fallback local | `node:sqlite` no servidor, PostgreSQL, JSON em arquivo, só localStorage | Sincroniza os dados entre os aparelhos de Alice e da ajudante, continua gratuito (Spark) e roda em site estático. |
 | Frontend     | `mock/index.html` (UI aprovada) publicada no GitHub Pages | Vite + TS + Tailwind                      | Não reconstruir UI que já foi validada.                                 |
-| Validação    | Validação leve no frontend (checagem manual)     | `zod` no stack inteiro                    | Sem backend no v1; validação fica na camada do navegador.               |
+| Validação    | Validação leve no frontend (checagem manual)     | `zod` no stack inteiro                    | Sem servidor próprio; validação fica na camada do navegador.           |
 | Build        | Sem build (arquivos diretos)                     | Vite, tsup, tsc                           | UI roda sem etapa de compilação.                                        |
 | Testes       | Teste manual via navegador + cenário de aceitação | Vitest/Jest                               | Projeto mínimo; testes automatizados podem vir em versão futura.        |
 | Qualidade    | Sem linter no v1                                 | ESLint + Prettier                         | Evita configuração; código pequeno e revisado.                          |
-| Deploy       | GitHub Pages (workflow Actions publica `mock/`)  | pm2, Docker                               | Hospedagem estática gratuita, HTTPS automático, sem servidor para manter. |
-| Backend futuro | Costura `BACKEND_URL` no frontend (vazio hoje)   | N/A                                       | Quando houver multi-dispositivo, basta apontar a constante para um backend (Apps Script ou VPS). |
+| Deploy       | GitHub Pages (workflow Actions publica `mock/`) + regras do Firestore via CLI | pm2, Docker                               | Hospedagem estática gratuita, HTTPS automático, sem servidor para manter. |
+| Nuvem (dados) | Firebase Firestore via SDK compat no navegador  | Costura `BACKEND_URL` (Apps Script, VPS)  | Firestore resolve a sincronização multi-dispositivo sem servidor próprio; a costura `BACKEND_URL` foi removida do mock. |
 
 ---
 
@@ -46,17 +46,18 @@ Este documento segue o template de `ZenStackSpec.md` e é derivado de `AliceConc
 
 | Recurso        | Onde vive                      | Papel                                  |
 | -------------- | ------------------------------ | -------------------------------------- |
-| Nenhum serviço | —                              | O v1 publicado é **100% estático** (HTML/JS servido pelo GitHub Pages). |
-| `localStorage` | Navegador (celular/desktop)    | Custos de referência, embalagens e padrão de etapas, por aparelho. |
+| GitHub Pages   | Nuvem (hospedagem estática)    | Serve `mock/` (HTML/JS/CSS) com HTTPS gratuito. |
+| Firestore      | Nuvem (projeto Firebase, plano Spark) | Doc `alice/estado` com custos + histórico de preços; sincroniza entre aparelhos (Alice + ajudante). |
+| `localStorage` | Navegador (celular/desktop)    | Cache local/offline (fonte quando a nuvem falha) + fotos das peças (base64, ficam só no aparelho). |
 | Backup exportável | Botão "Exportar/Importar backup" na tela Custos | Portabilidade e recuperação; o JSON exportado é a ponte para migrar dados no futuro. |
 
-### 4.2 Modo local (opcional — `server.js`)
+### 4.2 Modo local (legado, opcional — `server.js`)
 
-O servidor Node continua existindo para uso na rede de casa: `node:http` + `node:sqlite` (tabela `kv`), **sem pacote npm instalado**. Serve a mesma UI do `mock/` e expõe `GET/PUT /api/costs`. Nenhuma mudança no frontend é necessária para trocar de modo — basta preencher `BACKEND_URL`.
+O servidor Node (`node:http` + `node:sqlite`, tabela `kv`) continua existindo no repositório como **legado opcional** para quem quiser rodar em rede de casa: serve a mesma UI do `mock/` e expõe `GET/PUT /api/costs`. **O mock não depende mais dele** — a costura `BACKEND_URL` foi removida; a persistência real é o Firestore com fallback em `localStorage`.
 
 ### 4.3 Dev/Test/Build
 
-Sem build, sem linter, sem framework no v1. Testes manuais via navegador + cenário de aceitação (seção 8 da Sensei).
+Sem build, sem linter, sem framework no v1. Testes manuais via navegador + cenário de aceitação (seção 8 da Sensei). Ferramentas: `firebase-tools` (CLI) apenas para publicar as regras do Firestore.
 
 ---
 
@@ -64,8 +65,9 @@ Sem build, sem linter, sem framework no v1. Testes manuais via navegador + cená
 
 | Comando            | O que faz                                              |
 | ------------------ | ------------------------------------------------------ |
-| `npm start`        | Sobe o `server.js` na porta 8787 (modo local opcional). |
-| `pm2 start server.js --name alice` | Mantém o processo local de pé (reinício automático). |
+| `npm start`        | Sobe o `server.js` na porta 8787 (modo local legado, opcional). |
+| `npm run firebase:login` | Autentica a CLI Firebase na sua conta Google (uma vez por máquina). |
+| `npm run deploy:rules` | Publica `firestore.rules` no projeto (`firebase deploy --only firestore:rules`). |
 | `git push`         | Dispara o workflow do GitHub Pages, que publica `mock/`. |
 
 ---
@@ -74,11 +76,14 @@ Sem build, sem linter, sem framework no v1. Testes manuais via navegador + cená
 
 ```text
 .
-├── server.js          # Node puro: API (/api/costs) + serve estático do mock (modo local opcional)
-├── package.json       # Mínimo, só com script start
-├── mock/              # UI aprovada (index.html + logo.webp) — publicada no GitHub Pages
+├── server.js          # Node puro: API (/api/costs) + serve estático do mock (legado, opcional)
+├── package.json       # Scripts: start (legado) + login/deploy do Firestore
+├── mock/              # UI aprovada (index.html + logo.webp + firebase-config.js) — publicada no GitHub Pages
+├── firebase.json      # Configuração da CLI Firebase (aponta para firestore.rules)
+├── firestore.rules    # Regras de segurança do Firestore (versionadas, publicadas via CLI)
+├── .firebaserc        # Aponta o projeto Firebase padrão
 ├── specs/             # Spec de módulo + ZenSpecs filhas
-├── data/              # SQLite local (alice.db) — apenas modo local; ignorado no git
+├── data/              # SQLite local (alice.db) — legado; ignorado no git
 ├── backup/            # Exports manuais (alice-backup.json) — ignorado no git
 └── .github/workflows/ # Workflow que publica mock/ no GitHub Pages
 ```
@@ -90,31 +95,36 @@ Sem build, sem linter, sem framework no v1. Testes manuais via navegador + cená
 | O que não usamos                  | Por quê (uma frase)                                                        |
 | --------------------------------- | --------------------------------------------------------------------------- |
 | Framework SPA (React/Next/etc.)   | A UI já aprovada (mock) roda sem framework; nada a reconstruir.             |
-| Framework HTTP (Fastify/Express)  | Duas rotas simples não justificam dependência instalada.                    |
-| `better-sqlite3`                  | `node:sqlite` já vem no Node 22 — evita compilar módulo nativo no Windows.  |
-| Sincronização na nuvem (multi-dispositivo) | Fica para quando houver 2+ aparelhos; a costura `BACKEND_URL` já está pronta. |
+| Framework HTTP (Fastify/Express)  | Sem servidor próprio; o Firestore cobre a persistência no site estático.    |
+| `better-sqlite3`                  | `node:sqlite` já vem no Node 22; e o SQLite é apenas legado local.          |
+| Sincronização manual entre aparelhos | Resolvida pelo Firestore (Spark) — sem custo e sem servidor para manter.    |
 | Build/TypeScript no v1            | Servidor e UI rodam direto; sem etapa de compilação.                        |
-| Autenticação                      | Página pública estática sem dados no servidor (dados ficam no aparelho); auth entra junto do backend. |
+| Autenticação                      | Firestore sem login por enquanto; regras restringem o acesso ao doc `alice/estado`. Auth por usuário fica para o futuro. |
 
 ---
 
-## 8. Deploy (GitHub Pages)
+## 8. Deploy (GitHub Pages + Firestore)
 
 Hospedagem gratuita, HTTPS automático, sem servidor para manter.
 
 ### 8.1 Pré-requisito
 
-Repositório no GitHub. Para o GitHub Pages ser gratuito o repositório é **público** — os dados de custo não vão para o repositório (ficam no `localStorage` de cada aparelho e no backup JSON que você baixa).
+Repositório no GitHub. Para o GitHub Pages ser gratuito o repositório é **público** — os dados pessoais **não** vão para o repositório (ficam no Firestore e no `localStorage` de cada aparelho). Também é preciso um **projeto Firebase** (plano Spark, gratuito) com Firestore criado em modo produção.
 
 ### 8.2 Fluxo
 
+> **Estado atual (2026-08):** já configurado — projeto Firebase dedicado `denaro-precificador` (nome de exibição **Denaro**), Firestore `(default)` criado em `southamerica-east1` (modo produção, free tier), chaves em `mock/firebase-config.js`, `.firebaserc` preenchido e regras de `firestore.rules` publicadas. O passo 4 abaixo só precisa ser refeito quando as regras mudarem.
+
 1. Cria o repositório no GitHub e faz o primeiro push da branch `main`.
-2. O workflow em `.github/workflows/pages.yml` publica o conteúdo de `mock/`.
-3. Em **Settings → Pages**, seleciona **Source: GitHub Actions** (o workflow cria o deploy).
-4. O link fica em `https://<usuário>.github.io/<repositorio>/`.
+2. Cria o projeto no [console Firebase](https://console.firebase.google.com) e registra um app **Web** — copia as chaves para `mock/firebase-config.js`.
+3. No Firebase Console: **Build → Firestore Database → Criar banco de dados** (modo Produção, região `southamerica-east1`).
+4. Preenche o `projectId` em `.firebaserc`, roda `npm run firebase:login` (uma vez) e `npm run deploy:rules` para publicar as regras de `firestore.rules`.
+5. O workflow em `.github/workflows/pages.yml` publica o conteúdo de `mock/`.
+6. Em **Settings → Pages**, seleciona **Source: GitHub Actions** (o workflow cria o deploy).
+7. O link fica em `https://<usuário>.github.io/<repositorio>/`.
 
 ### 8.3 Regras
 
 - **Nunca commitar dados pessoais:** `data/`, `backup/` e os `.xlsx` de custos estão no `.gitignore` — qualquer coisa com preços reais fica fora do repositório público.
-- **Dados por aparelho:** sem backend, cada navegador guarda seus próprios custos. Exportar backup antes de trocar de aparelho.
-- **Migração futura:** para sincronizar entre aparelhos, preencher `BACKEND_URL` no `mock/index.html` com a URL de um backend (Apps Script ou VPS) que implemente `GET/PUT /api/costs` com CORS habilitado.
+- **Dados na nuvem:** custos e histórico de preços vivem no Firestore (doc `alice/estado`) e sincronizam entre aparelhos; `localStorage` é o cache offline. As regras do Firestore limitam leitura/escrita ao doc `alice/estado`.
+- **Fotos:** ficam só no aparelho (`localStorage`), não sobem para a nuvem (tamanho).

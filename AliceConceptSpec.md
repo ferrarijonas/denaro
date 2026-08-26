@@ -14,7 +14,7 @@ Metáfora: é uma **etiquetadora de preços** — você põe os dados da peça, 
 
 ## O que é
 
-O **Alice** é um **precificador de peças de cerâmica artesanal** que roda como **aplicação web local** no servidor de casa e é acessado pelo **celular** dentro da rede.
+O **Alice** é um **precificador de peças de cerâmica artesanal** que roda como **aplicação web na nuvem** (hospedagem estática gratuita) e é acessado pelo **celular de qualquer lugar**, sem instalar nada.
 
 Ele calcula o **custo da peça** (material + mão de obra) a partir de poucos dados e mostra o **preço de venda sugerido em várias margens de lucro**, além de guardar os **custos de referência** (argila, esmaltes, hora de trabalho) e permitir **reaproveitar peças já calculadas**.
 
@@ -86,7 +86,7 @@ Metáfora: começa como uma **etiquetadora de preços**, evolui para um **cadern
 - **Mobile-first.** A Alice usa no celular; o desktop é opcional.  
   Metáfora: o ateliê anda, o sistema anda junto.
 
-- **Grátis e em qualquer lugar.** Hospedagem estática gratuita (GitHub Pages); os custos ficam no aparelho, com backup exportável e importável.  
+- **Grátis e em qualquer lugar.** Hospedagem estática gratuita (GitHub Pages) + dados na nuvem gratuita (Firestore Spark), com cache no aparelho e backup exportável/importável.  
   Metáfora: uma **etiquetadora que cabe no bolso** — sem máquina para manter.
 
 - **Preço auditável.** Dá pra ver exatamente **de onde veio cada valor** do preço final.  
@@ -104,7 +104,7 @@ O Alice **não é**:
 - um ERP, sistema de estoque ou de vendas;  
 - um sistema financeiro/contábil completo;  
 - uma loja virtual ou app de e-commerce;  
-- um sistema que exige servidor pago ou banco remoto para funcionar.
+- um sistema que exige servidor pago para funcionar (Firestore Spark e GitHub Pages são gratuitos; sem máquina para manter).
 
 O Alice **não cobre** (neste conceito base):
 
@@ -120,7 +120,7 @@ Metáfora: é o **cérebro do preço**, não o **corpo da empresa**.
 
 - **Foco em precificação** → porque é a dor imediata da Alice, e o resto (estoque, vendas) fica para depois.  
 - **Web app acessível de qualquer lugar** → porque a Alice quer abrir o precificador no celular com o link, sem depender de rede local ou servidor ligado.  
-- **Hospedagem estática gratuita (GitHub Pages) + custos no aparelho** → porque coloca o app no ar com custo zero, e o backup exportável mantém os dados portáveis para quando houver backend.
+- **Hospedagem estática gratuita (GitHub Pages) + dados na nuvem (Firestore Spark)** → porque coloca o app no ar com custo zero e sincroniza os custos e o histórico de preços entre os aparelhos de Alice e da ajudante, com backup exportável como garantia de portabilidade.
 - **Custo = material + mão de obra** → material vem de argila e esmalte; mão de obra vem de tempo × valor da hora (ajustado pela dificuldade).  
 - **Margem exibida como múltiplos preços** → porque a Alice quer comparar e escolher quanto cobrar, não ser presa a uma única margem.  
 - **Custos de referência centralizados** → porque argila e esmaltes mudam de preço e precisam ser atualizados num lugar só.  
@@ -132,9 +132,9 @@ Metáfora: é o **cérebro do preço**, não o **corpo da empresa**.
 
 ### Mapa de contexto
 
-`Alice / Ajudante` → **celular (navegador)** → `GitHub Pages (UI)` → `localStorage (custos no aparelho)` + backup exportável
+`Alice / Ajudante` → **celular (navegador)** → `GitHub Pages (UI)` → `Firestore (dados na nuvem)` + `localStorage (cache/fotos)` + backup exportável
 
-Metáfora: o celular é o **balcão** e também a **gaveta de arquivos** — o backup exportado é a cópia de segurança.
+Metáfora: o celular é o **balcão**; a nuvem é a **gaveta de arquivos** que Alice e a ajudante dividem; o backup exportado é a cópia de segurança.
 
 ### Origem
 

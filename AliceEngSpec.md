@@ -24,7 +24,7 @@ Este documento segue o template de `ZenEngSpec.md` e é derivado de `AliceConcep
 | `Margem`           | Percentual que, subtraído do preço de venda, deixa o custo: `preco = custoComTaxas ÷ (1 − margem)`. |
 | `Esmalte (R$)`     | Custo do esmalte da peça informado em **reais** (não em %). |
 | `Cálculo`          | Resultado determinístico dos motores `pricingEngine`/`productEngine` a partir do modelo em `modelo-de-precificacao.md`. |
-| `Armazenamento`    | Onde os dados vivem: no v1 publicado, o `localStorage` do navegador; no modo local opcional, o SQLite do `server.js`. A UI conversa com o backend (quando houver) pela constante `BACKEND_URL`. |
+| `Armazenamento`    | Onde os dados vivem: no v1 publicado, o **Firestore** (doc `alice/estado`) com **`localStorage`** como cache/fallback local; o `server.js` (SQLite) é apenas legado opcional. A UI usa o SDK do Firebase compat direto no navegador — sem `BACKEND_URL`. |
 
 ---
 
@@ -62,7 +62,7 @@ O modelo exato de cálculo vive em `Specs/precificacao/modelo-de-precificacao.md
   Salva, lista, atualiza e apaga **produtos** (receitas) no banco local.  
   `Entrada: Product | query. Saída: Product | lista.`
 
-> **Nota de implantação (v1):** no modo GitHub Pages não há banco nem `costReferenceStore` remoto — os custos de referência vivem no `localStorage` do navegador (`LS_KEY`), com backup **exportar/importar** na tela de Custos. `pieceStore`/`productStore` (peças e produtos salvos) ainda são em memória no mock e entram no armazenamento persistente numa versão futura. O `server.js` (SQLite) é o modo local opcional com a mesma API.
+> **Nota de implantação (v1):** a persistência real vive no **Firestore** (doc único `alice/estado`, plano Spark grátis) — custos de referência + histórico de peças/produtos salvos, sincronizados entre aparelhos. O `localStorage` (`LS_KEY`) é o cache/fallback quando a nuvem está fora, e guarda também as **fotos** das peças (base64, não sobem para a nuvem). O backup **exportar/importar** permanece como portabilidade. O `server.js` (SQLite) é o modo local **legado**, sem uso no mock.
 
 ### 3.3 API (servidor)
 
@@ -86,11 +86,11 @@ O modelo exato de cálculo vive em `Specs/precificacao/modelo-de-precificacao.md
 
 ### 3.5 Infraestrutura
 
-- `storage` — **arquivo local**
-  No v1 publicado: `localStorage` do navegador. No modo local opcional: SQLite via `node:sqlite` do Node 22. Fonte de verdade da persistência.  
+- `storage` — **arquivo local + nuvem**
+  No v1 publicado: **Firestore** (doc `alice/estado`) como fonte de verdade + `localStorage` como cache/fallback. O `server.js` (SQLite) é legado opcional.  
   `Entrada: comandos do store. Saída: dados persistidos.`
 
-> **Nota de stack (v1):** a `aliceApi` do v1 é implementada em **Node puro** (`node:http` + `node:sqlite`), sem framework — **usada apenas no modo local opcional**. No GitHub Pages o frontend roda sem API: `fetch` só acontece se `BACKEND_URL` estiver preenchido (hoje vazio). As rotas, contratos e o modelo de erros abaixo permanecem idênticos ao que a Eng Spec define — só muda a ferramenta por baixo (ver `AliceStackSpec.md`).
+> **Nota de stack (v1):** o frontend fala com o Firestore via **SDK compat do Firebase no navegador** (`firebase.firestore()`), sem API própria. A antiga `aliceApi` (`node:http` + `node:sqlite`) ficou **legada** em `server.js` — não é usada pelo mock. A costura `BACKEND_URL` foi **removida** (ver `AliceStackSpec.md`).
 
 ---
 
@@ -199,38 +199,34 @@ Regra: toda situação de erro listada é rastreável a um componente ou estado 
 > **Alternativa descartada:** dificuldade já cadastrada como multiplicador direto na tela.
 > **Motivo:** a Alice pensa em 1 a 5; o multiplicador fica escondido e vai até 1,8, como nas planilhas.
 
-> **Decisão:** Persistência em SQLite local no servidor da casa.
-> **Alternativa descartada:** JSON em arquivo ou banco externo.
-> **Motivo:** SQLite é robusto o suficiente para 2 usuárias, não exige serviço extra e sobrevive a quedas de energia melhor que arquivo solto.
+> **Decisão:** Persistência na nuvem via **Firebase Firestore** (plano Spark, gratuito), doc único `alice/estado`, com `localStorage` como cache/fallback local.
+> **Alternativa descartada:** SQLite no servidor local, PostgreSQL, JSON em arquivo, e `localStorage` isolado por aparelho.
+> **Motivo:** o Firestore sincroniza os dados entre os aparelhos de Alice e da ajudante sem servidor para manter, continua gratuito (Spark) e funciona em site 100% estático (GitHub Pages).
 
-> **Decisão:** Servidor HTTP único serve API + UI estática (modo local opcional).
-> **Alternativa descartada:** separar frontend estático (CDN/outro servidor) do backend.
-> **Motivo:** a casa não tem CDN; um único processo é mais simples de subir no servidor local.
+> **Decisão:** Site 100% estático no GitHub Pages + Firestore; sem servidor próprio no v1.
+> **Alternativa descartada:** manter um processo Node (API + UI) no servidor da casa.
+> **Motivo:** hospedagem estática gratuita com HTTPS automático; o Firestore cobre a persistência, então não há processo para manter de pé.
 
-> **Decisão:** No v1 publicado, o armazenamento é o `localStorage` do navegador, com backup exportar/importar em JSON.
-> **Alternativa descartada:** manter SQLite no servidor como obrigatório.
-> **Motivo:** GitHub Pages é estático e gratuito; os dados de custo ficam no aparelho, e o JSON exportado garante portabilidade (o dia em que houver backend, o mesmo JSON migra).
-
-> **Decisão:** O frontend conversa com o backend por uma costura única (`BACKEND_URL`, vazio hoje) em vez de `fetch` fixo no servidor.
-> **Alternativa descartada:** deixar os `fetch("/api/...")` fixos no código.
-> **Motivo:** com `BACKEND_URL` vazio o app roda 100% estático; preencher a constante liga um backend futuro sem tocar em mais nada.
+> **Decisão:** O frontend usa o **SDK do Firebase compat** direto no navegador, em vez da costura `BACKEND_URL`.
+> **Alternativa descartada:** manter `fetch`/`BACKEND_URL` para um backend próprio (Apps Script ou VPS).
+> **Motivo:** com o SDK compat, o app roda 100% estático no GitHub Pages e sincroniza sem infraestrutura; a costura `BACKEND_URL` foi removida do mock.
 
 ---
 
 ## 9. Distribuição e uso
 
-- **Formato (v1):** app web estático publicado no **GitHub Pages** (HTTPS, gratuito); acesso pelo navegador em `https://<usuário>.github.io/<repositorio>/`. Dados por aparelho em `localStorage`, com backup exportar/importar.
-- **Formato (modo local opcional):** processo Node no servidor da casa (via `pm2`); acesso pelo celular na rede Wi-Fi (`http://<ip-do-servidor>:<porta>`). Nenhuma mudança no frontend — basta preencher `BACKEND_URL`.
+- **Formato (v1):** app web estático publicado no **GitHub Pages** (HTTPS, gratuito); acesso pelo navegador em `https://<usuário>.github.io/<repositorio>/`. Dados sincronizados no **Firestore** (doc `alice/estado`), com `localStorage` como cache e backup exportar/importar.
+- **Formato (modo local legado, opcional):** processo Node (`server.js`) na rede de casa via `pm2`; serve a mesma UI com API `/api/costs`. Não é usado pelo mock.
 - **Jornada mínima:** abrir o link → cadastrar custos de referência → precificar a primeira peça.
-- **Pré-requisitos:** para o modo local, Node.js no servidor e porta liberada no firewall; para o GitHub Pages, apenas o repositório público.
+- **Pré-requisitos:** repositório público no GitHub + projeto Firebase (Spark) com Firestore criado e regras publicadas.
 
 ---
 
 ## 10. Escopo fora
 
-- Multi-tenancy, autenticação por usuário e permissões (v1 usa o mesmo armazenamento por aparelho; auth fica para quando houver backend).  
-- Sincronização em nuvem entre aparelhos, backups automáticos externos (a costura `BACKEND_URL` já está pronta; hoje o backup é manual, exportar/importar).  
-- Persistência real de peças e produtos salvos (no mock atual ficam em memória).  
+- Multi-tenancy, autenticação por usuário e permissões (o Firestore hoje usa regras que restringem ao doc `alice/estado`; auth entra numa versão futura).  
+- Conflitos de edição simultânea real-time (o Firestore sincroniza por documento; editar ao mesmo tempo em dois aparelhos pode sobrescrever).  
+- Fotos das peças na nuvem (base64 fica só no aparelho por tamanho; um dia, Storage do Firebase).  
 - Importação das planilhas atuais (fica no escopo futuro do conceito; os valores de referência do v1 vêm de `modelo-de-precificacao.md`).  
 - Custos de queima por peça individual (entram no custo fixo via `custoHoraTotal`).  
 - Cálculos de lucro por mês, relatórios e dashboards.
