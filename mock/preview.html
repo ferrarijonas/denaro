@@ -2564,7 +2564,21 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     return RADII.length - 1;
   }
 
-  /* --- Empacotamento por piso: forno (redondo/quadrado) × peça (redonda/retangular) --- */
+  /* --- Ocupação do forno — parâmetros declarados (nosso algoritmo, auditável) --- */
+  const OCUPACAO = {
+    usarDiametro: 0.9,      /* % do diâmetro/lado do forno aproveitada pela prateleira (parede) */
+    gapBase: 4,             /* cm do piso até a 1ª peça */
+    gapTopo: 4,             /* cm da última peça ao teto */
+    prateleiraEsp: 2,       /* cm de espessura de cada prateleira */
+    folgaLateralBiscoito: 1,
+    folgaLateralEsmalte: 2,
+    folgaVerticalBiscoito: 2,
+    folgaVerticalEsmalte: 8,
+    pecaPlana: 2.5,         /* diâmetro >= 2,5× altura => empilha em coluna (biscoito) */
+    pecaEncaixe: 1.1,       /* diâmetro >= 1,1× altura => tigela encaixa (biscoito) */
+    fatorEncaixe: 0.7,      /* cada tigela encaixada ocupa 70% da altura da peça */
+  };
+
   function circulosEmDisco(r, discR) {
     return getNCircles(r, discR);
   }
@@ -2592,43 +2606,56 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     return Math.max(0, a, b);
   }
   function rectsEmDisco(w, h, discD) {
-    const lado = discD / Math.SQRT2;
+    const R = discD / 2;
+    if (w <= 0 || h <= 0 || R <= 0) return 0;
+    if (Math.hypot(w, h) / 2 > R) return 0; /* cantos da peça fora do círculo => não cabe */
+    function grid(ww, hh) {
+      const outer = R - hh / 2;
+      if (outer <= 0) return 0;
+      const nRows = Math.max(1, Math.floor((2 * outer) / hh) + 1);
+      let count = 0;
+      for (let r = 0; r < nRows; r++) {
+        const cy = nRows === 1 ? 0 : (-outer + r * hh);
+        const halfChord = Math.sqrt(Math.max(0, R * R - Math.pow(Math.abs(cy) + hh / 2, 2)));
+        const n = Math.floor((2 * halfChord) / ww);
+        if (n > 0) count += n;
+      }
+      return count;
+    }
     if (typeof window.__pack2D === "function") {
       try {
-        const res = window.__pack2D({
-          bins: [{ width: lado, height: lado }],
-          boxes: Array.from({ length: 200 }, () => ({ width: w, height: h })),
-        });
+        const lado = discD / Math.SQRT2;
+        const res = window.__pack2D({ bins: [{ width: lado, height: lado }], boxes: Array.from({ length: 200 }, () => ({ width: w, height: h })) });
         const boxes = (res.packedBins && res.packedBins[0] && res.packedBins[0].boxes) || [];
-        return Math.max(0, boxes.length);
-      } catch (e) { /* cai no fallback */ }
+        if (boxes.length) return Math.max(boxes.length, grid(w, h), grid(h, w));
+      } catch (e) { /* fallback */ }
     }
-    return Math.max(0, Math.floor(lado / Math.max(1, w)) * Math.floor(lado / Math.max(1, h)),
-      Math.floor(lado / Math.max(1, h)) * Math.floor(lado / Math.max(1, w)));
+    return Math.max(grid(w, h), grid(h, w));
   }
   function porNivelNoPiso(kilnShape, dims, pecaShape, pW, pH, folgaLat) {
     const w = pW + folgaLat, h = pH + folgaLat;
+    const U = OCUPACAO;
     if (kilnShape === "quadrada") {
-      const L = (dims.L || 0) * 0.9, P = (dims.P || 0) * 0.9;
+      const L = (dims.L || 0) * U.usarDiametro, P = (dims.P || 0) * U.usarDiametro;
       if (pecaShape === "quadrada") return rectsEmRetangulo(w, h, L, P);
       return circulosEmRetangulo(Math.max(w, h) / 2, Math.max(L, P), Math.min(L, P));
     }
-    const discD = (dims.D || 0) * 0.9;
+    const discD = (dims.D || 0) * U.usarDiametro;
     if (pecaShape === "quadrada") return rectsEmDisco(w, h, discD);
     return circulosEmDisco(Math.max(w, h) / 2, discD / 2);
   }
-  function calcNiveis(tipo, alt, pieceAlt, empilha) {
-    const bottomGap = 4, topGap = 4, shelfTh = 2;
-    const usable = alt - bottomGap - topGap;
+  function calcNiveis(tipo, alt, pieceAlt, mode) {
+    const U = OCUPACAO;
+    const usable = alt - U.gapBase - U.gapTopo;
     if (usable <= 0) return 0;
-    if (empilha) {
-      const n = Math.floor(usable / Math.max(1, pieceAlt));
-      return n > 0 ? n : 0;
+    if (mode === "empilha") return Math.max(0, Math.floor(usable / Math.max(1, pieceAlt)));
+    if (mode === "encaixa") {
+      const hAdd = Math.max(1, pieceAlt * U.fatorEncaixe);
+      return Math.max(0, Math.floor((usable - pieceAlt) / hAdd) + 1);
     }
-    const folgaVert = tipo === "esmalte" ? 8 : 2;
-    const slot = shelfTh + pieceAlt + folgaVert;
-    const n = Math.floor(usable / Math.max(1, slot));
-    return n > 0 ? n : 0;
+    const folgaVert = tipo === "esmalte" ? U.folgaVerticalEsmalte : U.folgaVerticalBiscoito;
+    const slot = U.prateleiraEsp + pieceAlt + folgaVert;
+    return Math.max(0, Math.floor(usable / Math.max(1, slot)));
   }
   function estimarCabem(tipo, forno, m) {
     const kilnShape = forno && forno.formato === "quadrada" ? "quadrada" : "cilindrico";
@@ -2643,12 +2670,16 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     if (!alt || !pW || !pH || !pieceAlt) return null;
     if (kilnShape === "quadrada" && (!dims.L || !dims.P)) return null;
     if (kilnShape === "cilindrico" && !dims.D) return null;
-    const folgaLat = tipo === "esmalte" ? 2 : 1;
+    const U = OCUPACAO;
+    const folgaLat = tipo === "esmalte" ? U.folgaLateralEsmalte : U.folgaLateralBiscoito;
     const porNivel = porNivelNoPiso(kilnShape, dims, pecaShape, pW, pH, folgaLat);
-    const empilha = tipo === "biscoito"
-      ? (pecaShape === "quadrada" ? Math.max(pW, pH) : pW) >= pieceAlt * 2.5
-      : false;
-    const niveis = calcNiveis(tipo, alt, pieceAlt, empilha);
+    let mode = "prateleira";
+    if (tipo === "biscoito") {
+      const ratio = (pecaShape === "quadrada" ? Math.max(pW, pH) : pW) / Math.max(1, pieceAlt);
+      if (ratio >= U.pecaPlana) mode = "empilha";
+      else if (pecaShape === "redonda" && ratio >= U.pecaEncaixe) mode = "encaixa";
+    }
+    const niveis = calcNiveis(tipo, alt, pieceAlt, mode);
     if (porNivel <= 0 || niveis <= 0) return { total: 0, porNivel, niveis };
     return { total: porNivel * niveis, porNivel, niveis };
   }

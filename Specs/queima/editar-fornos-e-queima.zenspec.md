@@ -242,6 +242,14 @@ A vista da peça no forno é **SVG puro gerado por JavaScript** — sem imagens 
 6. **Determinístico**: posições calculadas, sem aleatoriedade — mesmo render a cada carga.
 7. **Precisão (nada sai do forno)**: clamps horizontais e verticais; `halfW` inclui as faces isométricas da peça quadrada; margem de 2px das bordas internas.
 8. **Cálculo declarado**: `estimarCabem(tipo, forno, medidas)` devolve `{ total, porNivel, niveis }`; biscoito empilha (peça plana em colunas: porNivel × empilhamento), esmalte por prateleira × níveis (folga 8cm). A conta aparece na legenda, nunca escondida.
+9. **Empacotamento real (nunca chute)** — parâmetros declarados no config `OCUPACAO` (nosso algoritmo, auditável): usar diam. 0,9 · gaps 4cm base/topo · prateleira 2cm · folgas laterais 1/2cm · folgas verticais 2/8cm · peça plana ≥2,5× · tigela encaixa ≥1,1× com fator 0,7.
+   - **Círculos em círculo** (peça redonda em forno redondo): `getNCircles` — tabela de packing ótimo de `jcmiller11/circlepacking` (GitHub/MIT). Maior que a prateleira → 0 ("não cabe").
+   - **Círculos em retângulo** (redonda em forno quadrado): linhas hexagonais.
+   - **Retângulos em retângulo**: grade com rotação (exata para peças idênticas).
+   - **Retângulos em disco**: fileiras dentro do círculo com cantos verificados (`Math.hypot`), rotação considerada; `binpackingjs` `pack2D` quando disponível; nunca superestima.
+   - **Biscoito**: peça plana (diâmetro ≥ 2,5× altura) empilha em coluna; **tigela encaixa** (≥ 1,1×, redonda) com nidificação (fator 0,7 por peça encaixada); demais em prateleira densa.
+   - **Esmalte**: prateleiras reais (espessura + folga 8cm) × nº de níveis.
+   - Peça maior que o forno (piso ou altura) → `total: 0` = "não cabe", render vazio com a mensagem.
 
 ### Hierarquia visual
 
