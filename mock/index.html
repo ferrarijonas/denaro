@@ -610,7 +610,7 @@
   .chip.selecionado { background: var(--argila); border-color: var(--argila); }
   .chip.selecionado .n, .chip.selecionado .r { color: var(--cartao); }
 
-  .dificuldade-desc {
+.dificuldade-desc {
     margin-top: 10px;
     font-size: 12px;
     color: var(--tinta-suave);
@@ -619,6 +619,80 @@
     border-radius: 8px;
     padding: 8px 12px;
   }
+
+  .chip.nivel .n { font-size: 11.5px; line-height: 1.2; text-align: center; }
+  .chip.nivel .r { font-size: 9.5px; }
+
+  /* tamanho da peça + render no forno */
+  .tamanho-bloco { display: flex; gap: 12px; align-items: stretch; }
+  .tamanho-campos { flex: 1; min-width: 0; }
+  .render-forno {
+    flex: 0 0 110px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: var(--cartao);
+    border: 1px solid var(--linha);
+    border-radius: 12px;
+    padding: 8px 6px;
+  }
+  .render-forno svg { width: 84px; height: 84px; display: block; }
+  .render-legenda { font-size: 9.5px; color: var(--tinta-suave); text-align: center; line-height: 1.25; }
+  .render-legenda b { color: var(--argila); }
+  .medidas-linha { display: flex; gap: 8px; margin-top: 8px; }
+  .medidas-linha .suffix { flex: 1; }
+
+  /* queima */
+  .queima-check { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .queima-check .rotulo { font-size: 13px; font-weight: 600; }
+  .queima-linha {
+    border: 1px solid var(--linha);
+    border-radius: 10px;
+    background: var(--cartao);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .queima-topo { display: flex; align-items: center; gap: 8px; }
+  .queima-topo .chips { gap: 6px; flex: 1; }
+  .queima-topo .chip { height: 36px; }
+  .queima-topo .chip .n { font-size: 11.5px; }
+  .queima-topo select { flex: 0 0 44%; padding: 9px 10px; font-size: 13px; }
+  .queima-linha .custo { text-align: right; font-size: 13px; font-weight: 700; color: var(--argila); font-variant-numeric: tabular-nums; padding-top: 6px; }
+  .queima-del { border: none; background: none; color: var(--terracota); font-size: 16px; cursor: pointer; width: 26px; height: 26px; flex-shrink: 0; }
+  .queima-vazio { font-size: 12px; color: var(--tinta-suave); }
+
+  /* fornos & queima (tela) */
+  .forno-card {
+    background: var(--cartao);
+    border: 1px solid var(--linha);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+  .forno-card .cab {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 6px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--linha);
+  }
+  .forno-card .cab .nome { font-size: 13px; font-weight: 700; color: var(--argila); }
+  .forno-card .cab .del { border: none; background: none; color: var(--terracota); font-size: 15px; cursor: pointer; }
+  .forno-card .linha { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 12.5px; }
+  .forno-card .linha .rotulo { flex: 0 0 auto; color: var(--tinta-suave); font-weight: 600; }
+  .forno-card .linha .val { flex: 1; min-width: 0; }
+  .forno-card .linha input, .forno-card .linha select { padding: 8px 10px; font-size: 13px; }
+  .forno-card .tabela { margin-top: 6px; border-top: 1px dashed var(--linha); padding-top: 6px; }
+  .forno-card .tabela .tipo-linha { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 12.5px; }
+  .forno-card .tabela .tipo-linha .nome { flex: 1; }
+  .forno-card .tabela .tipo-linha .suffix { width: 110px; }
+  .forno-card .tabela .tipo-linha .suffix input { padding: 8px 34px 8px 10px; font-size: 13px; }
+  .forno-card .cap { font-size: 11px; color: var(--tinta-suave); padding-top: 4px; }
+  .forno-card .cap b { color: var(--argila); }
 
   /* lista de itens (embalagem, acessórios, receita) */
   .item-row {
@@ -1246,11 +1320,32 @@
                 </div>
                 <div class="argila-info" id="argila-info"></div>
               </div>
-              <div class="field">
+<div class="field">
                 <label for="esmalte">Esmalte <span class="dica">(em reais)</span></label>
                 <div class="suffix">
                   <input type="number" id="esmalte" value="5.00" min="0" step="0.50" inputmode="decimal" />
                   <span>R$</span>
+                </div>
+              </div>
+              <div class="field">
+                <label>Tamanho <span class="dica">(pra cubar a queima)</span></label>
+                <div class="tamanho-bloco">
+                  <div class="tamanho-campos">
+                    <div class="chips" id="chips-formato">
+                      <button type="button" class="chip flex-linha" data-formato="redonda"><span class="n">Redonda</span></button>
+                      <button type="button" class="chip flex-linha" data-formato="quadrada"><span class="n">Quadrada</span></button>
+                    </div>
+                    <div class="medidas-linha" id="medidas-redonda">
+                      <div class="suffix"><input type="number" id="t-diametro" value="25" min="0" step="1" inputmode="decimal" /><span>cm</span></div>
+                      <div class="suffix"><input type="number" id="t-altura" value="5" min="0" step="1" inputmode="decimal" /><span>cm</span></div>
+                    </div>
+                    <div class="medidas-linha escondido" id="medidas-quadrada">
+                      <div class="suffix"><input type="number" id="t-largura" value="20" min="0" step="1" inputmode="decimal" /><span>cm</span></div>
+                      <div class="suffix"><input type="number" id="t-profundidade" value="20" min="0" step="1" inputmode="decimal" /><span>cm</span></div>
+                      <div class="suffix"><input type="number" id="t-altura-q" value="5" min="0" step="1" inputmode="decimal" /><span>cm</span></div>
+                    </div>
+                  </div>
+                  <div class="render-forno" id="render-forno"></div>
                 </div>
               </div>
               <div class="sec-interna" id="sec-acessorios">
@@ -1278,29 +1373,40 @@
                 <span class="feedback vazio" id="fb-padrao"></span>
               </div>
               <div class="etapas" id="lista-etapas"></div>
-              <div class="field">
-                <label>Dificuldade</label>
-                <div class="chips" id="chips-dificuldade">
-                  <button type="button" class="chip" data-nivel="1"><span class="n">1</span></button>
-                  <button type="button" class="chip" data-nivel="2"><span class="n">2</span></button>
-                  <button type="button" class="chip" data-nivel="3"><span class="n">3</span></button>
-                  <button type="button" class="chip" data-nivel="4"><span class="n">4</span></button>
-                  <button type="button" class="chip" data-nivel="5"><span class="n">5</span></button>
+<div class="field">
+                <label>Nível de habilidade <span class="dica">(quem dá conta dessa peça)</span></label>
+                <div class="chips" id="chips-nivel">
+                  <button type="button" class="chip nivel" data-nivel="aprendiz"><span class="n">Aprendiz</span><span class="r" id="nivel-r-aprendiz"></span></button>
+                  <button type="button" class="chip nivel" data-nivel="profissional"><span class="n">Profissional</span><span class="r" id="nivel-r-profissional"></span></button>
+                  <button type="button" class="chip nivel" data-nivel="especialista"><span class="n">Especialista</span><span class="r" id="nivel-r-especialista"></span></button>
                 </div>
-                <div class="dificuldade-desc" id="dificuldade-desc"></div>
+                <div class="dificuldade-desc" id="nivel-desc"></div>
               </div>
             </div>
           </div>
 
+<div class="sec" data-sec>
+            <div class="sec-titulo"><span class="chev">▼</span> <span class="sec-num">3.</span> Queima</div>
+            <div class="sec-corpo">
+              <div class="queima-check">
+                <span class="check" id="queima-check-sem"></span>
+                <span class="rotulo">Peça sem queima</span>
+              </div>
+              <div id="lista-queimas"></div>
+              <button type="button" class="add-link" id="btn-add-queima">+ adicionar queima</button>
+              <div class="queima-vazio" id="queima-vazio"></div>
+            </div>
+          </div>
+
           <div class="sec" data-sec>
-            <div class="sec-titulo"><span class="chev">▼</span> <span class="sec-num">3.</span> Embalagem</div>
+            <div class="sec-titulo"><span class="chev">▼</span> <span class="sec-num">4.</span> Embalagem</div>
             <div class="sec-corpo">
               <div id="lista-embalagem-peca"></div>
             </div>
           </div>
 
           <div class="sec" data-sec>
-            <div class="sec-titulo"><span class="chev">▼</span> <span class="sec-num">4.</span> Entrega</div>
+            <div class="sec-titulo"><span class="chev">▼</span> <span class="sec-num">5.</span> Entrega</div>
             <div class="sec-corpo">
               <div class="field">
                 <label>Como a peça chega até quem compra?</label>
@@ -1370,7 +1476,8 @@
             <div class="custo-det"><span>Esmalte</span><span class="v" id="r-esmalte"></span></div>
             <div class="custo-det"><span>Acessórios</span><span class="v" id="r-acessorios"></span></div>
             <div class="custo-det"><span>Embalagem</span><span class="v" id="r-embalagem"></span></div>
-            <div class="custo-det"><span>Mão de obra</span><span class="v" id="r-mao"></span></div>
+<div class="custo-det"><span>Mão de obra</span><span class="v" id="r-mao"></span></div>
+            <div class="custo-det"><span>Queima</span><span class="v" id="r-queima"></span></div>
             <div class="custo-det sub"><span>Risco / refação (perda)</span><span class="v" id="r-risco"></span></div>
             <div class="custo-det sub"><span id="r-frete-rotulo">Frete / entrega</span><span class="v" id="r-frete"></span></div>
             <p class="frete-dica" id="r-frete-dica"></p>
@@ -1587,9 +1694,10 @@
               <button type="button" class="add-link" id="add-canal">+ adicionar canal</button>
             </div>
           </div>
-          <div class="sec" data-sec>
-            <div class="sec-titulo"><span class="chev">▼</span> Fator de dificuldade</div>
+<div class="sec" data-sec>
+            <div class="sec-titulo"><span class="chev">▼</span> Nível de habilidade</div>
             <div class="sec-corpo">
+              <p class="frete-dica">Aprendiz só vale se você tiver alguém pra delegar. Profissional é a sua hora (salário ÷ horas). Especialista paga mais.</p>
               <div id="fatores-cfg"></div>
             </div>
           </div>
@@ -1601,14 +1709,57 @@
           </div>
         </div>
 
-        <button type="button" class="btn primario" id="btn-salvar-custos">Salvar</button>
+<button type="button" class="btn primario" id="btn-salvar-custos">Salvar</button>
         <div class="feedback vazio" id="fb-custos"></div>
+      </main>
+    </section>
+
+    <!-- ============ TELA: FORNOS & QUEIMA ============ -->
+    <section id="tela-fornos" class="tela">
+      <header>
+        <div class="marca">
+          <div class="marca-esquerda">
+            <img class="logo" src="logo.webp" alt="Alice" />
+            <span class="nome-app">Denaro</span>
+          </div>
+          <span class="mock-tag">v3</span>
+        </div>
+        <h1>Fornos &amp; queima</h1>
+      </header>
+      <main>
+        <div class="sec" data-sec>
+          <div class="sec-titulo"><span class="chev">▼</span> Meus fornos</div>
+          <div class="sec-corpo">
+            <div id="lista-fornos"></div>
+            <button type="button" class="add-link" id="btn-add-forno">+ adicionar forno</button>
+          </div>
+        </div>
+        <div class="sec" data-sec>
+          <div class="sec-titulo"><span class="chev">▼</span> Queimar fora</div>
+          <div class="sec-corpo">
+            <div id="lista-servicos"></div>
+            <button type="button" class="add-link" id="btn-add-servico">+ adicionar serviço</button>
+          </div>
+        </div>
+        <div class="sec collapsed" data-sec>
+          <div class="sec-titulo"><span class="chev">▼</span> A conta da queima</div>
+          <div class="sec-corpo">
+            <div class="field"><label>Preço do kWh</label><input type="number" id="q-preco-kwh" value="0.90" min="0" step="0.05" inputmode="decimal" /></div>
+            <div class="field"><label>Duty cycle bisque</label><input type="number" id="q-duty-bisque" value="0.50" min="0.1" max="1" step="0.05" inputmode="decimal" /></div>
+            <div class="field"><label>Duty cycle esmalte</label><input type="number" id="q-duty-esmalte" value="0.65" min="0.1" max="1" step="0.05" inputmode="decimal" /></div>
+            <div class="field"><label>Horas por bisque</label><input type="number" id="q-horas-bisque" value="8" min="1" step="1" inputmode="numeric" /></div>
+            <div class="field"><label>Horas por esmalte</label><input type="number" id="q-horas-esmalte" value="9" min="1" step="1" inputmode="numeric" /></div>
+          </div>
+        </div>
+        <button type="button" class="btn primario" id="btn-salvar-fornos">Salvar</button>
+        <div class="feedback vazio" id="fb-fornos"></div>
       </main>
     </section>
 
     <nav>
       <button type="button" class="nav-item ativo" data-tela="precificar">Precificar<span class="dot"></span></button>
       <button type="button" class="nav-item" data-tela="salvos">Orçamentos<span class="dot"></span></button>
+      <button type="button" class="nav-item" data-tela="fornos">Fornos<span class="dot"></span></button>
       <button type="button" class="nav-item" data-tela="custos">Custos<span class="dot"></span></button>
     </nav>
   </div>
@@ -1736,7 +1887,19 @@
     ],
     regimeFiscal: "informal",
     impostosRegime: { informal: 0, mei: 0.0, simples: 0.045 },
-    fatores: { 1: 1.0, 2: 1.2, 3: 1.4, 4: 1.6, 5: 1.8 },
+fatores: { 1: 1.0, 2: 1.2, 3: 1.4, 4: 1.6, 5: 1.8 },
+    niveis: { aprendiz: 0.6, profissional: 1.0, especialista: 1.5 },
+    niveisNome: { aprendiz: "Aprendiz", profissional: "Profissional", especialista: "Especialista" },
+    fornos: [
+      { id: "forno1", nome: "Meu forno", formato: "cilindrico", diametroCm: 40, alturaCm: 60, larguraCm: 0, profundidadeCm: 0,
+        capacidadeKg: 15, unidade: "cm3", modoCusto: "digitar", potenciaKw: 7.2,
+        custos: { biscoito: 0.04, baixa: 0.05, alta: 0.06, "3fogo": 0.02 } },
+    ],
+    servicosFora: [
+      { id: "serv1", nome: "Forno da vizinha", unidade: "kg", minimo: 10,
+        custos: { biscoito: 15, baixa: 18, alta: 22, "3fogo": 0 } },
+    ],
+    configQueima: { precoKwh: 0.90, dutyBisque: 0.5, dutyEsmalte: 0.65, horasBisque: 8, horasEsmalte: 9 },
     margensPeca: [
       { nome: "Exclusiva", margem: 0.60, sub: "autoral única" },
       { nome: "Padrão", margem: 0.45, sub: "catálogo" },
@@ -1964,6 +2127,10 @@
         fretePagante: estado.fretePagante,
         argilaSelecionada: estado.argilaSelecionada,
         dificuldade: estado.dificuldade,
+        nivel: estado.nivel,
+        formatoPeca: estado.formatoPeca,
+        queimas: estado.queimas,
+        semQueima: estado.semQueima,
         etapas: estado.etapas,
         padraoEtapas: estado.padraoEtapas,
         tempoTotalMin: estado.tempoTotalMin,
@@ -1975,6 +2142,8 @@
       },
       inputs: {
         "peso": g("peso"), "esmalte": g("esmalte"),
+        "t-diametro": g("t-diametro"), "t-altura": g("t-altura"),
+        "t-largura": g("t-largura"), "t-profundidade": g("t-profundidade"), "t-altura-q": g("t-altura-q"),
         "frete-entrega": g("frete-entrega"), "frete-correios": g("frete-correios"),
         "frete-rateio-pecas": g("frete-rateio-pecas"),
         "nome-produto": g("nome-produto"), "unidades": g("unidades"),
@@ -1995,7 +2164,7 @@
       if (el && v !== undefined && v !== null && v !== "") el.value = v;
     };
     const inp = r.inputs || {};
-    ["peso", "esmalte", "frete-entrega", "frete-correios", "frete-rateio-pecas", "nome-produto", "unidades"].forEach((id) => setv(id, inp[id]));
+    ["peso", "esmalte", "t-diametro", "t-altura", "t-largura", "t-profundidade", "t-altura-q", "frete-entrega", "frete-correios", "frete-rateio-pecas", "nome-produto", "unidades"].forEach((id) => setv(id, inp[id]));
     if (r.selAcessorios) Object.keys(r.selAcessorios).forEach((k) => { selAcessorios[k] = r.selAcessorios[k]; });
     if (r.selPeca) Object.keys(r.selPeca).forEach((k) => { selPeca[k] = r.selPeca[k]; });
     if (r.selProd) Object.keys(r.selProd).forEach((k) => { selProd[k] = r.selProd[k]; });
@@ -2011,7 +2180,10 @@
     if (typeof atualizarArgilaInfo === "function") atualizarArgilaInfo();
     if (typeof renderEtapas === "function") renderEtapas();
     if (typeof atualizarTempoTotal === "function") atualizarTempoTotal();
-    if (typeof setDificuldade === "function") setDificuldade(estado.dificuldade);
+    if (typeof setNivel === "function") setNivel(estado.nivel || "profissional");
+    if (typeof renderQueimas === "function") renderQueimas();
+    if (typeof renderTamanho === "function") renderTamanho();
+    if (typeof renderFornoSVG === "function") renderFornoSVG();
     if (typeof setFreteModo === "function") setFreteModo(estado.freteModo);
     if (typeof renderPagante === "function") renderPagante();
     if (typeof renderCanais === "function") {
@@ -2070,6 +2242,10 @@ function dadosParaSalvar() {
       canais: CONFIG.canais,
       regimeFiscal: CONFIG.regimeFiscal,
       impostosRegime: CONFIG.impostosRegime,
+      niveis: CONFIG.niveis,
+      fornos: CONFIG.fornos,
+      servicosFora: CONFIG.servicosFora,
+      configQueima: CONFIG.configQueima,
       custosFixos: CONFIG.custosFixos,
       maoDeObra: CONFIG.maoDeObra,
       salvos: salvos,
@@ -2086,8 +2262,12 @@ function dadosParaSalvar() {
 CONFIG.perdaNivel = d.perdaNivel || "media";
     if (d.perdas) CONFIG.perdas = d.perdas;
     if (Array.isArray(d.canais) && d.canais.length) CONFIG.canais = d.canais;
-    if (d.regimeFiscal) CONFIG.regimeFiscal = d.regimeFiscal;
+if (d.regimeFiscal) CONFIG.regimeFiscal = d.regimeFiscal;
     if (d.impostosRegime) CONFIG.impostosRegime = d.impostosRegime;
+    if (d.niveis) CONFIG.niveis = Object.assign(CONFIG.niveis, d.niveis);
+    if (Array.isArray(d.fornos) && d.fornos.length) CONFIG.fornos = d.fornos;
+    if (Array.isArray(d.servicosFora)) CONFIG.servicosFora = d.servicosFora;
+    if (d.configQueima) CONFIG.configQueima = Object.assign(CONFIG.configQueima, d.configQueima);
     if (Array.isArray(d.custosFixos) && d.custosFixos.length) CONFIG.custosFixos = d.custosFixos;
     if (d.maoDeObra && d.maoDeObra.itens) CONFIG.maoDeObra = d.maoDeObra;
     if (Array.isArray(d.salvos)) salvos = d.salvos;
@@ -2140,8 +2320,13 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     canal: "direto",
     freteModo: "entrega",
     fretePagante: "cliente",
-    argilaSelecionada: "Argila Comum",
+argilaSelecionada: "Argila Comum",
     dificuldade: 1,
+    nivel: "profissional",
+    formatoPeca: "redonda",
+    tDiametro: 25, tAltura: 5, tLargura: 20, tProfundidade: 20, tAlturaQ: 5,
+    queimas: [{ tipo: "biscoito", forno: "forno1" }],
+    semQueima: false,
     etapas: { projeto: 15, preparacao: 10, modelagem: 30, esmaltacao: 15, decoracao: 0, forno: 15 },
     padraoEtapas: { projeto: 15, preparacao: 10, modelagem: 30, esmaltacao: 15, decoracao: 0, forno: 15 },
     editandoPadrao: false,
@@ -2157,8 +2342,11 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     return "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
-  function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.diasMes); }
+function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.diasMes); }
   function custoHoraTotal() { return totalCustosFixos() / (CONFIG.horasDia * CONFIG.diasMes); }
+  function horasMes() { return CONFIG.horasDia * CONFIG.diasMes; }
+  function horaAtelie() { return (totalCustosFixos() - salarioMensal()) / Math.max(1, horasMes()); }
+  function horaNivel() { return custoHoraPessoa() * (CONFIG.niveis[estado.nivel] || 1); }
 
   /* ===== navegação ===== */
   function navegar(tela) {
@@ -2290,14 +2478,194 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     salvarFeedback("fb-padrao", "Padrão salvo");
   });
 
-  /* ===== dificuldade ===== */
-  function setDificuldade(n) {
-    estado.dificuldade = n;
-    document.querySelectorAll("#chips-dificuldade .chip").forEach((c) => c.classList.toggle("selecionado", Number(c.dataset.nivel) === n));
-    document.getElementById("dificuldade-desc").textContent = "Nível " + n + " · " + DIF_DESC[n];
+/* ===== nível de habilidade ===== */
+  function nivelRate(id) { return custoHoraPessoa() * (CONFIG.niveis[id] || 1); }
+  function tieneAprendiz() {
+    return CONFIG.maoDeObra && CONFIG.maoDeObra.itens.some((i) => /aprendiz|estagi|ajudante/i.test(i.nome) && i.valor > 0);
   }
-  document.querySelectorAll("#chips-dificuldade .chip").forEach((c) => c.addEventListener("click", () => setDificuldade(Number(c.dataset.nivel))));
-  setDificuldade(1);
+  function atualizarNivelRates() {
+    ["aprendiz", "profissional", "especialista"].forEach((id) => {
+      const el = document.getElementById("nivel-r-" + id);
+      if (el) el.textContent = "R$ " + nivelRate(id).toFixed(0).replace(".", ",") + "/h";
+    });
+    const chip = document.querySelector('#chips-nivel .chip[data-nivel="aprendiz"]');
+    if (chip) chip.style.display = tieneAprendiz() ? "" : "none";
+  }
+  const NIVEL_DESC = {
+    aprendiz: "Dá pra delegar — uma pessoa em treinamento dá conta dessa peça.",
+    profissional: "É a sua mão — peça que você faz no dia a dia.",
+    especialista: "Só você ou alguém de domínio raro — exige habilidade alta.",
+  };
+  function setNivel(n) {
+    estado.nivel = n;
+    document.querySelectorAll("#chips-nivel .chip").forEach((c) => c.classList.toggle("selecionado", c.dataset.nivel === n));
+    const el = document.getElementById("nivel-desc");
+    if (el) el.textContent = (NIVEL_DESC[n] || "") + " Sua hora aqui: R$ " + nivelRate(n).toFixed(0).replace(".", ",") + "/h.";
+  }
+  document.querySelectorAll("#chips-nivel .chip").forEach((c) => c.addEventListener("click", () => setNivel(c.dataset.nivel)));
+  atualizarNivelRates();
+  setNivel("profissional");
+
+  /* ===== tamanho da peça + render no forno ===== */
+  function lerMedidas() {
+    const g = (id) => Number(document.getElementById(id) ? document.getElementById(id).value : 0) || 0;
+    return {
+      formato: estado.formatoPeca,
+      diametro: g("t-diametro"), altura: g("t-altura"),
+      largura: g("t-largura"), profundidade: g("t-profundidade"), alturaQ: g("t-altura-q"),
+    };
+  }
+  function cubagem() {
+    const m = lerMedidas();
+    if (m.formato === "quadrada") return m.largura * m.profundidade * m.alturaQ;
+    return Math.PI * Math.pow(m.diametro / 2, 2) * m.altura;
+  }
+  function pesoPeca() { return Number(document.getElementById("peso") ? document.getElementById("peso").value : 0) || 0; }
+  function renderTamanho() {
+    const q = document.getElementById("medidas-quadrada");
+    const r = document.getElementById("medidas-redonda");
+    if (estado.formatoPeca === "quadrada") { q.classList.remove("escondido"); r.classList.add("escondido"); }
+    else { r.classList.remove("escondido"); q.classList.add("escondido"); }
+    document.querySelectorAll("#chips-formato .chip").forEach((c) => c.classList.toggle("selecionado", c.dataset.formato === estado.formatoPeca));
+    renderFornoSVG();
+  }
+  function renderFornoSVG() {
+    const host = document.getElementById("render-forno");
+    if (!host) return;
+    const m = lerMedidas();
+    const raio = 42; const cx = 42; const cy = 42;
+    const diamPeca = m.formato === "quadrada" ? Math.max(m.largura, m.profundidade) : m.diametro;
+    const fornoDiam = (CONFIG.fornos[0] && CONFIG.fornos[0].diametroCm) || 40;
+    const f = Math.min(1, (diamPeca || 0) / Math.max(1, fornoDiam));
+    const wP = Math.max(6, f * raio * 1.7);
+    const hP = Math.max(6, f * raio * 1.7);
+    const areaForno = Math.PI * raio * raio;
+    const areaPeca = (diamPeca || 0) > 0 ? (m.formato === "quadrada" ? m.largura * m.profundidade : Math.PI * Math.pow(diamPeca / 2, 2)) : 0;
+    const areaPecaEsc = (areaPeca / (fornoDiam * fornoDiam)) * (raio * 2) * (raio * 2);
+    const pct = areaForno > 0 ? (areaPecaEsc / areaForno) * 100 : 0;
+    const forma = m.formato === "quadrada"
+      ? '<rect x="' + (cx - wP / 2) + '" y="' + (cy - hP / 2) + '" width="' + wP + '" height="' + hP + '" rx="4" fill="rgba(91,68,50,0.18)" stroke="#5b4432" stroke-width="1.5"/>'
+      : '<circle cx="' + cx + '" cy="' + cy + '" r="' + Math.max(4, f * raio * 0.8) + '" fill="rgba(91,68,50,0.18)" stroke="#5b4432" stroke-width="1.5"/>';
+    host.innerHTML =
+      '<svg viewBox="0 0 84 84" aria-hidden="true">' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + raio + '" fill="none" stroke="#ab9881" stroke-width="2" stroke-dasharray="3 3"/>' +
+      forma +
+      "</svg>" +
+      '<div class="render-legenda">ocupa <b>' + (pct > 100 ? "mais que" : "~" + Math.round(pct)) + '%</b> da prateleira</div>';
+  }
+  document.querySelectorAll("#chips-formato .chip").forEach((c) => c.addEventListener("click", () => { estado.formatoPeca = c.dataset.formato; renderTamanho(); }));
+  ["t-diametro", "t-altura", "t-largura", "t-profundidade", "t-altura-q"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", renderFornoSVG);
+  });
+
+  /* ===== queima da peça ===== */
+  const TIPOS_QUEIMA = [
+    { id: "biscoito", nome: "Biscoito" },
+    { id: "baixa", nome: "Queima baixa" },
+    { id: "alta", nome: "Queima alta" },
+    { id: "3fogo", nome: "3º fogo" },
+  ];
+  function acharForno(id) {
+    return CONFIG.fornos.find((x) => x.id === id) || CONFIG.servicosFora.find((x) => x.id === id) || null;
+  }
+  function volumeUtil(f) {
+    if (f.formato === "quadrada") return (f.larguraCm || 0) * (f.profundidadeCm || 0) * (f.alturaCm || 0) * 0.7;
+    return Math.PI * Math.pow((f.diametroCm || 0) / 2, 2) * (f.alturaCm || 0) * 0.7;
+  }
+  function custoEnergiaPorTipo(f, tipo) {
+    const c = CONFIG.configQueima;
+    if (tipo === "biscoito") return (f.potenciaKw || 7.2) * c.horasBisque * c.dutyBisque * c.precoKwh;
+    if (tipo === "3fogo") return (f.potenciaKw || 7.2) * 3 * 0.3 * c.precoKwh;
+    return (f.potenciaKw || 7.2) * c.horasEsmalte * c.dutyEsmalte * c.precoKwh;
+  }
+  function custoQueimaLinha(q) {
+    const f = acharForno(q.forno);
+    if (!f) return 0;
+    if (f.unidade === "carga") {
+      const pecas = Math.max(1, Math.round((f.capacidadeKg || 10) / Math.max(pesoPeca(), 0.1)));
+      return (f.custos[q.tipo] || 0) / pecas;
+    }
+    let precoUnidade = f.custos[q.tipo] || 0;
+    if (f.modoCusto === "calcular" && f.unidade === "cm3") {
+      const custoCarga = custoEnergiaPorTipo(f, q.tipo);
+      const cap = Math.max(1, volumeUtil(f));
+      precoUnidade = custoCarga / cap;
+    }
+    if (f.unidade === "cm3") return precoUnidade * cubagem();
+    if (f.unidade === "kg") return precoUnidade * pesoPeca();
+    return precoUnidade; /* peça */
+  }
+  function custoQueimaTotal() {
+    if (estado.semQueima) return 0;
+    return estado.queimas.reduce((s, q) => s + custoQueimaLinha(q), 0);
+  }
+  function renderQueimas() {
+    const lista = document.getElementById("lista-queimas");
+    const vazio = document.getElementById("queima-vazio");
+    const check = document.getElementById("queima-check-sem");
+    if (check) {
+      check.classList.toggle("on", estado.semQueima);
+      check.textContent = estado.semQueima ? "✓" : "";
+    }
+    if (!lista) return;
+    lista.innerHTML = "";
+    if (estado.semQueima) {
+      if (vazio) vazio.textContent = "Sem queima — custo de queima R$ 0,00.";
+      return;
+    }
+    if (vazio) vazio.textContent = "";
+    if (!estado.queimas.length) { if (vazio) vazio.textContent = "Nenhuma queima — custo R$ 0,00."; return; }
+    const todas = CONFIG.fornos.concat(CONFIG.servicosFora);
+    estado.queimas.forEach((q, i) => {
+      const linha = document.createElement("div");
+      linha.className = "queima-linha";
+      const tipoSel = document.createElement("div");
+      tipoSel.className = "chips";
+      TIPOS_QUEIMA.forEach((t) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip" + (t.id === q.tipo ? " selecionado" : "");
+        b.innerHTML = '<span class="n">' + t.nome + "</span>";
+        b.addEventListener("click", () => { q.tipo = t.id; renderQueimas(); });
+        tipoSel.appendChild(b);
+      });
+      const selF = document.createElement("select");
+      selF.setAttribute("aria-label", "Forno");
+      todas.forEach((f) => {
+        const o = document.createElement("option");
+        o.value = f.id;
+        o.textContent = f.nome;
+        selF.appendChild(o);
+      });
+      selF.value = q.forno;
+      selF.addEventListener("change", () => { q.forno = selF.value; renderQueimas(); });
+      const del = document.createElement("button");
+      del.type = "button";
+      del.className = "queima-del";
+      del.textContent = "✕";
+      del.addEventListener("click", () => { estado.queimas.splice(i, 1); renderQueimas(); });
+      const topo = document.createElement("div");
+      topo.className = "queima-topo";
+      topo.appendChild(tipoSel);
+      topo.appendChild(selF);
+      topo.appendChild(del);
+      const custo = document.createElement("div");
+      custo.className = "custo";
+      custo.textContent = fmt(custoQueimaLinha(q));
+      linha.appendChild(topo);
+      linha.appendChild(custo);
+      lista.appendChild(linha);
+    });
+  }
+  document.getElementById("btn-add-queima").addEventListener("click", () => {
+    if (estado.semQueima) estado.semQueima = false;
+    const todas = CONFIG.fornos.concat(CONFIG.servicosFora);
+    estado.queimas.push({ tipo: "biscoito", forno: todas.length ? todas[0].id : "" });
+    renderQueimas();
+  });
+  const checkSem = document.getElementById("queima-check-sem");
+  if (checkSem) checkSem.addEventListener("click", () => { estado.semQueima = !estado.semQueima; renderQueimas(); });
 
   /* ===== canais de venda ===== */
   function canalTotal(id) {
@@ -2694,8 +3062,7 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     const peso = Number(document.getElementById("peso").value) || 0;
     const esmalte = Number(document.getElementById("esmalte").value) || 0;
     const frete = fretePeca();
-    const tempoH = estado.tempoTotalMin / 60;
-    const fator = CONFIG.fatores[estado.dificuldade];
+const tempoH = estado.tempoTotalMin / 60;
 
     const custoArgila = peso * argilaPreco();
     const custoMaterial = custoArgila + esmalte;
@@ -2703,11 +3070,12 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     const embalagem = itensSelecionados(selPeca, CATALOGO_EMBALAGEM);
     const custoAcessorios = acessorios.reduce((s, i) => s + i.qtd * i.preco, 0);
     const custoEmbalagem = embalagem.reduce((s, i) => s + i.qtd * i.preco, 0);
-    const maoDeObra = tempoH * custoHoraTotal() * fator;
-    const risco = taxaPerda() * (custoMaterial + maoDeObra);
+    const maoDeObra = tempoH * (horaNivel() + horaAtelie());
+    const queima = custoQueimaTotal();
+    const risco = taxaPerda() * (custoMaterial + maoDeObra + queima);
     const freteEmbutido = estado.fretePagante === "atele";
     const freteNaConta = freteEmbutido ? frete : 0;
-    const custoTotal = custoMaterial + custoAcessorios + custoEmbalagem + maoDeObra + risco + freteNaConta;
+    const custoTotal = custoMaterial + custoAcessorios + custoEmbalagem + maoDeObra + queima + risco + freteNaConta;
     const taxas = impostoPorRegime() + canalTotal(estado.canal);
     const custoComTaxas = custoTotal / (1 - taxas);
 
@@ -2716,6 +3084,7 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     document.getElementById("r-acessorios").textContent = fmt(custoAcessorios);
     document.getElementById("r-embalagem").textContent = fmt(custoEmbalagem);
     document.getElementById("r-mao").textContent = fmt(maoDeObra);
+    document.getElementById("r-queima").textContent = fmt(queima);
     document.getElementById("r-risco").textContent = fmt(risco);
     document.getElementById("r-frete").textContent = fmt(frete);
     document.getElementById("r-custo").textContent = fmt(custoTotal);
@@ -2847,7 +3216,7 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     estado.cliente = document.getElementById("cliente-peca").value.trim();
     const catLabel = { utilitario: "utilitário", escultura: "escultura", outros: "outros" }[estado.categoria] || "outros";
     const data = pegarData();
-    const meta = catLabel + " · " + estado.dificuldade + " · " + fmtTempo(estado.tempoTotalMin) + (estado.cliente ? " · " + estado.cliente : "");
+    const meta = catLabel + " · " + (CONFIG.niveisNome[estado.nivel] || estado.nivel) + " · " + fmtTempo(estado.tempoTotalMin) + (estado.cliente ? " · " + estado.cliente : "");
     salvos.unshift({ tipo: "peca", nome, preco: estado.precoSelecionado || 0, meta, data, foto: estado.foto });
     renderSalvos();
     salvarLocalStorage();
@@ -3014,15 +3383,20 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
       le.appendChild(row);
     });
 
-    // fatores
+// nível de habilidade
     const lf = document.getElementById("fatores-cfg");
-    lf.innerHTML = "";
-    [1, 2, 3, 4, 5].forEach((n) => {
-      const row = document.createElement("div");
-      row.className = "item-row";
-      row.innerHTML = '<div class="nome">Dificuldade ' + n + "</div>" + '<div class="preco">×' + CONFIG.fatores[n].toFixed(1).replace(".", ",") + "</div>";
-      lf.appendChild(row);
-    });
+    if (lf) {
+      lf.innerHTML = "";
+      const hp = custoHoraPessoa();
+      [["aprendiz", "Aprendiz"], ["profissional", "Profissional"], ["especialista", "Especialista"]].forEach((par) => {
+        const id = par[0], nome = par[1];
+        const pct = Math.round((CONFIG.niveis[id] || 1) * 100);
+        const row = document.createElement("div");
+        row.className = "item-row";
+        row.innerHTML = '<div class="nome">' + nome + "</div>" + '<div class="preco">' + pct + "% · R$ " + (hp * (CONFIG.niveis[id] || 1)).toFixed(0).replace(".", ",") + "/h</div>";
+        lf.appendChild(row);
+      });
+    }
 
     // canais de venda
     const lc = document.getElementById("canais-cfg");
@@ -3278,7 +3652,7 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
 
   document.getElementById("btn-nova-categoria").addEventListener("click", novaCategoria);
 
-  document.getElementById("btn-salvar-custos").addEventListener("click", () => {
+document.getElementById("btn-salvar-custos").addEventListener("click", () => {
     CONFIG.horasDia = Number(document.getElementById("f-horas-dia").value) || 8;
     CONFIG.diasMes = Number(document.getElementById("f-dias-mes").value) || 22;
     CONFIG.imposto = (Number(document.getElementById("t-imposto").value) || 0) / 100;
@@ -3287,10 +3661,114 @@ CONFIG.perdaNivel = d.perdaNivel || "media";
     salvarFeedback("fb-custos", "Custos salvos");
   });
 
+  /* ===== tela Fornos & queima ===== */
+  const UNIDADE_NOME = { cm3: "cm³ (cubagem)", kg: "kg", peca: "peça", carga: "carga" };
+  const UNIDADE_SUFIXO = { cm3: "/cm³", kg: "/kg", peca: "/peça", carga: "/carga" };
+
+  function renderFornos() {
+    const lista = document.getElementById("lista-fornos");
+    if (!lista) return;
+    lista.innerHTML = "";
+    CONFIG.fornos.forEach((f, fi) => {
+      const card = document.createElement("div");
+      card.className = "forno-card";
+      const capVol = volumeUtil(f);
+      let html = '<div class="cab"><span class="nome">' + f.nome + '</span><button type="button" class="del" data-del="' + fi + '">✕</button></div>';
+      html += '<div class="linha"><span class="rotulo">Formato</span><span class="val">' + (f.formato === "quadrada" ? "Quadrado" : "Cilíndrico") + "</span></div>";
+      html += '<div class="linha"><span class="rotulo">Medidas</span><span class="val">' + (f.formato === "quadrada" ? f.larguraCm + "×" + f.profundidadeCm + "×" + f.alturaCm + " cm" : "ø " + f.diametroCm + " × " + f.alturaCm + " cm") + "</span></div>";
+      html += '<div class="linha"><span class="rotulo">Cobra por</span><select data-unidade="' + fi + '">' + ["cm3", "kg", "peca", "carga"].map((u) => '<option value="' + u + '"' + (f.unidade === u ? " selected" : "") + ">" + UNIDADE_NOME[u] + "</option>").join("") + "</select></div>";
+      html += '<div class="linha"><span class="rotulo">Capacidade</span><div class="suffix"><input type="number" data-cap="' + fi + '" value="' + (f.capacidadeKg || 0) + '" min="0" step="1" inputmode="decimal" /><span>kg</span></div></div>';
+      html += '<div class="linha"><span class="rotulo">Custo</span><select data-modo="' + fi + '">' +
+        '<option value="digitar"' + (f.modoCusto === "digitar" ? " selected" : "") + '>Eu sei quanto gasta</option>' +
+        '<option value="calcular"' + (f.modoCusto === "calcular" ? " selected" : "") + '>Me ajuda a calcular</option></select></div>';
+      html += '<div class="linha"><span class="rotulo">kW</span><div class="suffix"><input type="number" data-kw="' + fi + '" value="' + (f.potenciaKw || 0) + '" min="0" step="0.1" inputmode="decimal" /><span>kW</span></div></div>';
+      html += '<div class="tabela">';
+      TIPOS_QUEIMA.forEach((t) => {
+        html += '<div class="tipo-linha"><span class="nome">' + t.nome + '</span><div class="suffix"><input type="number" data-tipo="' + t.id + '" data-forno="' + fi + '" value="' + (f.custos[t.id] || 0) + '" min="0" step="0.01" inputmode="decimal" /><span>' + UNIDADE_SUFIXO[f.unidade] + "</span></div></div>";
+      });
+      html += "</div>";
+      html += '<div class="cap">Volume útil ~' + Math.round(capVol) + " L · cabe ~" + (f.capacidadeKg || "?") + " kg</div>";
+      card.innerHTML = html;
+      card.querySelectorAll("[data-del]").forEach((b) => b.addEventListener("click", () => {
+        if (confirm("Remover este forno?")) { CONFIG.fornos.splice(fi, 1); renderFornos(); renderQueimas(); }
+      }));
+      card.querySelectorAll("[data-unidade]").forEach((sel) => sel.addEventListener("change", () => { f.unidade = sel.value; renderFornos(); }));
+      card.querySelectorAll("[data-cap]").forEach((inp) => inp.addEventListener("input", () => { f.capacidadeKg = Number(inp.value) || 0; }));
+      card.querySelectorAll("[data-modo]").forEach((sel) => sel.addEventListener("change", () => { f.modoCusto = sel.value; }));
+      card.querySelectorAll("[data-kw]").forEach((inp) => inp.addEventListener("input", () => { f.potenciaKw = Number(inp.value) || 0; }));
+      card.querySelectorAll("[data-tipo]").forEach((inp) => inp.addEventListener("input", () => { f.custos[inp.dataset.tipo] = Number(inp.value) || 0; }));
+      lista.appendChild(card);
+    });
+  }
+
+  function renderServicos() {
+    const lista = document.getElementById("lista-servicos");
+    if (!lista) return;
+    lista.innerHTML = "";
+    CONFIG.servicosFora.forEach((f, fi) => {
+      const card = document.createElement("div");
+      card.className = "forno-card";
+      let html = '<div class="cab"><span class="nome">' + f.nome + '</span><button type="button" class="del" data-del="' + fi + '">✕</button></div>';
+      html += '<div class="linha"><span class="rotulo">Cobra por</span><select data-unidade="' + fi + '">' + ["cm3", "kg", "peca", "carga"].map((u) => '<option value="' + u + '"' + (f.unidade === u ? " selected" : "") + ">" + UNIDADE_NOME[u] + "</option>").join("") + "</select></div>";
+      html += '<div class="tabela">';
+      TIPOS_QUEIMA.forEach((t) => {
+        html += '<div class="tipo-linha"><span class="nome">' + t.nome + '</span><div class="suffix"><input type="number" data-tipo="' + t.id + '" data-forno="' + fi + '" value="' + (f.custos[t.id] || 0) + '" min="0" step="0.1" inputmode="decimal" /><span>' + UNIDADE_SUFIXO[f.unidade] + "</span></div></div>";
+      });
+      html += "</div>";
+      card.innerHTML = html;
+      card.querySelectorAll("[data-del]").forEach((b) => b.addEventListener("click", () => {
+        if (confirm("Remover este serviço?")) { CONFIG.servicosFora.splice(fi, 1); renderServicos(); renderQueimas(); }
+      }));
+      card.querySelectorAll("[data-unidade]").forEach((sel) => sel.addEventListener("change", () => { f.unidade = sel.value; renderServicos(); }));
+      card.querySelectorAll("[data-tipo]").forEach((inp) => inp.addEventListener("input", () => { f.custos[inp.dataset.tipo] = Number(inp.value) || 0; }));
+      lista.appendChild(card);
+    });
+  }
+
+  function sincronizarQueimaForm() {
+    const q = CONFIG.configQueima;
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+    set("q-preco-kwh", q.precoKwh);
+    set("q-duty-bisque", q.dutyBisque);
+    set("q-duty-esmalte", q.dutyEsmalte);
+    set("q-horas-bisque", q.horasBisque);
+    set("q-horas-esmalte", q.horasEsmalte);
+  }
+
+  document.getElementById("btn-add-forno").addEventListener("click", () => {
+    const id = "forno" + Date.now();
+    CONFIG.fornos.push({ id, nome: "Novo forno", formato: "cilindrico", diametroCm: 30, alturaCm: 30, larguraCm: 0, profundidadeCm: 0, capacidadeKg: 10, unidade: "cm3", modoCusto: "digitar", potenciaKw: 7.2, custos: { biscoito: 0.04, baixa: 0.05, alta: 0.06, "3fogo": 0.02 } });
+    renderFornos();
+  });
+  document.getElementById("btn-add-servico").addEventListener("click", () => {
+    const id = "serv" + Date.now();
+    CONFIG.servicosFora.push({ id, nome: "Novo serviço", unidade: "kg", minimo: 0, custos: { biscoito: 15, baixa: 18, alta: 22, "3fogo": 0 } });
+    renderServicos();
+  });
+  document.getElementById("btn-salvar-fornos").addEventListener("click", () => {
+    CONFIG.configQueima.precoKwh = Number(document.getElementById("q-preco-kwh").value) || 0;
+    CONFIG.configQueima.dutyBisque = Number(document.getElementById("q-duty-bisque").value) || 0.5;
+    CONFIG.configQueima.dutyEsmalte = Number(document.getElementById("q-duty-esmalte").value) || 0.65;
+    CONFIG.configQueima.horasBisque = Number(document.getElementById("q-horas-bisque").value) || 8;
+    CONFIG.configQueima.horasEsmalte = Number(document.getElementById("q-horas-esmalte").value) || 9;
+    renderFornos();
+    renderServicos();
+    renderQueimas();
+    salvarLocalStorage();
+    salvarFeedback("fb-fornos", "Fornos salvos");
+  });
+
   /* carrega dados salvos (servidor ou cache local) antes de renderizar */
   carregarLocalStorage().then(() => {
     sincronizarCamposCustos();
+    sincronizarQueimaForm();
     renderCustos();
+    renderFornos();
+    renderServicos();
+    renderQueimas();
+    renderTamanho();
+    atualizarNivelRates();
+    renderFornoSVG();
     calcularPeca();
     calcularProduto();
     suprimindoAutosave = false;
