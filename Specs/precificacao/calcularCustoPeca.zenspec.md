@@ -49,7 +49,7 @@ custoComTaxas   = custoTotal ÷ (1 − taxas)
 precoPorLinha   = custoComTaxas ÷ (1 − margemDaLinha)
 ```
 
-> A mão de obra de peça usa `custoHoraTotal` (já embute os custos fixos rateados); a de produto usa `custoHoraPessoa`. `horaAtelie` e `custoHoraTotal` vêm dos custos fixos (ver `Specs/custos/editar-custos-de-referencia.zenspec.md`).
+> A mão de obra de peça usa `custoHoraTotal` (já embute os custos fixos rateados); a de produto usa `custoHoraPessoa`. `horaAtelie` e `custoHoraTotal` vêm dos custos fixos (ver `Specs/custos/costsPanel.zenspec.md`).
 
 ### Contrato
 
@@ -97,7 +97,7 @@ Erros:
 
 ## Interface
 
-Sem interface própria — o resultado é renderizado pelo `pricingPanel` (custo detalhado + linhas de preço). Ver `apresentar-calculadora-no-celular.zenspec.md`.
+Sem interface própria — o resultado é renderizado pelo `pricingPanel` (custo detalhado + linhas de preço). Ver `pricingPanel.zenspec.md`.
 
 ### Acessibilidade
 

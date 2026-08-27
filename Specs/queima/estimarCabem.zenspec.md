@@ -2,9 +2,9 @@
 
 ZenSpec de programa. Este programa existe para que **a ceramista veja, em tempo real, quantas peças como a que ela faz ocupam o forno** — e quanto custa queimar de verdade com a **carga real** (forno cheio vs o que ela realmente queima).
 
-> **Estado atual:** o cálculo (`estimarCabem`) e o render-duplo (biscoito/esmalte) já existem **embutidos no bloco Tamanho da precificação** (ver `medir-tamanho-da-peca` e `desenhar-forno`). O **painel separado** de ocupação — `ocupacaoPanel` (tela futura, nome próprio de tela, não de função) — com seletor de peça salva, chip de tipo e slider de carga real, é um programa **futuro**, aberto a partir de **Fornos & queima** ou de **"ver no forno"**. Esta ZenSpec cobre o núcleo (já implementado, `estimarCabem`) e o alvo (painel).
+> **Estado atual:** o cálculo (`estimarCabem`) e o render-duplo (biscoito/esmalte) já existem **embutidos no bloco Tamanho da precificação** (ver `cubagemDe` e `desenharForno`). O **painel separado** de ocupação — `ocupacaoPanel` (tela futura, nome próprio de tela, não de função) — com seletor de peça salva, chip de tipo e slider de carga real, é um programa **futuro**, aberto a partir de **Fornos & queima** ou de **"ver no forno"**. Esta ZenSpec cobre o núcleo (já implementado, `estimarCabem`) e o alvo (painel).
 
-Requisitos: `editar-fornos-e-queima.zenspec.md` (fornos, `estimarCabem`, render SVG).
+Requisitos: `fornosPanel.zenspec.md` (fornos, `estimarCabem`, render SVG).
 
 ---
 

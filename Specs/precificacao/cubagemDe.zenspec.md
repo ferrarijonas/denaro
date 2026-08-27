@@ -16,7 +16,7 @@ Esta feature existe para que **a ceramista** consiga **dizer o tamanho da peça 
 
 A peça tem **formato** (redonda = diâmetro + altura; quadrada = largura × profundidade × altura) e **medidas em cm**. A cubagem (cm³) alimenta o custo de queima por unidade `cm3` e a estimativa de quantas peças cabem no forno.
 
-O bloco de tamanho mostra também o **render no forno** (ver `desenhar-forno.zenspec.md`) e um **slider de ajuste**: por padrão ele escala a peça **proporcionalmente** (preserva a razão entre as medidas); ao tocar em um campo de medida, o slider passa a controlar **só aquela dimensão**.
+O bloco de tamanho mostra também o **render no forno** (ver `desenharForno.zenspec.md`) e um **slider de ajuste**: por padrão ele escala a peça **proporcionalmente** (preserva a razão entre as medidas); ao tocar em um campo de medida, o slider passa a controlar **só aquela dimensão**.
 
 Metáfora: é a **régua do ateliê** — mediu, o app fez a conta.
 
@@ -46,7 +46,7 @@ pricingPanel → (slider) → proporcional OU dimensão tocada → atualiza medi
 - **Slider proporcional (padrão)**: "Ajustar tamanho" escala a peça **preservando a razão** entre as medidas (largura/diâmetro e altura juntos), nos dois formatos. `max` = a menor dimensão do forno **selecionado** no seletor de forno (não o primeiro da lista).
 - **Bind por campo (A)**: ao focar/tocar um campo de medida (altura, largura, profundidade, diâmetro), o slider vira o slider **daquela dimensão** — slide altera só ela (o rótulo mostra "Ajustar altura", "Ajustar largura", etc.). O vínculo **persiste** ao sair do campo (para não interromper o ajuste ao tocar o slider); só volta ao **modo proporcional** ao trocar o formato.
 - **Fonte única**: as medidas saem do formulário (`lerMedidas`) e alimentam `cubagem`, `estimarCabem` e `desenharForno` — nunca há uma segunda cópia no estado.
-- **Render integrado**: o bloco de tamanho mostra o seletor de forno e o render-duplo (ver `desenhar-forno.zenspec.md`).
+- **Render integrado**: o bloco de tamanho mostra o seletor de forno e o render-duplo (ver `desenharForno.zenspec.md`).
 
 ### Contrato
 
@@ -60,7 +60,7 @@ Saída:
 
 - `medidas` normalizadas (só os campos do formato atual).
 - `cubagemCm3` (number ≥ 0).
-- `estimarCabem(...)` → `{ total, porNivel, niveis, mode }` (ver `Specs/queima/calcular-ocupacao-do-forno.zenspec.md`).
+- `estimarCabem(...)` → `{ total, porNivel, niveis, mode }` (ver `Specs/queima/estimarCabem.zenspec.md`).
 
 Erros:
 
@@ -94,7 +94,7 @@ Forno: [ Meu forno ▾ ]   onde a peça queima
 Ajustar tamanho
 [══════════●══════════]   ← slider proporcional / da dimensão tocada
 ┌──────────┐ ┌──────────┐
-│ BISCOITO │ │ ESMALTE  │  ← render (desenhar-forno)
+│ BISCOITO │ │ ESMALTE  │  ← render (desenharForno)
 └──────────┘ └──────────┘
 ```
 

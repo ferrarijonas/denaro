@@ -2,7 +2,7 @@
 
 ZenSpec de componente de UI. Este programa existe para que **a ceramista precifique uma peça ou produto pelo celular em poucos toques**.
 
-O painel é a **fiação** entre o formulário e os programas puros: lê os campos, chama `normalizar-entradas`, `calcular-custo-de-peca`/`calcular-custo-de-produto`, `medir-tamanho-da-peca` e `desenhar-forno`, e renderiza os resultados. Não contém lógica de cálculo.
+O painel é a **fiação** entre o formulário e os programas puros: lê os campos, chama `lerMedidas`, `calcularCustoPeca`/`calcularCustoProduto`, `cubagemDe` e `desenharForno`, e renderiza os resultados. Não contém lógica de cálculo.
 
 ---
 
@@ -51,11 +51,11 @@ toggle Peça/Produto → seções → (cálculo local, ao vivo ou botão) → cu
 - Tocando em **"Salvar peça"** sem selecionar linha → seleciona a linha padrão (Padrão p/ peça, Essencial p/ produto) e salva.
 - Após salvar → feedback curto (`verde-argila`): "Peça salva" / "Produto salvo" por 2s.
 - Seções são colapsáveis; estado de abertura não afeta o cálculo.
-- **Tamanho da peça**: chips de formato + medidas em cm + seletor de forno + slider de ajuste (proporcional, com bind à dimensão tocada) + render-duplo do forno (ver `medir-tamanho-da-peca` e `desenhar-forno`).
+- **Tamanho da peça**: chips de formato + medidas em cm + seletor de forno + slider de ajuste (proporcional, com bind à dimensão tocada) + render-duplo do forno (ver `cubagemDe` e `desenharForno`).
 
 ### Contrato
 
-Entrada (pedido de cálculo — peça): `tipo: "peca"` + os campos normalizados do formulário (`PricingInput` — ver `normalizar-entradas.zenspec.md`).
+Entrada (pedido de cálculo — peça): `tipo: "peca"` + os campos normalizados do formulário (`PricingInput` — ver `lerMedidas.zenspec.md`).
 
 Entrada (pedido de cálculo — produto): `tipo: "produto"` + `receita`, `unidadesProduzidas`, `embalagem`, `tempoMontagemHoras`.
 

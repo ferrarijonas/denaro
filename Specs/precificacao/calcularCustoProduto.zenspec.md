@@ -83,4 +83,4 @@ Erros:
 
 ## Interface
 
-Sem interface própria — renderizado pelo `pricingPanel`. Ver `apresentar-calculadora-no-celular.zenspec.md`.
+Sem interface própria — renderizado pelo `pricingPanel`. Ver `pricingPanel.zenspec.md`.

@@ -2,7 +2,7 @@
 
 ZenSpec de programa. Este programa existe para que **a ceramista veja, em tempo real, um desenho do forno com as peças como a que ela faz** (biscoito e esmalte lado a lado) — sem raciocínio espacial. O desenho **declara o cálculo**: a legenda mostra "quantas cabem" e "como" (empilhado / por prateleira).
 
-Programa puro (regra `DenaroEngSpec.md` §3): `desenharForno(medidas, forno)` devolve a **string SVG**. A injeção no DOM (`renderFornoSVG`) é do `pricingPanel`. Hoje o render-duplo vive **embutido no bloco Tamanho** da precificação; um painel separado de ocupação (com slider de carga real) é futuro (ver `Specs/queima/calcular-ocupacao-do-forno.zenspec.md`).
+Programa puro (regra `DenaroEngSpec.md` §3): `desenharForno(medidas, forno)` devolve a **string SVG**. A injeção no DOM (`renderFornoSVG`) é do `pricingPanel`. Hoje o render-duplo vive **embutido no bloco Tamanho** da precificação; um painel separado de ocupação (com slider de carga real) é futuro (ver `Specs/queima/estimarCabem.zenspec.md`).
 
 ---
 
@@ -19,7 +19,7 @@ O render é **SVG puro gerado por JavaScript** — sem imagens externas, sem bib
 - **Biscoito** — peças empilhadas em colunas; legenda "~N no forno · empilhado em coluna" (ou "tigelas encaixadas" / "X por prateleira × Y níveis").
 - **Esmalte** — prateleiras tracejadas com peças ordenadas; legenda "~N no forno · X por prateleira × Y prateleiras".
 
-O tamanho na tela é **proporcional ao real** (peça ÷ forno). A conta vem de `estimarCabem` (`Specs/queima/calcular-ocupacao-do-forno.zenspec.md`) — **fonte única**, a mesma usada pelo custo de queima. Nada sai do forno (clamps horizontais e verticais).
+O tamanho na tela é **proporcional ao real** (peça ÷ forno). A conta vem de `estimarCabem` (`Specs/queima/estimarCabem.zenspec.md`) — **fonte única**, a mesma usada pelo custo de queima. Nada sai do forno (clamps horizontais e verticais).
 
 Metáfora: é o **boneco do forno** — a ceramista olha e entende "quantas cabem" sem virar a peça na cabeça.
 

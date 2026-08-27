@@ -57,25 +57,25 @@ O modelo exato de cálculo vive em `Specs/precificacao/modelo-de-precificacao.md
 
 - `calcularCustoPeca` — **calculadora de peças**
   Computa o custo de uma **peça** (argila + esmalte + mão de obra + embalagem + acessórios + queima + risco + taxas) e os preços por linha (Exclusiva/Padrão/Revenda). Função pura: `(estado, config, inputs) → { custo, custoComTaxas, linhas }`.
-  `Contrato: calcular-custo-de-peca.zenspec.md`.
+  `Contrato: calcularCustoPeca.zenspec.md`.
 
 - `calcularCustoProduto` — **calculadora de produtos**
   Computa o custo de um **produto** (receita em gramas ÷ unidades + embalagem + montagem + taxas) e os preços por linha (Autoral/Profissional/Essencial). Função pura.
-  `Contrato: calcular-custo-de-produto.zenspec.md`.
+  `Contrato: calcularCustoProduto.zenspec.md`.
 
 - `lerMedidas` (+ leitura do formulário) — **tradutor**
   Lê os campos do formulário e devolve objetos planos validados (peso, esmalte em R$, tempo h:min → decimal, medidas da peça). É a fronteira entre DOM e núcleo.
-  `Contrato: normalizar-entradas.zenspec.md`.
+  `Contrato: lerMedidas.zenspec.md`.
 
 - `estimarCabem` — **"quantas cabem"**
   Estima quantas peças como a atual ocupam um forno (por prateleira × níveis, empilhamento e encaixe), usando o config `OCUPACAO`. Função pura. Fonte única de "quantas cabem" — usada pelo custo de queima **e** pelo render.
-  `Contrato: Specs/queima/calcular-ocupacao-do-forno.zenspec.md`.
+  `Contrato: Specs/queima/estimarCabem.zenspec.md`.
 
 ### 4.2 Desenho (domínio `queima`) — programa puro em `app/js/desenho.js`
 
 - `desenharForno` — **ilustrador do forno**
   Recebe `(medidas, forno)` e devolve a **string SVG** das duas vistas (biscoito/esmalte) com a peça principal + cópias, determinístico, nada fora do forno. Não toca DOM.
-  `Contrato: Specs/precificacao/desenhar-forno.zenspec.md`.
+  `Contrato: Specs/precificacao/desenharForno.zenspec.md`.
 
 ### 4.3 Config — `app/js/config.js`
 
@@ -92,19 +92,19 @@ O modelo exato de cálculo vive em `Specs/precificacao/modelo-de-precificacao.md
 
 - `pricingPanel` — **balcão do precificador**
   Tela principal com toggle **Peça / Produto**, seções (Insumos, Mão de obra, Tamanho, Queima, Embalagem, Frete), custo detalhado + preços por linha. Escreve no DOM os resultados dos motores.
-  `Contrato: Specs/precificacao/apresentar-calculadora-no-celular.zenspec.md`.
+  `Contrato: Specs/precificacao/pricingPanel.zenspec.md`.
 
 - `costsPanel` — **gaveta visível**
   Tela de cadastro/edição dos custos de referência (Fixos → custo hora, Insumos, Embalagens/Acessórios, Taxas & Margens).
-  `Contrato: Specs/custos/editar-custos-de-referencia.zenspec.md`.
+  `Contrato: Specs/custos/costsPanel.zenspec.md`.
 
 - `fornosPanel` — **parede da garagem**
   Tela de fornos e serviços de queima.
-  `Contrato: Specs/queima/editar-fornos-e-queima.zenspec.md`.
+  `Contrato: Specs/queima/fornosPanel.zenspec.md`.
 
 - `piecesListPanel` — **caderno aberto**
   Tela que lista peças e produtos salvos, com filtro por tipo, e permite abrir/copiar/editar.
-  `Contrato: Specs/pecas/listar-e-reusar-pecas.zenspec.md`.
+  `Contrato: Specs/pecas/piecesListPanel.zenspec.md`.
 
 ---
 
@@ -214,5 +214,5 @@ Regra: toda situação de erro listada é rastreável a um programa ou estado do
 - Conflitos de edição simultânea real-time (o Firestore sincroniza por documento; editar ao mesmo tempo em dois aparelhos pode sobrescrever).  
 - Controle de quais fotos podem ser apagadas no Storage (hoje o arquivo é mantido mesmo se o orçamento for apagado, por segurança).  
 - Importação das planilhas atuais (fica no escopo futuro do conceito; os valores de referência do v1 vêm de `modelo-de-precificacao.md`).  
-- Painel separado de ocupação do forno (hoje o render-duplo vive embutido na precificação; o painel com slider de carga real é futuro — ver `Specs/queima/calcular-ocupacao-do-forno.zenspec.md`).  
+- Painel separado de ocupação do forno (hoje o render-duplo vive embutido na precificação; o painel com slider de carga real é futuro — ver `Specs/queima/estimarCabem.zenspec.md`).  
 - Cálculos de lucro por mês, relatórios e dashboards.
