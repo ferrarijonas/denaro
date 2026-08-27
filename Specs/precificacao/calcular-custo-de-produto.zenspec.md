@@ -46,17 +46,22 @@ precoPorLinha    = custoComTaxas × multiplicadorDaLinha
 
 ### Contrato
 
-Entrada:
+Entrada (`inputs` — montado pelo `pricingPanel`, que resolve catálogo/taxas na fronteira):
 
-- `receita`: lista `{ insumo, gramas }` (índice no catálogo de insumos).
-- `unidadesProduzidas`: number ≥ 1.
+- `unidades`: number ≥ 1.
 - `tempoMontagemHoras`: number ≥ 0 (`prodH + prodM/60`).
-- `embalagem`: lista `{ item, qtd }`.
-- `canal`, `perdaNivel`, `regimeFiscal`.
+- `receita`: `[{ gramas, precoKg }]` (insumos do catálogo já resolvidos).
+- `embalagem`: `[{ qtd, preco }]`.
+- `custoHoraTotal`: number (embute os fixos rateados — ver nota de divergência abaixo).
+- `taxaPerda`: number (nível de perda).
+- `imposto`: number (regime fiscal).
+- `canalPct`: number (Σ comissões do canal).
+
+`config` = `CONFIG` (usa `linhasProduto`).
 
 Saída (`PricingResult`):
 
-- `custoReceita`, `custoPorUnidade`, `custoEmbalagem`, `montagem`, `risco`, `custoTotal`, `custoComTaxas`.
+- `custoReceita`, `porUnidade`, `custoEmbalagem`, `montagem`, `risco`, `custoTotal`, `taxas`, `custoComTaxas`.
 - `linhas`: `[{ nome, mult, sub, preco }]`.
 
 Erros:

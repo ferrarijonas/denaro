@@ -149,7 +149,7 @@ Com os 20 itens pré-cadastrados (§2.1): `totalCustosFixos=5.980`, `salario=3.5
 - riscoRefacao = taxaPerda(média 0,3) × (7,80 + 16,99) = 7,44
 - custoTotal = 7,80 + 3,00 + 16,99 + 7,44 = 35,23
 - custoComTaxas = 35,23 ÷ 0,95 = 37,08 (imposto 5%)
-- exclusiva = 36,99 ÷ 0,40 = 92,48 | padrão = 36,99 ÷ 0,55 = 67,26 | revenda = 36,99 ÷ 0,70 = 52,84
+- exclusiva = 37,08 ÷ 0,40 = 92,70 | padrão = 37,08 ÷ 0,55 = 67,42 | revenda = 37,08 ÷ 0,70 = 52,97
 
 **Conferência contra a planilha:** a mesma fórmula com o config da aba `Alice_Custos_FUNCIONA` (total 6.880 → hora total 39,09) reproduz os valores dela: custo 38,55 ✓, c/taxas 40,48 ✓, revenda 57,83 ✓, padrão 73,60 ✓, exclusiva 101,20 ✓. A fórmula é 1:1; muda apenas o config de custos fixos.
 

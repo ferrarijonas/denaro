@@ -3005,31 +3005,30 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     const peso = Number(document.getElementById("peso").value) || 0;
     const esmalte = Number(document.getElementById("esmalte").value) || 0;
     const frete = fretePeca();
-const tempoH = estado.tempoTotalMin / 60;
+    const inputs = {
+      peso, esmalteReais: esmalte, frete, tempoHoras: estado.tempoTotalMin / 60,
+      argilaPreco: argilaPreco(),
+      acessorios: itensSelecionados(selAcessorios, CATALOGO_ACESSORIOS),
+      embalagem: itensSelecionados(selPeca, CATALOGO_EMBALAGEM),
+      horaNivel: horaNivel(), horaAtelie: horaAtelie(),
+      queima: custoQueimaTotal(),
+      taxaPerda: taxaPerda(),
+      fretePagante: estado.fretePagante,
+      imposto: impostoPorRegime(), canalPct: canalTotal(estado.canal),
+    };
+    const r = calcularCustoPeca(inputs, CONFIG);
+    const custoTotal = r.custoTotal;
+    const custoComTaxas = r.custoComTaxas;
+    const freteEmbutido = r.freteEmbutido;
 
-    const custoArgila = peso * argilaPreco();
-    const custoMaterial = custoArgila + esmalte;
-    const acessorios = itensSelecionados(selAcessorios, CATALOGO_ACESSORIOS);
-    const embalagem = itensSelecionados(selPeca, CATALOGO_EMBALAGEM);
-    const custoAcessorios = acessorios.reduce((s, i) => s + i.qtd * i.preco, 0);
-    const custoEmbalagem = embalagem.reduce((s, i) => s + i.qtd * i.preco, 0);
-    const maoDeObra = tempoH * (horaNivel() + horaAtelie());
-    const queima = custoQueimaTotal();
-    const risco = taxaPerda() * (custoMaterial + maoDeObra + queima);
-    const freteEmbutido = estado.fretePagante === "atele";
-    const freteNaConta = freteEmbutido ? frete : 0;
-    const custoTotal = custoMaterial + custoAcessorios + custoEmbalagem + maoDeObra + queima + risco + freteNaConta;
-    const taxas = impostoPorRegime() + canalTotal(estado.canal);
-    const custoComTaxas = custoTotal / (1 - taxas);
-
-    document.getElementById("r-argila").textContent = fmt(custoArgila);
-    document.getElementById("r-esmalte").textContent = fmt(esmalte);
-    document.getElementById("r-acessorios").textContent = fmt(custoAcessorios);
-    document.getElementById("r-embalagem").textContent = fmt(custoEmbalagem);
-    document.getElementById("r-mao").textContent = fmt(maoDeObra);
-    document.getElementById("r-queima").textContent = fmt(queima);
-    document.getElementById("r-risco").textContent = fmt(risco);
-    document.getElementById("r-frete").textContent = fmt(frete);
+    document.getElementById("r-argila").textContent = fmt(r.custoArgila);
+    document.getElementById("r-esmalte").textContent = fmt(r.esmalte);
+    document.getElementById("r-acessorios").textContent = fmt(r.custoAcessorios);
+    document.getElementById("r-embalagem").textContent = fmt(r.custoEmbalagem);
+    document.getElementById("r-mao").textContent = fmt(r.maoDeObra);
+    document.getElementById("r-queima").textContent = fmt(r.queima);
+    document.getElementById("r-risco").textContent = fmt(r.risco);
+    document.getElementById("r-frete").textContent = fmt(r.frete);
     document.getElementById("r-custo").textContent = fmt(custoTotal);
     document.getElementById("r-custo-taxas").textContent = fmt(custoComTaxas);
 
@@ -3078,23 +3077,25 @@ const tempoH = estado.tempoTotalMin / 60;
   /* ===== cálculo PRODUTO (modelo 1:1) ===== */
   function calcularProduto() {
     const un = Math.max(1, Number(document.getElementById("unidades").value) || 1);
-    const montagemH = estado.prodH + estado.prodM / 60;
-    const custoReceita = estado.receita.reduce((s, r) => s + (r.gramas / 1000) * CATALOGO_INSUMOS[r.insumo].preco, 0);
-    const porUnidade = custoReceita / un;
-    const embalagem = itensSelecionados(selProd, CATALOGO_EMBALAGEM);
-    const custoEmbalagem = embalagem.reduce((s, i) => s + i.qtd * i.preco, 0);
-    const montagem = montagemH * custoHoraTotal();
-    const risco = taxaPerda() * (porUnidade + montagem);
-    const custoTotal = porUnidade + custoEmbalagem + montagem + risco;
-    const taxas = impostoPorRegime() + canalTotal(estado.canal);
-    const custoComTaxas = custoTotal / (1 - taxas);
+    const inputs = {
+      unidades: un,
+      tempoMontagemHoras: estado.prodH + estado.prodM / 60,
+      receita: estado.receita.map((r) => ({ gramas: r.gramas, precoKg: CATALOGO_INSUMOS[r.insumo].preco })),
+      embalagem: itensSelecionados(selProd, CATALOGO_EMBALAGEM),
+      custoHoraTotal: custoHoraTotal(),
+      taxaPerda: taxaPerda(),
+      imposto: impostoPorRegime(), canalPct: canalTotal(estado.canal),
+    };
+    const r = calcularCustoProduto(inputs, CONFIG);
+    const custoTotal = r.custoTotal;
+    const custoComTaxas = r.custoComTaxas;
 
-    document.getElementById("rp-receita").textContent = fmt(custoReceita);
+    document.getElementById("rp-receita").textContent = fmt(r.custoReceita);
     document.getElementById("rp-un").textContent = "÷ " + un;
-    document.getElementById("rp-por-un").textContent = fmt(porUnidade);
-    document.getElementById("rp-embalagem").textContent = fmt(custoEmbalagem);
-    document.getElementById("rp-montagem").textContent = fmt(montagem);
-    document.getElementById("rp-risco").textContent = fmt(risco);
+    document.getElementById("rp-por-un").textContent = fmt(r.porUnidade);
+    document.getElementById("rp-embalagem").textContent = fmt(r.custoEmbalagem);
+    document.getElementById("rp-montagem").textContent = fmt(r.montagem);
+    document.getElementById("rp-risco").textContent = fmt(r.risco);
     document.getElementById("rp-custo").textContent = fmt(custoTotal);
     document.getElementById("rp-custo-taxas").textContent = fmt(custoComTaxas);
 

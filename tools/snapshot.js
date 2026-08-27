@@ -42,7 +42,7 @@ function carregarProgramas() {
   const context = { window: {} };
   context.globalThis = context;
   vm.createContext(context);
-  const ex = code + "\n;globalThis.__d = { cubagemDe, estimarCabem, desenharForno };";
+  const ex = code + "\n;globalThis.__d = { cubagemDe, estimarCabem, desenharForno, calcularCustoPeca, calcularCustoProduto, CONFIG };";
   vm.runInContext(ex, context, { filename: "denaro-puros.js" });
   return context.__d;
 }
@@ -73,6 +73,47 @@ function snapshotDe(p) {
       out.push(svg);
     }
   }
+
+  out.push("=== motores (pricingEngine / productEngine) ===");
+  /* referencia do modelo-de-precificacao.md §3.4 (validada contra as planilhas) */
+  const C = p.CONFIG;
+  const salario = C.maoDeObra.itens.find((i) => i.nome === "Salário").valor;
+  const totalFixos = C.custosFixos.reduce((s, cat) => s + cat.itens.reduce((x, i) => x + i.valor, 0), 0)
+    + C.maoDeObra.itens.reduce((s, i) => s + i.valor, 0);
+  const horasMes = C.horasDia * C.diasMes;
+  const custoHoraPessoa = salario / horasMes;
+  const horaAtelie = (totalFixos - salario) / horasMes;
+  const horaNivel = custoHoraPessoa * (C.niveis.profissional || 1);
+
+  const inPeca = {
+    peso: 0.4, esmalteReais: 5, frete: 0, tempoHoras: 0.5,
+    argilaPreco: 7,
+    acessorios: [],
+    embalagem: [{ qtd: 1, preco: 2 }, { qtd: 1, preco: 1 }],
+    horaNivel, horaAtelie,
+    queima: 0,
+    taxaPerda: 0.30,
+    fretePagante: "cliente",
+    imposto: 0.05, canalPct: 0,
+  };
+  const resPeca = p.calcularCustoPeca(inPeca, C);
+  out.push(`peca §3.4 — custoTotal: ${resPeca.custoTotal.toFixed(2)}`);
+  out.push(`peca §3.4 — custoComTaxas: ${resPeca.custoComTaxas.toFixed(2)}`);
+  out.push(`peca §3.4 — linhas: ${resPeca.linhas.map((l) => `${l.nome}=${l.preco.toFixed(2)}`).join(" | ")}`);
+
+  const inProd = {
+    unidades: 20,
+    tempoMontagemHoras: 0.5,
+    receita: [{ gramas: 400, precoKg: 5.3 }, { gramas: 250, precoKg: 13 }, { gramas: 100, precoKg: 7 }],
+    embalagem: [],
+    custoHoraTotal: totalFixos / horasMes,
+    taxaPerda: 0.30,
+    imposto: 0.06, canalPct: 0.06,
+  };
+  const resProd = p.calcularCustoProduto(inProd, C);
+  out.push(`produto — custoTotal: ${resProd.custoTotal.toFixed(2)}`);
+  out.push(`produto — custoComTaxas: ${resProd.custoComTaxas.toFixed(2)}`);
+  out.push(`produto — linhas: ${resProd.linhas.map((l) => `${l.nome}=${l.preco.toFixed(2)}`).join(" | ")}`);
 
   return out.join("\n");
 }

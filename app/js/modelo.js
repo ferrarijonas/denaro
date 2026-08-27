@@ -142,3 +142,60 @@ function custoEnergiaPorTipo(f, tipo) {
   if (tipo === "3fogo") return (f.potenciaKw || 7.2) * 3 * 0.3 * c.precoKwh;
   return (f.potenciaKw || 7.2) * c.horasEsmalte * c.dutyEsmalte * c.precoKwh;
 }
+
+/* =====================================================================
+ * Motores de precificação (pricingEngine / productEngine) — puros.
+ * Recebem `inputs` já resolvidos pelo pricingPanel (catálogo, taxas,
+ * queima e frete são resolvidos na fronteira; ver zenspecs). Não tocam DOM.
+ * ===================================================================== */
+
+/* pricingEngine — calcula o custo de uma PEÇA e os preços por linha. */
+function calcularCustoPeca(inputs, config) {
+  const peso = inputs.peso;
+  const esmalte = inputs.esmalteReais;
+  const frete = inputs.frete;
+  const tempoH = inputs.tempoHoras;
+
+  const custoArgila = peso * inputs.argilaPreco;
+  const custoMaterial = custoArgila + esmalte;
+  const custoAcessorios = inputs.acessorios.reduce((s, i) => s + i.qtd * i.preco, 0);
+  const custoEmbalagem = inputs.embalagem.reduce((s, i) => s + i.qtd * i.preco, 0);
+  const maoDeObra = tempoH * (inputs.horaNivel + inputs.horaAtelie);
+  const queima = inputs.queima;
+  const risco = inputs.taxaPerda * (custoMaterial + maoDeObra + queima);
+  const freteEmbutido = inputs.fretePagante === "atele";
+  const freteNaConta = freteEmbutido ? frete : 0;
+  const custoTotal = custoMaterial + custoAcessorios + custoEmbalagem + maoDeObra + queima + risco + freteNaConta;
+  const taxas = inputs.imposto + inputs.canalPct;
+  const custoComTaxas = custoTotal / (1 - taxas);
+  const linhas = (config.margensPeca || []).map((l) => ({
+    nome: l.nome, margem: l.margem, sub: l.sub,
+    preco: custoComTaxas / (1 - l.margem),
+  }));
+  return {
+    custoArgila, esmalte, custoAcessorios, custoEmbalagem, maoDeObra, queima,
+    risco, frete, freteEmbutido, freteNaConta, custoTotal, taxas, custoComTaxas, linhas,
+  };
+}
+
+/* productEngine — calcula o custo de um PRODUTO (lote) e os preços por linha. */
+function calcularCustoProduto(inputs, config) {
+  const un = inputs.unidades;
+  const montagemH = inputs.tempoMontagemHoras;
+  const custoReceita = inputs.receita.reduce((s, r) => s + (r.gramas / 1000) * r.precoKg, 0);
+  const porUnidade = custoReceita / un;
+  const custoEmbalagem = inputs.embalagem.reduce((s, i) => s + i.qtd * i.preco, 0);
+  const montagem = montagemH * inputs.custoHoraTotal;
+  const risco = inputs.taxaPerda * (porUnidade + montagem);
+  const custoTotal = porUnidade + custoEmbalagem + montagem + risco;
+  const taxas = inputs.imposto + inputs.canalPct;
+  const custoComTaxas = custoTotal / (1 - taxas);
+  const linhas = (config.linhasProduto || []).map((l) => ({
+    nome: l.nome, mult: l.mult, sub: l.sub,
+    preco: custoComTaxas * l.mult,
+  }));
+  return {
+    custoReceita, porUnidade, custoEmbalagem, montagem, risco,
+    custoTotal, taxas, custoComTaxas, linhas, un,
+  };
+}

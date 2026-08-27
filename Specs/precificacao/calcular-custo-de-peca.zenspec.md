@@ -53,22 +53,27 @@ precoPorLinha   = custoComTaxas ÷ (1 − margemDaLinha)
 
 ### Contrato
 
-Entrada (`inputs` — montado pelo normalizador):
+Entrada (`inputs` — montado pelo `pricingPanel`, que resolve catálogo/taxas/queima na fronteira):
 
-- `kgsArgila`: number ≥ 0 (peso da argila, kg).
+- `peso`: number ≥ 0 (kg de argila).
 - `esmalteReais`: number ≥ 0.
-- `tempoHoras`: number ≥ 0 (tempo em decimal; h + min/60).
-- `dificuldade`: 1–5 (UI) → fator interno via `CONFIG.fatores`.
-- `nivel`: `"aprendiz" | "profissional" | "especialista"` → multiplicador `CONFIG.niveis`.
-- `acessorios`, `embalagem`: listas `{ item, qtd }` com preço do catálogo.
-- `queimas`: `[{ tipo, forno }]` + `semQueima` (bool).
-- `frete`: valor (R$) e `fretePagante` (`"cliente" | "atele"`), `pecasNoEnvio`.
-- `medidas`: objeto do tamanho da peça (para `estimarCabem`).
-- `argilaSelecionada` (nome) e `canal`.
+- `frete`: number ≥ 0 (valor já rateado pelo método de entrega).
+- `tempoHoras`: number ≥ 0 (decimal; h + min/60).
+- `argilaPreco`: number (R$/kg da argila selecionada, do catálogo).
+- `acessorios`, `embalagem`: `[{ qtd, preco }]` (itens do catálogo já resolvidos).
+- `horaNivel`: number (`custoHoraPessoa × CONFIG.niveis[nivel]`).
+- `horaAtelie`: number (rateio dos fixos fora do salário).
+- `queima`: number (Σ custo de queima — resolvido na fronteira via `estimarCabem`/unidade do forno).
+- `taxaPerda`: number (nível de perda `CONFIG.perdas`).
+- `fretePagante`: `"cliente" | "atele"`.
+- `imposto`: number (regime fiscal `CONFIG.impostosRegime`).
+- `canalPct`: number (Σ comissões do canal selecionado).
+
+`config` = `CONFIG` (usa `margensPeca`). Dificuldade/nível/medidas/queimas são resolvidos pelo `pricingPanel` antes de virar input.
 
 Saída (`PricingResult`):
 
-- `custoArgila`, `custoMaterial`, `custoAcessorios`, `custoEmbalagem`, `maoDeObra`, `queima`, `risco`, `frete`, `custoTotal`, `custoComTaxas`.
+- `custoArgila`, `custoMaterial` (implícito: argila + esmalte), `custoAcessorios`, `custoEmbalagem`, `maoDeObra`, `queima`, `risco`, `frete`, `freteEmbutido`, `custoTotal`, `taxas`, `custoComTaxas`.
 - `linhas`: `[{ nome, margem, sub, preco }]`.
 
 Erros:
@@ -86,7 +91,7 @@ Erros:
 ### Critérios de aceitação
 
 - Mesmos inputs → mesmos custos e preços (determinístico; validado pelo harness contra `modelo-de-precificacao.md` §3.4).
-- Exemplo conferido: peso 0,4 · esmalte R$5 · tempo 0,5h · dificuldade 1 · embalagem papel R$2 + etiqueta R$1 → custoTotal R$ 35,23 · c/taxas R$ 37,08 (imposto 5%) · exclusiva R$ 92,48 · padrão R$ 67,26 · revenda R$ 52,84.
+- Exemplo conferido: peso 0,4 · esmalte R$5 · tempo 0,5h · dificuldade 1 · embalagem papel R$2 + etiqueta R$1 → custoTotal R$ 35,23 · c/taxas R$ 37,08 (imposto 5%) · exclusiva R$ 92,70 · padrão R$ 67,42 · revenda R$ 52,97.
 
 ---
 

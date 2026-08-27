@@ -139,9 +139,9 @@ Erros:
 │  │ Queima R$… · Risco R$…   │ │
 │  │ CUSTO TOTAL     R$ 35,23 │ │
 │  │ CUSTO C/ TAXAS  R$ 37,08 │ │
-│  │ Exclusiva R$92,48   [  ] │ │
-│  │ Padrão    R$67,26   [ • ]│ │
-│  │ Revenda   R$52,84   [  ] │ │
+│  │ Exclusiva R$92,70   [  ] │ │
+│  │ Padrão    R$67,42   [ • ]│ │
+│  │ Revenda   R$52,97   [  ] │ │
 │  │ [ SALVAR PEÇA ]          │ │
 │  └──────────────────────────┘│
 └──────────────────────────────┘
