@@ -31,8 +31,8 @@
     --sombra: 0 1px 3px rgba(102,75,56,0.08);
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow-x: hidden; }
   .icone { width: 20px; height: 20px; display: block; color: var(--tinta); }
   .icone.g { color: var(--tinta-suave); }
 
@@ -54,6 +54,7 @@
     flex-direction: column;
     background: var(--papel);
     position: relative;
+    overflow-x: hidden;
   }
 
   header { padding: 16px 20px 8px; }
@@ -645,7 +646,12 @@
   .render-legenda b { color: var(--argila); }
   .render-det { display: block; font-size: 8px; opacity: 0.9; margin-top: 1px; }
   .medidas-linha { display: flex; gap: 8px; margin-top: 8px; }
+  .medida-campo { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .medida-label { font-size: 10px; font-weight: 600; color: var(--tinta-suave); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0; }
   .medidas-linha .suffix { flex: 1; }
+  .render-forno-cab { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .render-forno-cab select { flex: 1; padding: 9px 12px; font-size: 13px; }
+  .render-forno-dica { font-size: 10px; color: var(--tinta-suave); white-space: nowrap; }
   .tamanho-slider { margin-top: 10px; display: flex; flex-direction: column; gap: 2px; }
   .tamanho-slider .rotulo-slider { font-size: 11px; color: var(--tinta-suave); font-weight: 600; }
   .tamanho-slider input[type="range"] { width: 100%; accent-color: var(--argila); height: 26px; margin: 0; }
@@ -1342,13 +1348,17 @@
                       <button type="button" class="chip flex-linha" data-formato="quadrada"><span class="n">Quadrada</span></button>
                     </div>
                     <div class="medidas-linha" id="medidas-redonda">
-                      <div class="suffix"><input type="number" id="t-diametro" value="25" min="0" step="1" inputmode="decimal" /><span>cm</span></div>
-                      <div class="suffix"><input type="number" id="t-altura" value="5" min="0" step="1" inputmode="decimal" /><span>cm</span></div>
+                      <div class="medida-campo"><label class="medida-label" for="t-diametro">Diâmetro</label><div class="suffix"><input type="number" id="t-diametro" value="25" min="0" step="1" inputmode="decimal" /><span>cm</span></div></div>
+                      <div class="medida-campo"><label class="medida-label" for="t-altura">Altura</label><div class="suffix"><input type="number" id="t-altura" value="5" min="0" step="1" inputmode="decimal" /><span>cm</span></div></div>
                     </div>
                     <div class="medidas-linha escondido" id="medidas-quadrada">
-                      <div class="suffix"><input type="number" id="t-largura" value="20" min="0" step="1" inputmode="decimal" /><span>cm</span></div>
-                      <div class="suffix"><input type="number" id="t-profundidade" value="20" min="0" step="1" inputmode="decimal" /><span>cm</span></div>
-                      <div class="suffix"><input type="number" id="t-altura-q" value="5" min="0" step="1" inputmode="decimal" /><span>cm</span></div>
+                      <div class="medida-campo"><label class="medida-label" for="t-largura">Largura</label><div class="suffix"><input type="number" id="t-largura" value="20" min="0" step="1" inputmode="decimal" /><span>cm</span></div></div>
+                      <div class="medida-campo"><label class="medida-label" for="t-profundidade">Profund.</label><div class="suffix"><input type="number" id="t-profundidade" value="20" min="0" step="1" inputmode="decimal" /><span>cm</span></div></div>
+                      <div class="medida-campo"><label class="medida-label" for="t-altura-q">Altura</label><div class="suffix"><input type="number" id="t-altura-q" value="5" min="0" step="1" inputmode="decimal" /><span>cm</span></div></div>
+                    </div>
+                    <div class="render-forno-cab">
+                      <select id="forno-render" aria-label="Forno"></select>
+                      <span class="render-forno-dica">onde a peça queima</span>
                     </div>
                     <div class="tamanho-slider">
                       <label class="rotulo-slider" for="tamanho-slider">Ajustar tamanho</label>
@@ -2338,6 +2348,7 @@ argilaSelecionada: "Argila Comum",
     dificuldade: 1,
     nivel: "profissional",
     formatoPeca: "redonda",
+    fornoRender: null,
     tDiametro: 25, tAltura: 5, tLargura: 20, tProfundidade: 20, tAlturaQ: 5,
     queimas: [{ tipo: "biscoito", forno: "forno1" }],
     semQueima: false,
@@ -2696,7 +2707,9 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     const host = document.getElementById("render-forno");
     if (!host) return;
     const m = lerMedidas();
-    const forno = CONFIG.fornos[0];
+    const fornoBase = CONFIG.fornos[0] || CONFIG.servicosFora[0];
+    const fornoSel = estado.fornoRender ? acharForno(estado.fornoRender) : null;
+    const forno = fornoSel || fornoBase;
     const fornoDiam = forno && forno.formato === "quadrada"
       ? (Math.max(forno.larguraCm || 0, forno.profundidadeCm || 0) || 40)
       : ((forno && forno.diametroCm) || 40);
@@ -2705,9 +2718,11 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     function pecaRedonda(x, baseY, w, h, mode) {
       const rx = w / 2, ry = Math.max(1.5, w * 0.09);
       const y = baseY - h - ry;
+      if (mode === "copy") {
+        return '<g opacity="0.5"><path d="M' + (x - rx) + ' ' + (y + ry) + ' L' + (x - rx) + ' ' + (y + h) + ' a' + rx + ',' + ry + ' 0 0 0 ' + (2 * rx) + ',0 L' + (x + rx) + ' ' + (y + ry) + ' Z" fill="rgba(91,68,50,0.18)"/></g>';
+      }
       const P = mode === "main" ? ["rgba(91,68,50,0.92)", "#5b4432", "", 1]
-        : mode === "copy" ? ["rgba(91,68,50,0.22)", "#5b4432", "", 0.6]
-          : ["none", "#ab9881", "3 3", 0.8];
+        : ["none", "#ab9881", "3 3", 0.8];
       return '<g opacity="' + P[3] + '">' +
         '<path d="M' + (x - rx) + ' ' + (y + ry) + ' L' + (x - rx) + ' ' + (y + h) + ' a' + rx + ',' + ry + ' 0 0 0 ' + (2 * rx) + ',0 L' + (x + rx) + ' ' + (y + ry) + ' Z" fill="' + P[0] + '" stroke="' + P[1] + '" stroke-width="1.1"' + (P[2] ? ' stroke-dasharray="' + P[2] + '"' : "") + "/>" +
         '<ellipse cx="' + x + '" cy="' + y + '" rx="' + rx + '" ry="' + ry + '" fill="' + P[0] + '" stroke="' + P[1] + '" stroke-width="1.1"' + (P[2] ? ' stroke-dasharray="' + P[2] + '"' : "") + "/>" +
@@ -2716,9 +2731,11 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     function pecaQuadrado(x, baseY, w, h, mode) {
       const t = w * 0.22;
       const y0 = baseY - h;
+      if (mode === "copy") {
+        return '<g opacity="0.5"><path d="M' + (x - w / 2) + ' ' + y0 + ' L' + (x - w / 2) + ' ' + (baseY) + ' L' + (x + w / 2) + ' ' + (baseY) + ' L' + (x + w / 2) + ' ' + y0 + ' Z" fill="rgba(91,68,50,0.18)"/></g>';
+      }
       const P = mode === "main" ? ["rgba(91,68,50,0.92)", "#5b4432", "", 1]
-        : mode === "copy" ? ["rgba(91,68,50,0.22)", "#5b4432", "", 0.6]
-          : ["none", "#ab9881", "3 3", 0.8];
+        : ["none", "#ab9881", "3 3", 0.8];
       const lado = "rgba(91,68,50," + (mode === "main" ? "0.55" : mode === "copy" ? "0.14" : "0.12") + ")";
       const front = "M" + (x - w / 2) + " " + y0 + " L" + (x - w / 2) + " " + (baseY) + " L" + (x + w / 2) + " " + (baseY) + " L" + (x + w / 2) + " " + y0 + " Z";
       const top = "M" + (x - w / 2) + " " + y0 + " L" + (x - w / 2 + t) + " " + (y0 - t * 0.5) + " L" + (x + w / 2 + t) + " " + (y0 - t * 0.5) + " L" + (x + w / 2) + " " + y0 + " Z";
@@ -2831,6 +2848,26 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     });
     const f0 = CONFIG.fornos[0];
     sliderTamanho.max = Math.max(5, f0 ? (f0.formato === "quadrada" ? Math.max(f0.larguraCm || 0, f0.profundidadeCm || 0) : (f0.diametroCm || 0)) : 40);
+  }
+  function populateFornoRender() {
+    const sel = document.getElementById("forno-render");
+    if (!sel) return;
+    sel.innerHTML = "";
+    const todas = CONFIG.fornos.concat(CONFIG.servicosFora);
+    todas.forEach((f) => {
+      const o = document.createElement("option");
+      o.value = f.id;
+      o.textContent = f.nome;
+      sel.appendChild(o);
+    });
+    if (estado.fornoRender && acharForno(estado.fornoRender)) sel.value = estado.fornoRender;
+    else if (todas.length) { estado.fornoRender = todas[0].id; sel.value = todas[0].id; }
+    sel.onchange = () => {
+      estado.fornoRender = sel.value;
+      const f = acharForno(estado.fornoRender);
+      if (sliderTamanho && f) sliderTamanho.max = Math.max(5, f.formato === "quadrada" ? Math.max(f.larguraCm || 0, f.profundidadeCm || 0) : (f.diametroCm || 0));
+      renderFornoSVG();
+    };
   }
 
   /* ===== queima da peça ===== */
@@ -4030,6 +4067,7 @@ document.getElementById("btn-salvar-custos").addEventListener("click", () => {
     CONFIG.configQueima.horasEsmalte = Number(document.getElementById("q-horas-esmalte").value) || 9;
     renderFornos();
     renderServicos();
+    populateFornoRender();
     renderQueimas();
     salvarLocalStorage();
     salvarFeedback("fb-fornos", "Fornos salvos");
@@ -4042,6 +4080,7 @@ document.getElementById("btn-salvar-custos").addEventListener("click", () => {
     renderCustos();
     renderFornos();
     renderServicos();
+    populateFornoRender();
     renderQueimas();
     renderTamanho();
     atualizarNivelRates();
