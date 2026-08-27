@@ -23,7 +23,7 @@ Este documento segue o template de `ZenEngSpec.md` e é derivado de `DenaroConce
 | `Dificuldade`      | Nível artístico 1–5 (UI) mapeado para multiplicador interno 1,0–1,8 que ajusta a mão de obra. |
 | `Margem`           | Percentual que, subtraído do preço de venda, deixa o custo: `preco = custoComTaxas ÷ (1 − margem)`. |
 | `Esmalte (R$)`     | Custo do esmalte da peça informado em **reais** (não em %). |
-| `Cálculo`          | Resultado determinístico dos motores `pricingEngine`/`productEngine` a partir do modelo em `modelo-de-precificacao.md`. |
+| `Cálculo`          | Resultado determinístico dos motores `calcularCustoPeca`/`calcularCustoProduto` a partir do modelo em `modelo-de-precificacao.md`. |
 | `Armazenamento`    | Onde os dados vivem: o **Firestore** (doc `alice/estado`) com **`localStorage`** como cache/fallback local. A UI usa o SDK do Firebase compat direto no navegador — sem servidor. O `server.js` (SQLite) é apenas legado opcional. |
 
 > **Chave interna:** o doc do Firestore chama-se `alice/estado` por continuidade de dados (não é o nome do produto — o produto é **Denaro**). Não renomear sem migração dos dados existentes.
@@ -53,25 +53,27 @@ Para cada componente: nome em `código`, metáfora em **negrito**, resumo e cont
 
 O modelo exato de cálculo vive em `Specs/precificacao/modelo-de-precificacao.md` (extraído das planilhas, validado número a número).
 
-- `pricingEngine` (`calcularCustoPeca`) — **calculadora de peças**
+> **Regra de nome:** o nome do programa (no spec) é o nome da função no código. Um programa, um nome.
+
+- `calcularCustoPeca` — **calculadora de peças**
   Computa o custo de uma **peça** (argila + esmalte + mão de obra + embalagem + acessórios + queima + risco + taxas) e os preços por linha (Exclusiva/Padrão/Revenda). Função pura: `(estado, config, inputs) → { custo, custoComTaxas, linhas }`.
   `Contrato: calcular-custo-de-peca.zenspec.md`.
 
-- `productEngine` (`calcularCustoProduto`) — **calculadora de produtos**
+- `calcularCustoProduto` — **calculadora de produtos**
   Computa o custo de um **produto** (receita em gramas ÷ unidades + embalagem + montagem + taxas) e os preços por linha (Autoral/Profissional/Essencial). Função pura.
   `Contrato: calcular-custo-de-produto.zenspec.md`.
 
-- `pricingInputNormalizer` (`lerMedidas` + leitura do formulário) — **tradutor**
+- `lerMedidas` (+ leitura do formulário) — **tradutor**
   Lê os campos do formulário e devolve objetos planos validados (peso, esmalte em R$, tempo h:min → decimal, medidas da peça). É a fronteira entre DOM e núcleo.
   `Contrato: normalizar-entradas.zenspec.md`.
 
-- `ocupacaoEngine` (`estimarCabem`) — **"quantas cabem"**
+- `estimarCabem` — **"quantas cabem"**
   Estima quantas peças como a atual ocupam um forno (por prateleira × níveis, empilhamento e encaixe), usando o config `OCUPACAO`. Função pura. Fonte única de "quantas cabem" — usada pelo custo de queima **e** pelo render.
   `Contrato: Specs/queima/calcular-ocupacao-do-forno.zenspec.md`.
 
 ### 4.2 Desenho (domínio `queima`) — programa puro em `app/js/desenho.js`
 
-- `renderForno` (`desenharForno`) — **ilustrador do forno**
+- `desenharForno` — **ilustrador do forno**
   Recebe `(medidas, forno)` e devolve a **string SVG** das duas vistas (biscoito/esmalte) com a peça principal + cópias, determinístico, nada fora do forno. Não toca DOM.
   `Contrato: Specs/precificacao/desenhar-forno.zenspec.md`.
 
@@ -119,9 +121,9 @@ formulário → lerMedidas → estimarCabem (ocupação) → desenharForno (SVG)
 
 | Programa               | Recebe                                | Faz                                          | Manda para                  |
 | ---------------------- | ------------------------------------- | -------------------------------------------- | --------------------------- |
-| `pricingPanel`         | toques da usuária                     | lê campos + `lerMedidas` → monta `inputs`    | `pricingEngine`/`productEngine` |
-| `pricingEngine`        | `inputs` + config                     | calcula custo e preços por linha de peça     | `pricingPanel` (render)     |
-| `productEngine`        | `inputs` + config                     | calcula custo e preços por linha de produto  | `pricingPanel` (render)     |
+| `pricingPanel`         | toques da usuária                     | lê campos + `lerMedidas` → monta `inputs`    | `calcularCustoPeca`/`calcularCustoProduto` |
+| `calcularCustoPeca`    | `inputs` + config                     | calcula custo e preços por linha de peça     | `pricingPanel` (render)     |
+| `calcularCustoProduto` | `inputs` + config                     | calcula custo e preços por linha de produto  | `pricingPanel` (render)     |
 | `estimarCabem`         | tipo + forno + medidas                | peças por prateleira × níveis (empilha/encaixa) | `desenharForno` + custo de queima |
 | `desenharForno`        | medidas + forno + `estimarCabem`      | gera a string SVG das 2 vistas               | `pricingPanel` (injeção)    |
 | `storage`              | comandos de salvar/carregar           | Firestore + `localStorage` (fotos no Storage) | — (persistência)            |
@@ -156,7 +158,7 @@ Regra: toda seta do diagrama aparece na tabela. Sem atalhos; nenhum programa de 
 | Situação                                      | Comportamento                                                  |
 | --------------------------------------------- | -------------------------------------------------------------- |
 | Entrada inválida (peso ≤ 0, tempo ≤ 0, dificuldade fora de 1–5, medidas ≤ 0) | campo marcado em `terracota` com mensagem; nada é calculado |
-| `pricingEngine` recebe input que não passa na validação | falha explícita, nunca retorna preço parcial |
+| `calcularCustoPeca` recebe input que não passa na validação | falha explícita, nunca retorna preço parcial |
 | Custo de referência ausente (sem argila/hora cadastrados) | banner suave "Cadastre seus custos para valores reais" + link para `costsPanel` |
 | Firestore fora do ar | badge `#sync-status` "nuvem off"; tudo segue no `localStorage` |
 | Peça maior que o forno (`estimarCabem.total = 0`) | render vazio + legenda "não cabe · peça maior que o forno" |
@@ -171,7 +173,7 @@ Regra: toda situação de erro listada é rastreável a um programa ou estado do
 > **Alternativa descartada:** esmalte como percentual sobre a argila e margem como markup sobre custo (`custo × (1 + margem)`).
 > **Motivo:** a planilha usa esmalte em **reais** e margem como **% do preço** (`÷ (1 − m)`); os valores da planilha foram conferidos número a número com esta regra.
 
-> **Decisão:** Dois motores (`pricingEngine` para peças, `productEngine` para produtos) em vez de um único.
+> **Decisão:** Dois motores (`calcularCustoPeca` para peças, `calcularCustoProduto` para produtos) em vez de um único.
 > **Alternativa descartada:** um engine genérico único com flag de tipo.
 > **Motivo:** as contas diferem em estrutura (peça soma argila+risco; produto divide receita por unidades), e manter cada um com seu contrato deixa o trio ZenSpec→Código→Teste mais direto.
 

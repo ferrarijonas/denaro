@@ -20,23 +20,23 @@ Metáfora: a precificação é a **etiquetadora** — entra o que a peça "custa
 
 ## Programas
 
-O domínio `precificacao` reúne os motores de cálculo e o painel. Cada programa é uma **função pura com contrato** (regra `DenaroEngSpec.md` §3) — entrada → saída, sem tocar DOM. A fiação (leitura do formulário, escrita na tela) vive no `pricingPanel`.
+O domínio `precificacao` reúne os motores de cálculo e o painel. Cada programa é uma **função pura com contrato** (regra `DenaroEngSpec.md` §3) — entrada → saída, sem tocar DOM. **O nome do programa é o nome da função no código.** A fiação (leitura do formulário, escrita na tela) vive no `pricingPanel`.
 
 | Programa (spec)                                  | Função no código        | Recebe                                        | Devolve                          |
 | ------------------------------------------------ | ----------------------- | --------------------------------------------- | -------------------------------- |
-| `pricingInputNormalizer` (normalizar-entradas)   | leitura do form + `lerMedidas` | raw do formulário                      | `PricingInput` (objeto plano)    |
-| `pricingEngine` (calcular-custo-de-peca)         | `calcularCustoPeca`     | `PricingInput` + config                       | `PricingResult` (custo + linhas) |
-| `productEngine` (calcular-custo-de-produto)      | `calcularCustoProduto`  | `ProductPricingInput` + config                | `PricingResult`                  |
-| `medirTamanho` (medir-tamanho-da-peca)           | `lerMedidas` + `cubagem`| formato + medidas (cm)                        | `medidas` + `cubagemCm3`         |
-| `ocupacaoEngine` (em `Specs/queima/`)            | `estimarCabem`          | tipo + forno + medidas                        | `{ total, porNivel, niveis, mode }` |
-| `renderForno` (desenhar-forno)                   | `desenharForno`         | medidas + forno + `estimarCabem`              | string SVG                        |
+| `lerMedidas` (normalizar-entradas)               | leitura do form + `lerMedidas` | raw do formulário                      | `PricingInput` (objeto plano)    |
+| `calcularCustoPeca` (calcular-custo-de-peca)     | `calcularCustoPeca`     | `PricingInput` + config                       | `PricingResult` (custo + linhas) |
+| `calcularCustoProduto` (calcular-custo-de-produto) | `calcularCustoProduto`| `ProductPricingInput` + config                | `PricingResult`                  |
+| `cubagemDe` (medir-tamanho-da-peca)              | `lerMedidas` + `cubagemDe`| formato + medidas (cm)                        | `medidas` + `cubagemCm3`         |
+| `estimarCabem` (em `Specs/queima/`)              | `estimarCabem`          | tipo + forno + medidas                        | `{ total, porNivel, niveis, mode }` |
+| `desenharForno` (desenhar-forno)                 | `desenharForno`         | medidas + forno + `estimarCabem`              | string SVG                        |
 | `pricingPanel` (apresentar-calculadora)          | camada DOM do `index.html` | toques + resultados                      | estados visuais                   |
 
 Fluxo geral:
 
 ```
-formulário → normalizar (PricingInput) → pricingEngine|productEngine → PricingResult → pricingPanel (render)
-formulário → medirTamanho (medidas) → ocupacaoEngine (estimarCabem) → renderForno (SVG) → pricingPanel
+formulário → normalizar (PricingInput) → calcularCustoPeca|calcularCustoProduto → PricingResult → pricingPanel (render)
+formulário → lerMedidas (medidas) → estimarCabem (ocupação) → desenharForno (SVG) → pricingPanel
 ```
 
 ---
@@ -59,9 +59,9 @@ Os contratos campo-a-campo dos programas vivem nas ZenSpecs filhas desta pasta:
 
 - `medir-tamanho-da-peca.zenspec.md` — formato, medidas, cubagem, slider proporcional + bind por campo.
 - `desenhar-forno.zenspec.md` — render SVG determinístico do forno (biscoito/esmalte).
-- `calcular-custo-de-peca.zenspec.md` — `pricingEngine`.
-- `calcular-custo-de-produto.zenspec.md` — `productEngine`.
-- `normalizar-entradas.zenspec.md` — `pricingInputNormalizer`.
+- `calcular-custo-de-peca.zenspec.md` — `calcularCustoPeca`.
+- `calcular-custo-de-produto.zenspec.md` — `calcularCustoProduto`.
+- `normalizar-entradas.zenspec.md` — `lerMedidas`.
 - `apresentar-calculadora-no-celular.zenspec.md` — `pricingPanel` (UI).
 - Ocupação e fornos: `Specs/queima/calcular-ocupacao-do-forno.zenspec.md` e `Specs/queima/editar-fornos-e-queima.zenspec.md`.
 

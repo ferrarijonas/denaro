@@ -1,4 +1,4 @@
-# Calcular custo de peça (`pricingEngine`)
+# Calcular custo de peça (`calcularCustoPeca`)
 
 ZenSpec de programa. Este programa existe para que **a ceramista veja o custo de uma peça** (material + acessórios + embalagem + mão de obra + queima + risco + frete + taxas) **e o preço em cada linha comercial** — sem conta manual.
 
@@ -30,7 +30,7 @@ pricingPanel → normalizar → calcularCustoPeca(inputs, config) → PricingRes
 
 | Programa        | Recebe            | Faz                                        | Manda para       |
 | --------------- | ----------------- | ------------------------------------------ | ---------------- |
-| `pricingEngine` | `inputs` + config | calcula custo + preços por linha de peça   | `pricingPanel`   |
+| `calcularCustoPeca` | `inputs` + config | calcula custo + preços por linha de peça   | `pricingPanel`   |
 
 ### Regras (ordem exata — `modelo-de-precificacao.md` §3.3)
 

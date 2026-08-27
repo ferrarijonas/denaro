@@ -1,6 +1,6 @@
-# Normalizar entradas (`pricingInputNormalizer`)
+# Normalizar entradas (`lerMedidas`)
 
-ZenSpec de programa. Este programa existe para que **o formulário vire objetos planos validados** que os motores (`pricingEngine`/`productEngine`) e a ocupação consomem — sem "sujeira" de DOM ou formato solto.
+ZenSpec de programa. Este programa existe para que **o formulário vire objetos planos validados** que os motores (`calcularCustoPeca`/`calcularCustoProduto`) e a ocupação consomem — sem "sujeira" de DOM ou formato solto.
 
 É a **fronteira entre a tela e o núcleo** (regra `DenaroEngSpec.md` §3): a leitura dos inputs (`lerMedidas`, peso, esmalte, tempo) acontece aqui; tudo o que sai é objeto puro.
 

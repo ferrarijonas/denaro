@@ -1,4 +1,4 @@
-# Desenhar forno (`renderForno`)
+# Desenhar forno (`desenharForno`)
 
 ZenSpec de programa. Este programa existe para que **a ceramista veja, em tempo real, um desenho do forno com as peças como a que ela faz** (biscoito e esmalte lado a lado) — sem raciocínio espacial. O desenho **declara o cálculo**: a legenda mostra "quantas cabem" e "como" (empilhado / por prateleira).
 

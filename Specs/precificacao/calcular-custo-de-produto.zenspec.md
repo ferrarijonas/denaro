@@ -1,4 +1,4 @@
-# Calcular custo de produto (`productEngine`)
+# Calcular custo de produto (`calcularCustoProduto`)
 
 ZenSpec de programa. Este programa existe para que **a ceramista veja o custo de um produto** (lote fabricado a partir de uma receita em gramas) **e o preço em cada linha** — sem conta manual.
 

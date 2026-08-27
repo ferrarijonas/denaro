@@ -35,7 +35,7 @@ toggle Peça/Produto → seções → (cálculo local, ao vivo ou botão) → cu
 
 | Programa          | Recebe                          | Faz                                        | Manda para                |
 | ----------------- | ------------------------------- | ------------------------------------------ | ------------------------- |
-| `pricingPanel`    | toques da ceramista nas seções  | lê campos + normaliza                      | `pricingEngine`/`productEngine` |
+| `pricingPanel`    | toques da ceramista nas seções  | lê campos + normaliza                      | `calcularCustoPeca`/`calcularCustoProduto` |
 | `pricingPanel`    | resultado do cálculo (objeto)   | renderiza custo e preços por linha         | — (tela)                  |
 | `pricingPanel`    | toque em "Salvar peça/produto"  | grava no `storage` (Firestore + local)     | `storage`                 |
 

@@ -1,4 +1,4 @@
-# Medir tamanho da peça (`medirTamanho`)
+# Medir tamanho da peça (`cubagemDe`)
 
 ZenSpec de programa. Este programa existe para que **a ceramista informe como é a peça (formato e medidas em cm)** e o app **estime a cubagem** usada no custo de queima e na ocupação do forno — sem conta manual e sem raciocínio espacial.
 
@@ -34,7 +34,7 @@ pricingPanel → (slider) → proporcional OU dimensão tocada → atualiza medi
 
 | Programa       | Recebe                    | Faz                                        | Manda para            |
 | -------------- | ------------------------- | ------------------------------------------ | --------------------- |
-| `medirTamanho` | formato + medidas (cm)    | normaliza e calcula `cubagemCm3`           | custo de queima + `estimarCabem` |
+| `cubagemDe` | formato + medidas (cm)    | normaliza e calcula `cubagemCm3`           | custo de queima + `estimarCabem` |
 | `pricingPanel` | toque no formato          | mostra os campos do formato escolhido      | — (tela)              |
 | `pricingPanel` | toque em um campo de medida | vincula o slider àquela dimensão           | — (tela)              |
 
