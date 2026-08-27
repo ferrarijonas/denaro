@@ -1,6 +1,6 @@
-# Alice Design Spec
+# Denaro Design Spec
 
-Direção estética do precificador, derivada de `AliceConceptSpec` (mobile-first, simplicidade máxima). Segue a skill `design`: **funcionalidade como estética** — cada elemento existe porque resolve algo.
+Direção estética do precificador, derivada de `DenaroConceptSpec` (mobile-first, simplicidade máxima). Segue a skill `design`: **funcionalidade como estética** — cada elemento existe porque resolve algo.
 
 ---
 
@@ -55,8 +55,8 @@ Números sempre em figura tabular (monoespaçadas) para alinhar colunas de preç
 
 ## 3.1 Marca
 
-- O cabeçalho usa o **logo oficial** de `alicegussoni.com.br` (arquivo local `mock/logo.webp`, altura 44px) seguido do nome da ferramenta.
-- A identidade do app deriva da loja: o usuário reconhece que é "da Alice" na mesma hora.
+- O cabeçalho usa o **logo oficial** de `alicegussoni.com.br` (arquivo local `app/logo.webp`, altura 44px) seguido do nome da ferramenta.
+- A identidade do app deriva da loja: o usuário reconhece a origem da ceramista na mesma hora.
 
 ---
 
@@ -64,9 +64,9 @@ Números sempre em figura tabular (monoespaçadas) para alinhar colunas de preç
 
 - **Celular primeiro.** Largura alvo: 390px. Nada além de 2 colunas; o comum é 1.
 - Espaço negativo generoso: campos com `16px` de respiro; blocos de tela com `24px` de separação.
-- Formulário em coluna única, um campo por linha, na ordem em que a Alice pensa:
-  `peso → esmalte % → dificuldade → tempo`.
-- Cards de preço por margem em **linha única horizontal rolável** (a Alice desliza e vê as margens) OU grid de 2 colunas quando houver espaço. A rolagem horizontal evita esticar a tela.
+- Formulário em coluna única, um campo por linha, na ordem em que a ceramista pensa:
+  `argila → esmalte (R$) → tamanho → mão de obra → queima → embalagem → frete`.
+- Cards de preço por margem em **linha única horizontal rolável** (a ceramista desliza e vê as margens) OU grid de 2 colunas quando houver espaço. A rolagem horizontal evita esticar a tela.
 - Toque amigável: alvos ≥ `44px` de altura (polegar).
 
 ---
@@ -104,7 +104,7 @@ Números sempre em figura tabular (monoespaçadas) para alinhar colunas de preç
 
 - Sem ícone emoji como decoração. Ícones usados só quando funcionam (seta de voltar, check de salvo) — traço fino (`1.5px`), cor `tinta-suave`.
 - Sem gradientes. Sem sombras dramáticas.
-- Sem logotipo rebuscado: o nome "Alice" na tipografia display, cor `tinta`, no topo da tela, basta.
+- Sem logotipo rebuscado: o nome "Denaro" na tipografia display, cor `tinta`, no topo da tela, basta.
 
 ---
 

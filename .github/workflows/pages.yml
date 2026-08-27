@@ -20,10 +20,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Prepara site com o conteudo de mock/
+      - name: Prepara site com o conteudo de app/
         run: |
           mkdir -p _site
-          cp -R mock/. _site/
+          cp -R app/. _site/
       - name: Poka-yoke — bloqueia dados sensiveis
         run: |
           set -e

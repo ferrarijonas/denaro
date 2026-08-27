@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
@@ -102,7 +102,7 @@
 
   main { flex: 1; padding: 0 20px 120px; }
 
-  .mock-tag {
+  .versao-tag {
     display: inline-block;
     font-size: 11px;
     font-weight: 600;
@@ -114,7 +114,7 @@
     padding: 2px 6px;
   }
 
-  .mock-tag.margem {
+  .versao-tag.margem {
     font-size: 10px;
     border: none;
     background: var(--papel);
@@ -1230,7 +1230,7 @@
             <span class="nome-app">Denaro</span>
           </div>
           <span class="sync-tag" id="sync-status" title="Status de sincronização dos dados">…</span>
-          <span class="mock-tag">v3</span>
+          <span class="versao-tag">v3</span>
         </div>
         <h1>Precificar</h1>
         <div class="intro" id="intro-inicio">
@@ -1520,7 +1520,7 @@
           </div>
 
           <div class="sec" data-sec>
-            <div class="sec-titulo"><span class="chev">▼</span> <span class="sec-num">1.</span> Receita <span class="mock-tag margem">gramas</span></div>
+            <div class="sec-titulo"><span class="chev">▼</span> <span class="sec-num">1.</span> Receita <span class="versao-tag margem">gramas</span></div>
             <div class="sec-corpo">
               <div id="lista-receita"></div>
               <button type="button" class="add-link" id="add-receita">+ adicionar insumo</button>
@@ -1584,7 +1584,7 @@
 
           <div class="resultado" id="resultado-produto">
             <div class="custo-det"><span>Receita (total)</span><span class="v" id="rp-receita"></span></div>
-            <div class="custo-det"><span>Por unidade <span class="mock-tag margem" id="rp-un">÷ 20</span></span><span class="v" id="rp-por-un"></span></div>
+            <div class="custo-det"><span>Por unidade <span class="versao-tag margem" id="rp-un">÷ 20</span></span><span class="v" id="rp-por-un"></span></div>
             <div class="custo-det"><span>Embalagem</span><span class="v" id="rp-embalagem"></span></div>
             <div class="custo-det"><span>Montagem</span><span class="v" id="rp-montagem"></span></div>
             <div class="custo-det sub"><span>Risco / refação (perda)</span><span class="v" id="rp-risco"></span></div>
@@ -1613,7 +1613,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="mock-tag">v3</span>
+          <span class="versao-tag">v3</span>
         </div>
         <h1>Orçamentos</h1>
       </header>
@@ -1636,7 +1636,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="mock-tag">v3</span>
+          <span class="versao-tag">v3</span>
         </div>
         <h1>Custos de referência</h1>
       </header>
@@ -1742,7 +1742,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="mock-tag">v3</span>
+          <span class="versao-tag">v3</span>
         </div>
         <h1>Fornos &amp; queima</h1>
       </header>
@@ -1788,72 +1788,10 @@
   import { pack2D } from "https://esm.sh/binpackingjs@4/2d";
   window.__pack2D = pack2D;
 </script>
+<script src="js/config.js"></script>
+<script src="js/modelo.js"></script>
+<script src="js/desenho.js"></script>
 <script>
-  /* ===== catálogos (valores reais das planilhas) ===== */
-  const ARGILAS = [
-    { nome: "Argila Comum", preco: 7.00, fornecedor: "Terra Nova" },
-    { nome: "Argila São Simão em Pó", preco: 13.00, fornecedor: "São Simão" },
-    { nome: "Argila São Simão (terranova)", preco: 13.00, fornecedor: "São Simão" },
-  ];
-
-  /* Matérias-primas organizadas por seção — fonte única que alimentará
-     a aba "Matérias-primas" (argilas, minerais, acessórios, embalagens…).
-     Os acessórios da peça carregam desta seção "ACESSÓRIOS". */
-  const MATERIAS_PRIMAS = {
-    "ARGILAS": ARGILAS,
-    "MINERAIS": [
-      { nome: "Feldspato Potássico", preco: 5.30 },
-      { nome: "Caulim Branco", preco: 5.50 },
-      { nome: "Quartzo", preco: 5.30 },
-      { nome: "Bentonita", preco: 25.00 },
-    ],
-    "ACESSÓRIOS": [
-      { nome: "Fio (acessório)", preco: 1.00 },
-      { nome: "Cabo com plugue", preco: 12.00 },
-      { nome: "Soquete / bocal", preco: 15.00 },
-      { nome: "Lâmpada LED", preco: 10.00 },
-      { nome: "Interruptor", preco: 8.00 },
-      { nome: "Fonte 12V", preco: 25.00 },
-      { nome: "Motor (acessório)", preco: 5.00 },
-      { nome: "Parafusos / porcas (kit)", preco: 2.00 },
-    ],
-    "EMBALAGEM": [
-      { nome: "Papel entre peças (10x10)", preco: 2.00, cat: "Proteção da peça" },
-      { nome: "Papel seda", preco: 1.50, cat: "Proteção da peça" },
-      { nome: "Plástico bolha", preco: 2.00, cat: "Proteção da peça" },
-      { nome: "Feltro padrão camurça", preco: 30.00, cat: "Decorativa (padrão do ateliê)" },
-      { nome: "Cordas / laços", preco: 1.00, cat: "Decorativa (padrão do ateliê)" },
-      { nome: "Caixa para 4 pratos", preco: 12.00, cat: "Caixa & transporte (correios)" },
-      { nome: "Caixa individual por peça", preco: 5.00, cat: "Caixa & transporte (correios)" },
-      { nome: "Caixa envio 16X11X10", preco: 4.00, cat: "Caixa & transporte (correios)" },
-      { nome: "Enchimento (papel picado)", preco: 1.00, cat: "Caixa & transporte (correios)" },
-      { nome: "Etiqueta de correio", preco: 1.00, cat: "Itens fixos (etiquetas)" },
-      { nome: "Etiqueta térmica 100X150", preco: 1.00, cat: "Itens fixos (etiquetas)" },
-      { nome: "Etiqueta adesiva 50X140", preco: 1.00, cat: "Itens fixos (etiquetas)" },
-    ],
-  };
-  const CATALOGO_ACESSORIOS = MATERIAS_PRIMAS["ACESSÓRIOS"] || [];
-
-  const CATALOGO_INSUMOS = [
-    { nome: "Argila Comum", preco: 7.00 },
-    { nome: "Argila São Simão em Pó", preco: 13.00 },
-    { nome: "Feldspato Potássico", preco: 5.30 },
-    { nome: "Caulim Branco", preco: 5.50 },
-    { nome: "Calcita Cinza", preco: 5.30 },
-    { nome: "Quartzo", preco: 5.30 },
-    { nome: "Frita 3134", preco: 55.00 },
-    { nome: "Zirconita", preco: 100.00 },
-    { nome: "Bentonita", preco: 25.00 },
-    { nome: "ox Cobalto", preco: 900.00 },
-    { nome: "ox Ferro Vermelho", preco: 50.00 },
-    { nome: "Pigmento vermelho", preco: 360.00 },
-    { nome: "Pigmento azul", preco: 120.00 },
-    { nome: "Pigmento preto", preco: 110.00 },
-    { nome: "Polietilenoglicol", preco: 145.00 },
-    { nome: "Glicerina bidestilada", preco: 33.00 },
-    { nome: "Preparado Goma Arábica", preco: 110.00 },
-    { nome: "CMC", preco: 124.00 },
-  ];
 
   const LS_EMBAGEM_ITENS_KEY = "alice-mock-embalagem-itens-v1";
   let embalagemItensExtra = [];
@@ -1884,85 +1822,7 @@
   let embalagensSalvas = {};
   try { embalagensSalvas = JSON.parse(localStorage.getItem(LS_EMBALAGEM_KEY)) || {}; } catch (e) { /* vazio */ }
 
-  const CONFIG = {
-    horasDia: 8, diasMes: 22,
-    argilaPreco: 7.00,
-    imposto: 0.05, marketplace: 0.0, maquina: 0.0,
-    perdaNivel: "media",
-    perdas: { baixa: 0.15, media: 0.30, alta: 0.45 },
-    canais: [
-      { id: "direto", nome: "Direto / Pix", itens: [{ nome: "Pix", pct: 0.0099 }] },
-      { id: "site", nome: "Site (NuvemShop)", itens: [
-        { nome: "Cartão de crédito", pct: 0.0499 },
-        { nome: "TPV plataforma", pct: 0.02 },
-      ] },
-      { id: "feira", nome: "Feira / maquininha", itens: [
-        { nome: "Cartão maquininha", pct: 0.035 },
-        { nome: "Pix", pct: 0.0099 },
-      ] },
-      { id: "mercado-livre", nome: "Mercado Livre", itens: [
-        { nome: "Comissão", pct: 0.13 },
-        { nome: "Cartão de crédito", pct: 0.0499 },
-      ] },
-      { id: "etsy", nome: "Etsy", itens: [
-        { nome: "Comissão", pct: 0.065 },
-        { nome: "Taxa de pagamento", pct: 0.04 },
-      ] },
-    ],
-    regimeFiscal: "informal",
-    impostosRegime: { informal: 0, mei: 0.0, simples: 0.045 },
-fatores: { 1: 1.0, 2: 1.2, 3: 1.4, 4: 1.6, 5: 1.8 },
-    niveis: { aprendiz: 0.6, profissional: 1.0, especialista: 1.5 },
-    niveisNome: { aprendiz: "Aprendiz", profissional: "Profissional", especialista: "Especialista" },
-    fornos: [
-      { id: "forno1", nome: "Meu forno", formato: "cilindrico", diametroCm: 40, alturaCm: 60, larguraCm: 0, profundidadeCm: 0,
-        capacidadeKg: 15, unidade: "cm3", modoCusto: "digitar", potenciaKw: 7.2,
-        custos: { biscoito: 0.01, baixa: 0.012, alta: 0.015, "3fogo": 0.004 } },
-    ],
-    servicosFora: [
-      { id: "serv1", nome: "Forno da vizinha", unidade: "kg", minimo: 10,
-        custos: { biscoito: 15, baixa: 18, alta: 22, "3fogo": 0 } },
-    ],
-    configQueima: { precoKwh: 0.90, dutyBisque: 0.5, dutyEsmalte: 0.65, horasBisque: 8, horasEsmalte: 9 },
-    margensPeca: [
-      { nome: "Exclusiva", margem: 0.60, sub: "autoral única" },
-      { nome: "Padrão", margem: 0.45, sub: "catálogo" },
-      { nome: "Revenda", margem: 0.30, sub: "lojista" },
-    ],
-    linhasProduto: [
-      { nome: "Autoral", mult: 3.0, sub: "peças autorais" },
-      { nome: "Profissional", mult: 2.5, sub: "linha profissional" },
-      { nome: "Essencial", mult: 2.0, sub: "atacado" },
-    ],
-    custosFixos: [
-      { categoria: "Espaço & contas", id: "espaco", itens: [
-        { nome: "Aluguel", valor: 0 }, { nome: "IPTU", valor: 0 }, { nome: "Condomínio", valor: 0 },
-        { nome: "Água", valor: 50 }, { nome: "CEMIG (luz)", valor: 600 }, { nome: "Internet", valor: 50 },
-        { nome: "Gás", valor: 0 }, { nome: "Manutenção do espaço", valor: 50 },
-      ] },
-      { categoria: "Freelas & terceirizados", id: "freelas", itens: [{ nome: "Freelas / ajudantes", valor: 0 }] },
-      { categoria: "Serviços & digital", id: "servicos", itens: [
-        { nome: "Contador", valor: 300 }, { nome: "Imposto", valor: 600 },
-        { nome: "Site", valor: 100 }, { nome: "Domínio do site", valor: 0 }, { nome: "Hospedagem / provedor", valor: 0 }, { nome: "Impulsionamento", valor: 0 },
-      ] },
-      { categoria: "Equipamentos & manutenção", id: "equipamentos", itens: [
-        { nome: "Empréstimo forno", valor: 300 }, { nome: "Manutenção forno", valor: 100 },
-        { nome: "Ferramentas", valor: 10 }, { nome: "Fluke", valor: 10 }, { nome: "Novos equipamentos", valor: 0 },
-      ] },
-      { categoria: "Suprimentos & provisões", id: "insumos", itens: [
-        { nome: "Café", valor: 30 }, { nome: "Papel higiênico", valor: 5 }, { nome: "Papel toalha", valor: 30 },
-        { nome: "Detergente", valor: 5 }, { nome: "Embalagens internas", valor: 20 }, { nome: "Insumos bolo", valor: 20 },
-        { nome: "Cursos", valor: 0 }, { nome: "Escambo / presentes", valor: 200 }, { nome: "Papelaria", valor: 0 },
-      ] },
-    ],
-    maoDeObra: { categoria: "Mão de obra & pessoal", id: "pessoal", itens: [
-      { nome: "Salário", valor: 3500 },
-      { nome: "Impostos do salário (INSS, IR)", valor: 0 },
-      { nome: "Plano de saúde", valor: 0 }, { nome: "Vale-refeição", valor: 0 },
-    ] },
-  };
-
-  function totalCustosFixos() {
+function totalCustosFixos() {
     const cats = CONFIG.custosFixos.reduce((s, c) => s + c.itens.reduce((x, i) => x + i.valor, 0), 0);
     const mo = CONFIG.maoDeObra ? CONFIG.maoDeObra.itens.reduce((s, i) => s + i.valor, 0) : 0;
     return cats + mo;
@@ -2349,7 +2209,6 @@ argilaSelecionada: "Argila Comum",
     nivel: "profissional",
     formatoPeca: "redonda",
     fornoRender: null,
-    tDiametro: 25, tAltura: 5, tLargura: 20, tProfundidade: 20, tAlturaQ: 5,
     queimas: [{ tipo: "biscoito", forno: "forno1" }],
     semQueima: false,
     etapas: { projeto: 15, preparacao: 10, modelagem: 30, esmaltacao: 15, decoracao: 0, forno: 15 },
@@ -2541,9 +2400,7 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     };
   }
   function cubagem() {
-    const m = lerMedidas();
-    if (m.formato === "quadrada") return m.largura * m.profundidade * m.alturaQ;
-    return Math.PI * Math.pow(m.diametro / 2, 2) * m.altura;
+    return cubagemDe(lerMedidas());
   }
   function pesoPeca() { return Number(document.getElementById("peso") ? document.getElementById("peso").value : 0) || 0; }
   function renderTamanho() {
@@ -2552,155 +2409,9 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     if (estado.formatoPeca === "quadrada") { q.classList.remove("escondido"); r.classList.add("escondido"); }
     else { r.classList.remove("escondido"); q.classList.add("escondido"); }
     document.querySelectorAll("#chips-formato .chip").forEach((c) => c.classList.toggle("selecionado", c.dataset.formato === estado.formatoPeca));
+    sliderCampoAtivo = null;
     sincronizarSlider();
     renderFornoSVG();
-  }
-  /* Empacotamento real de círculos em círculo — tabela de packing ótimo (adaptado de jcmiller11/circlepacking, GitHub). */
-  const RADII = [
-    1.0, 1.0, 0.5, 0.4641016151377546, 0.41421356237309503, 0.37019190815875014, 0.3333333333333333, 0.3333333333333333,
-    0.3025933883486113, 0.2767686539141552, 0.26225892419016583, 0.2548547017171489, 0.24816347057168683, 0.2360679774997897, 0.23103072797100863, 0.22117253908639092,
-    0.21666474292442242, 0.20867966557049974, 0.20560464675956822, 0.20560464675956822, 0.19522401101874887, 0.1903921468490535, 0.18383302658168169, 0.1803360092544365,
-    0.17693913059596167, 0.17382766142122225, 0.17158025218716685, 0.16930793113457304, 0.16625275003860693, 0.16290364927664436, 0.16134910906468986, 0.15894454156034005,
-    0.15553398542277086, 0.15416151794705815, 0.15126402824675547, 0.14931677663511603, 0.14821942976111935, 0.14795590447907633, 0.14363921807328983, 0.14168552174540316,
-    0.1403736042027147, 0.13774081292534454, 0.13611374871569787, 0.1347718910802124, 0.1333682458860056, 0.13204959425163018, 0.1307158800382334, 0.12946374732695726,
-    0.12834875654284525, 0.12679299626220694, 0.12582548953040418, 0.12457167660236501, 0.12369016459246959, 0.12225562368761991, 0.12189202185696497, 0.12178632452799958,
-    0.11928149708236242, 0.1183826376515002, 0.11730819312828653, 0.11638056499604701, 0.11565748013281499, 0.11545614167835687, 0.11325329198258037, 0.11245619291783593,
-    0.11158259582572624, 0.11089674372296171, 0.10993505729827056, 0.10906348202318328, 0.10834501770447505, 0.10787764336484912, 0.10700161660576299, 0.10620449983711232,
-    0.10555325315906697, 0.10481799968818843, 0.10428362983520856, 0.10339091566644489, 0.102779181946967, 0.10205214698369008, 0.10144343971936973, 0.10095846465445622,
-    0.10031949941617659, 0.0998914754916362, 0.09949432780515713, 0.09884491927686671, 0.09852672139045499, 0.09839506369260617, 0.09709962400530128, 0.09649521183618055,
-    0.09585579277180084, 0.09523363454386985, 0.09482205958694769, 0.09463627850604674, 0.09359224575469459, 0.09316753462248228, 0.09278131528386693, 0.09224917776072092,
-    0.09188471648262463, 0.0914194599063644, 0.0910797982293663, 0.09063601981281943, 0.09023520028847372, 0.08971077052118658, 0.08931072549307773, 0.08876939687067727,
-    0.08835749851784307, 0.08800756460785963, 0.08755161105931972, 0.0871683648375564, 0.0867753037108809, 0.08648933589533483, 0.0860817696475519, 0.08574262106974673,
-    0.08543157170231562, 0.08512429079325748, 0.08478044104459825, 0.08446321172803425, 0.08405689155110237, 0.08372772204895762, 0.08343379425240932, 0.08304037764943754,
-  ];
-  function getNCircles(circleRadius, containerRadius) {
-    if (!circleRadius || !containerRadius) return 0;
-    if (circleRadius > containerRadius) return 0;
-    const ratio = circleRadius / containerRadius;
-    for (let i = 0; i < RADII.length - 1; i++) {
-      if (RADII[i + 1] < ratio) return Math.max(1, i);
-    }
-    return RADII.length - 1;
-  }
-
-  /* --- Ocupação do forno — parâmetros declarados (nosso algoritmo, auditável) --- */
-  const OCUPACAO = {
-    usarDiametro: 0.9,      /* % do diâmetro/lado do forno aproveitada pela prateleira (parede) */
-    gapBase: 4,             /* cm do piso até a 1ª peça */
-    gapTopo: 4,             /* cm da última peça ao teto */
-    prateleiraEsp: 2,       /* cm de espessura de cada prateleira */
-    folgaLateralBiscoito: 1,
-    folgaLateralEsmalte: 2,
-    folgaVerticalBiscoito: 2,
-    folgaVerticalEsmalte: 8,
-    pecaPlana: 2.5,         /* diâmetro >= 2,5× altura => empilha em coluna (biscoito) */
-    pecaEncaixe: 1.1,       /* diâmetro >= 1,1× altura => tigela encaixa (biscoito) */
-    fatorEncaixe: 0.7,      /* cada tigela encaixada ocupa 70% da altura da peça */
-  };
-
-  function circulosEmDisco(r, discR) {
-    return getNCircles(r, discR);
-  }
-  function circulosEmRetangulo(r, compr, larg) {
-    if (r <= 0 || compr <= 0 || larg <= 0) return 0;
-    const d = 2 * r;
-    if (d > Math.min(compr, larg)) return 0;
-    const cols = Math.max(1, Math.floor((compr - 2 * r) / d) + 1);
-    let count = 0, y = r;
-    const dy = Math.sqrt(3) * r;
-    while (y <= larg - r) {
-      count += cols;
-      y += dy;
-      if (y <= larg - r) {
-        count += cols;
-        y += dy;
-      }
-    }
-    return count;
-  }
-  function rectsEmRetangulo(w, h, compr, larg) {
-    if (w <= 0 || h <= 0 || compr <= 0 || larg <= 0) return 0;
-    const a = Math.floor(compr / w) * Math.floor(larg / h);
-    const b = Math.floor(compr / h) * Math.floor(larg / w);
-    return Math.max(0, a, b);
-  }
-  function rectsEmDisco(w, h, discD) {
-    const R = discD / 2;
-    if (w <= 0 || h <= 0 || R <= 0) return 0;
-    if (Math.hypot(w, h) / 2 > R) return 0; /* cantos da peça fora do círculo => não cabe */
-    function grid(ww, hh) {
-      const outer = R - hh / 2;
-      if (outer <= 0) return 0;
-      const nRows = Math.max(1, Math.floor((2 * outer) / hh) + 1);
-      let count = 0;
-      for (let r = 0; r < nRows; r++) {
-        const cy = nRows === 1 ? 0 : (-outer + r * hh);
-        const halfChord = Math.sqrt(Math.max(0, R * R - Math.pow(Math.abs(cy) + hh / 2, 2)));
-        const n = Math.floor((2 * halfChord) / ww);
-        if (n > 0) count += n;
-      }
-      return count;
-    }
-    if (typeof window.__pack2D === "function") {
-      try {
-        const lado = discD / Math.SQRT2;
-        const res = window.__pack2D({ bins: [{ width: lado, height: lado }], boxes: Array.from({ length: 200 }, () => ({ width: w, height: h })) });
-        const boxes = (res.packedBins && res.packedBins[0] && res.packedBins[0].boxes) || [];
-        if (boxes.length) return Math.max(boxes.length, grid(w, h), grid(h, w));
-      } catch (e) { /* fallback */ }
-    }
-    return Math.max(grid(w, h), grid(h, w));
-  }
-  function porNivelNoPiso(kilnShape, dims, pecaShape, pW, pH, folgaLat) {
-    const w = pW + folgaLat, h = pH + folgaLat;
-    const U = OCUPACAO;
-    if (kilnShape === "quadrada") {
-      const L = (dims.L || 0) * U.usarDiametro, P = (dims.P || 0) * U.usarDiametro;
-      if (pecaShape === "quadrada") return rectsEmRetangulo(w, h, L, P);
-      return circulosEmRetangulo(Math.max(w, h) / 2, Math.max(L, P), Math.min(L, P));
-    }
-    const discD = (dims.D || 0) * U.usarDiametro;
-    if (pecaShape === "quadrada") return rectsEmDisco(w, h, discD);
-    return circulosEmDisco(Math.max(w, h) / 2, discD / 2);
-  }
-  function calcNiveis(tipo, alt, pieceAlt, mode) {
-    const U = OCUPACAO;
-    const usable = alt - U.gapBase - U.gapTopo;
-    if (usable <= 0) return 0;
-    if (mode === "empilha") return Math.max(0, Math.floor(usable / Math.max(1, pieceAlt)));
-    if (mode === "encaixa") {
-      const hAdd = Math.max(1, pieceAlt * U.fatorEncaixe);
-      return Math.max(0, Math.floor((usable - pieceAlt) / hAdd) + 1);
-    }
-    const folgaVert = tipo === "esmalte" ? U.folgaVerticalEsmalte : U.folgaVerticalBiscoito;
-    const slot = U.prateleiraEsp + pieceAlt + folgaVert;
-    return Math.max(0, Math.floor(usable / Math.max(1, slot)));
-  }
-  function estimarCabem(tipo, forno, m) {
-    const kilnShape = forno && forno.formato === "quadrada" ? "quadrada" : "cilindrico";
-    const dims = kilnShape === "quadrada"
-      ? { L: (forno && forno.larguraCm) || 0, P: (forno && forno.profundidadeCm) || 0 }
-      : { D: (forno && forno.diametroCm) || 0 };
-    const alt = (forno && forno.alturaCm) || 0;
-    const pecaShape = m.formato === "quadrada" ? "quadrada" : "redonda";
-    const pW = pecaShape === "quadrada" ? m.largura : m.diametro;
-    const pH = pecaShape === "quadrada" ? m.profundidade : m.diametro;
-    const pieceAlt = pecaShape === "quadrada" ? m.alturaQ : m.altura;
-    if (!alt || !pW || !pH || !pieceAlt) return null;
-    if (kilnShape === "quadrada" && (!dims.L || !dims.P)) return null;
-    if (kilnShape === "cilindrico" && !dims.D) return null;
-    const U = OCUPACAO;
-    const folgaLat = tipo === "esmalte" ? U.folgaLateralEsmalte : U.folgaLateralBiscoito;
-    const porNivel = porNivelNoPiso(kilnShape, dims, pecaShape, pW, pH, folgaLat);
-    let mode = "prateleira";
-    if (tipo === "biscoito") {
-      const ratio = (pecaShape === "quadrada" ? Math.max(pW, pH) : pW) / Math.max(1, pieceAlt);
-      if (ratio >= U.pecaPlana) mode = "empilha";
-      else if (pecaShape === "redonda" && ratio >= U.pecaEncaixe) mode = "encaixa";
-    }
-    const niveis = calcNiveis(tipo, alt, pieceAlt, mode);
-    if (porNivel <= 0 || niveis <= 0) return { total: 0, porNivel, niveis, mode };
-    return { total: porNivel * niveis, porNivel, niveis, mode };
   }
 
   function renderFornoSVG() {
@@ -2710,123 +2421,7 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     const fornoBase = CONFIG.fornos[0] || CONFIG.servicosFora[0];
     const fornoSel = estado.fornoRender ? acharForno(estado.fornoRender) : null;
     const forno = fornoSel || fornoBase;
-    const fornoDiam = forno && forno.formato === "quadrada"
-      ? (Math.max(forno.larguraCm || 0, forno.profundidadeCm || 0) || 40)
-      : ((forno && forno.diametroCm) || 40);
-    const fornoAlt = (forno && forno.alturaCm) || 60;
-
-    function pecaRedonda(x, baseY, w, h, mode) {
-      const rx = w / 2, ry = Math.max(1.5, w * 0.09);
-      const y = baseY - h - ry;
-      if (mode === "copy") {
-        return '<g opacity="0.5"><path d="M' + (x - rx) + ' ' + (y + ry) + ' L' + (x - rx) + ' ' + (y + h) + ' a' + rx + ',' + ry + ' 0 0 0 ' + (2 * rx) + ',0 L' + (x + rx) + ' ' + (y + ry) + ' Z" fill="rgba(91,68,50,0.18)"/></g>';
-      }
-      const P = mode === "main" ? ["rgba(91,68,50,0.92)", "#5b4432", "", 1]
-        : ["none", "#ab9881", "3 3", 0.8];
-      return '<g opacity="' + P[3] + '">' +
-        '<path d="M' + (x - rx) + ' ' + (y + ry) + ' L' + (x - rx) + ' ' + (y + h) + ' a' + rx + ',' + ry + ' 0 0 0 ' + (2 * rx) + ',0 L' + (x + rx) + ' ' + (y + ry) + ' Z" fill="' + P[0] + '" stroke="' + P[1] + '" stroke-width="1.1"' + (P[2] ? ' stroke-dasharray="' + P[2] + '"' : "") + "/>" +
-        '<ellipse cx="' + x + '" cy="' + y + '" rx="' + rx + '" ry="' + ry + '" fill="' + P[0] + '" stroke="' + P[1] + '" stroke-width="1.1"' + (P[2] ? ' stroke-dasharray="' + P[2] + '"' : "") + "/>" +
-        "</g>";
-    }
-    function pecaQuadrado(x, baseY, w, h, mode) {
-      const t = w * 0.22;
-      const y0 = baseY - h;
-      if (mode === "copy") {
-        return '<g opacity="0.5"><path d="M' + (x - w / 2) + ' ' + y0 + ' L' + (x - w / 2) + ' ' + (baseY) + ' L' + (x + w / 2) + ' ' + (baseY) + ' L' + (x + w / 2) + ' ' + y0 + ' Z" fill="rgba(91,68,50,0.18)"/></g>';
-      }
-      const P = mode === "main" ? ["rgba(91,68,50,0.92)", "#5b4432", "", 1]
-        : ["none", "#ab9881", "3 3", 0.8];
-      const lado = "rgba(91,68,50," + (mode === "main" ? "0.55" : mode === "copy" ? "0.14" : "0.12") + ")";
-      const front = "M" + (x - w / 2) + " " + y0 + " L" + (x - w / 2) + " " + (baseY) + " L" + (x + w / 2) + " " + (baseY) + " L" + (x + w / 2) + " " + y0 + " Z";
-      const top = "M" + (x - w / 2) + " " + y0 + " L" + (x - w / 2 + t) + " " + (y0 - t * 0.5) + " L" + (x + w / 2 + t) + " " + (y0 - t * 0.5) + " L" + (x + w / 2) + " " + y0 + " Z";
-      const side = "M" + (x + w / 2) + " " + y0 + " L" + (x + w / 2 + t) + " " + (y0 - t * 0.5) + " L" + (x + w / 2 + t) + " " + (baseY) + " L" + (x + w / 2) + " " + (baseY) + " Z";
-      return '<g opacity="' + P[3] + '">' +
-        '<path d="' + front + '" fill="' + P[0] + '" stroke="' + P[1] + '" stroke-width="1.1"' + (P[2] ? ' stroke-dasharray="' + P[2] + '"' : "") + "/>" +
-        '<path d="' + top + '" fill="' + P[0] + '" stroke="' + P[1] + '" stroke-width="1.1"' + (P[2] ? ' stroke-dasharray="' + P[2] + '"' : "") + "/>" +
-        '<path d="' + side + '" fill="' + lado + '" stroke="' + P[1] + '" stroke-width="1.1"' + (P[2] ? ' stroke-dasharray="' + P[2] + '"' : "") + "/>" +
-        "</g>";
-    }
-
-    function umRender(tipo, W, H, topoY, chaoY) {
-      const cx = W / 2, rx = W / 2 - 6;
-      const ryLid = rx * 0.14;
-      const bodyTop = topoY + ryLid;
-      const interiorTop = bodyTop + 3;
-      const interiorH = chaoY - interiorTop;
-      const usableW = (rx - 2) * 2;
-      const usableH = interiorH - 6;
-      const propPW = Math.max(8, (((m.formato === "quadrada" ? Math.max(m.largura, m.profundidade) : m.diametro) || 1) / Math.max(1, fornoDiam)) * usableW);
-      const propPH = Math.max(6, (((m.formato === "quadrada" ? m.alturaQ : m.altura) || 1) / Math.max(1, fornoAlt)) * usableH);
-      const est = estimarCabem(tipo, forno, m);
-      const draw = (m.formato === "quadrada" ? pecaQuadrado : pecaRedonda);
-      let s = '<svg viewBox="0 0 ' + W + " " + H + '" aria-hidden="true">';
-      if (forno && forno.formato === "quadrada") {
-        s += '<path d="M' + (cx - rx) + ' ' + topoY + ' L' + (cx - rx + 8) + ' ' + (topoY - 5) + ' L' + (cx + rx + 8) + ' ' + (topoY - 5) + ' L' + (cx + rx) + ' ' + topoY + ' Z" fill="rgba(171,152,129,0.22)" stroke="#ab9881" stroke-width="1.4"/>';
-        s += '<rect x="' + (cx - rx) + '" y="' + bodyTop + '" width="' + (2 * rx) + '" height="' + (chaoY - bodyTop) + '" rx="3" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.4"/>';
-      } else {
-        s += '<ellipse cx="' + cx + '" cy="' + topoY + '" rx="' + rx + '" ry="' + ryLid + '" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.4"/>';
-        s += '<path d="M' + (cx - rx) + ' ' + bodyTop + ' L' + (cx - rx) + ' ' + chaoY + ' a' + rx + ',' + ryLid + ' 0 0 0 ' + (2 * rx) + ',0 L' + (cx + rx) + ' ' + bodyTop + '" fill="rgba(247,244,239,0.96)" stroke="#ab9881" stroke-width="1.4"/>';
-      }
-      s += '<line x1="' + (cx - rx) + '" y1="' + chaoY + '" x2="' + (cx + rx) + '" y2="' + chaoY + '" stroke="#ab9881" stroke-width="1.2" opacity="0.6"/>';
-      if (est && est.total > 0) {
-        const nCol = Math.max(1, Math.min(est.porNivel || 1, 6));
-        const nLvl = Math.max(1, Math.min(est.niveis || 1, 6));
-        const slotY = interiorH / nLvl;
-        const colW = Math.min(propPW, (usableW - 4) / nCol);
-        const halfW = colW / 2 + (m.formato === "quadrada" ? colW * 0.22 : 0);
-        const topE = (m.formato === "quadrada" ? colW * 0.11 : 0);
-        const maxOff = Math.max(0, rx - halfW - 2);
-        if (tipo === "biscoito") {
-          const encaixaDenso = est.mode === "empilha" || est.mode === "encaixa";
-          const layerH = encaixaDenso ? Math.max(6, slotY - 2) : Math.min(propPH, Math.max(6, slotY - 3));
-          const centro = Math.floor(nCol / 2);
-          for (let c = 0; c < nCol; c++) {
-            const f = nCol === 1 ? 0 : (c / (nCol - 1) - 0.5) * 2;
-            const x = cx + f * maxOff * 0.9;
-            const maxL = nCol >= 3 ? (c === centro ? nLvl : Math.max(1, nLvl - 1)) : (c === 0 ? nLvl : Math.max(1, nLvl - 1));
-            for (let r = 0; r < maxL; r++) {
-              const yBase = chaoY - 3 - r * slotY;
-              if (yBase - layerH - topE < interiorTop) break;
-              const main = (c === centro && r === 0);
-              s += draw(x, yBase, colW, layerH, main ? "main" : "copy");
-            }
-          }
-        } else {
-          const porV = Math.max(1, Math.min(est.porNivel || 1, 6));
-          const pecaH = Math.min(propPH, Math.max(6, slotY * 0.6));
-          for (let i = 0; i < nLvl; i++) {
-            const yBase = chaoY - 3 - i * slotY;
-            if (yBase - pecaH - topE < interiorTop) break;
-            s += '<line x1="' + (cx - rx) + '" y1="' + yBase + '" x2="' + (cx + rx) + '" y2="' + yBase + '" stroke="#ab9881" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>';
-            for (let k = 0; k < porV; k++) {
-              const f = porV === 1 ? 0 : (k / (porV - 1) - 0.5) * 2;
-              const x = cx + f * maxOff * 0.9;
-              const main = (i === Math.floor(nLvl / 2) && k === Math.floor(porV / 2));
-              s += draw(x, yBase, colW * 0.9, pecaH, main ? "main" : "copy");
-            }
-          }
-        }
-      }
-      s += "</svg>";
-      const rotulo = tipo === "biscoito" ? "Biscoito" : "Esmalte";
-      let leg = "—";
-      if (est) {
-        if (est.total <= 0) {
-          leg = "<b>não cabe</b><span class=\"render-det\">peça maior que o forno</span>";
-        } else {
-          const num = est.total > 12 ? "12+" : est.total;
-          const detalhe = tipo === "esmalte"
-            ? est.porNivel + " por prateleira × " + est.niveis + " prateleiras"
-            : est.mode === "empilha" ? "empilhado em coluna"
-              : est.mode === "encaixa" ? "tigelas encaixadas"
-                : est.porNivel + " por prateleira × " + est.niveis + " níveis";
-          leg = "~<b>" + num + "</b> no forno<span class=\"render-det\">" + detalhe + "</span>";
-        }
-      }
-      return '<div class="render-item"><div class="render-item-rotulo">' + rotulo + "</div>" + s + '<div class="render-legenda">' + leg + "</div></div>";
-    }
-
-    host.innerHTML = '<div class="render-duplo">' + umRender("biscoito", 96, 118, 16, 106) + umRender("esmalte", 96, 118, 16, 106) + "</div>";
+    host.innerHTML = desenharForno(m, forno);
   }
   document.querySelectorAll("#chips-formato .chip").forEach((c) => c.addEventListener("click", () => { estado.formatoPeca = c.dataset.formato; renderTamanho(); }));
   ["t-diametro", "t-altura", "t-largura", "t-profundidade", "t-altura-q"].forEach((id) => {
@@ -2834,21 +2429,69 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     if (el) el.addEventListener("input", () => { sincronizarSlider(); renderFornoSVG(); });
   });
   const sliderTamanho = document.getElementById("tamanho-slider");
+  const rotuloSlider = document.querySelector(".rotulo-slider");
   function campoPrincipal() { return estado.formatoPeca === "quadrada" ? "t-largura" : "t-diametro"; }
+  let sliderCampoAtivo = null; /* null = proporcional; string = id do campo vinculado (A) */
+  function fornoDoSlider() {
+    return acharForno(estado.fornoRender) || CONFIG.fornos[0] || CONFIG.servicosFora[0] || null;
+  }
+  function maxSliderPara(campo) {
+    const f = fornoDoSlider();
+    const base = f ? (f.formato === "quadrada" ? Math.max(f.larguraCm || 0, f.profundidadeCm || 0) : (f.diametroCm || 0)) : 40;
+    const alt = f ? (f.alturaCm || 60) : 60;
+    if (campo === "t-altura" || campo === "t-altura-q") return Math.max(5, alt);
+    return Math.max(5, base);
+  }
+  function campoAtivoDoSlider() { return sliderCampoAtivo || campoPrincipal(); }
+  const NOMES_MEDIDA = { "t-diametro": "diâmetro", "t-altura": "altura", "t-largura": "largura", "t-profundidade": "profundidade", "t-altura-q": "altura" };
+  function rotuloDoSlider() {
+    if (!rotuloSlider) return;
+    rotuloSlider.textContent = sliderCampoAtivo ? ("Ajustar " + (NOMES_MEDIDA[sliderCampoAtivo] || "tamanho")) : "Ajustar tamanho (proporcional)";
+  }
   function sincronizarSlider() {
     if (!sliderTamanho) return;
-    const el = document.getElementById(campoPrincipal());
+    const campo = campoAtivoDoSlider();
+    sliderTamanho.max = maxSliderPara(campo);
+    const el = document.getElementById(campo);
     sliderTamanho.value = Number(el ? el.value : 0) || 0;
+    rotuloDoSlider();
   }
   if (sliderTamanho) {
     sliderTamanho.addEventListener("input", () => {
-      const el = document.getElementById(campoPrincipal());
-      if (el) el.value = sliderTamanho.value;
+      if (sliderCampoAtivo) {
+        const el = document.getElementById(sliderCampoAtivo);
+        if (el) el.value = sliderTamanho.value;
+      } else {
+        /* proporcional: preserva a razão entre as medidas */
+        const principal = document.getElementById(campoPrincipal());
+        const atual = Number(principal ? principal.value : 0) || 1;
+        const novo = Number(sliderTamanho.value) || 1;
+        if (atual > 0 && novo > 0) {
+          const fator = novo / atual;
+          const ids = estado.formatoPeca === "quadrada"
+            ? ["t-largura", "t-profundidade", "t-altura-q"]
+            : ["t-diametro", "t-altura"];
+          ids.forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.value = Math.round((Number(el.value) || 0) * fator);
+          });
+        }
+      }
       renderFornoSVG();
     });
-    const f0 = CONFIG.fornos[0];
-    sliderTamanho.max = Math.max(5, f0 ? (f0.formato === "quadrada" ? Math.max(f0.larguraCm || 0, f0.profundidadeCm || 0) : (f0.diametroCm || 0)) : 40);
+    /* B: max inicial = forno selecionado (não cego em fornos[0]) */
+    sliderTamanho.max = maxSliderPara(campoAtivoDoSlider());
+    sincronizarSlider();
   }
+  /* A: tocar num campo de medida vincula o slider àquela dimensão */
+  ["t-diametro", "t-altura", "t-largura", "t-profundidade", "t-altura-q"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("focus", () => {
+      sliderCampoAtivo = id;
+      sincronizarSlider();
+    });
+  });
   function populateFornoRender() {
     const sel = document.getElementById("forno-render");
     if (!sel) return;
@@ -2864,8 +2507,7 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     else if (todas.length) { estado.fornoRender = todas[0].id; sel.value = todas[0].id; }
     sel.onchange = () => {
       estado.fornoRender = sel.value;
-      const f = acharForno(estado.fornoRender);
-      if (sliderTamanho && f) sliderTamanho.max = Math.max(5, f.formato === "quadrada" ? Math.max(f.larguraCm || 0, f.profundidadeCm || 0) : (f.diametroCm || 0));
+      sincronizarSlider();
       renderFornoSVG();
     };
   }
@@ -2877,19 +2519,6 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     { id: "alta", nome: "Queima alta" },
     { id: "3fogo", nome: "3º fogo" },
   ];
-  function acharForno(id) {
-    return CONFIG.fornos.find((x) => x.id === id) || CONFIG.servicosFora.find((x) => x.id === id) || null;
-  }
-  function volumeUtil(f) {
-    if (f.formato === "quadrada") return (f.larguraCm || 0) * (f.profundidadeCm || 0) * (f.alturaCm || 0) * 0.7;
-    return Math.PI * Math.pow((f.diametroCm || 0) / 2, 2) * (f.alturaCm || 0) * 0.7;
-  }
-  function custoEnergiaPorTipo(f, tipo) {
-    const c = CONFIG.configQueima;
-    if (tipo === "biscoito") return (f.potenciaKw || 7.2) * c.horasBisque * c.dutyBisque * c.precoKwh;
-    if (tipo === "3fogo") return (f.potenciaKw || 7.2) * 3 * 0.3 * c.precoKwh;
-    return (f.potenciaKw || 7.2) * c.horasEsmalte * c.dutyEsmalte * c.precoKwh;
-  }
   function custoQueimaLinha(q) {
     const f = acharForno(q.forno);
     if (!f) return 0;

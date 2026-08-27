@@ -40,7 +40,7 @@ id_ed25519
 *.credentials
 
 # ---------- Coordenação interna (não deve ir público) ----------
-COORDENACAO-AGENTE-MOCK.md
+COORDENACAO-AGENTE-DENARO.md
 
 # ---------- Node / ferramentas ----------
 node_modules/

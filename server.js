@@ -6,7 +6,7 @@ const { randomUUID } = require("node:crypto");
 
 const PORT = process.env.PORT || 8787;
 const ROOT = __dirname;
-const MOCK_DIR = path.join(ROOT, "mock");
+const APP_DIR = path.join(ROOT, "app");
 const DATA_DIR = path.join(ROOT, "data");
 const DB_FILE = path.join(DATA_DIR, "alice.db");
 const COSTS_KEY = "costs";
@@ -44,8 +44,8 @@ const MIME = {
 function serveStatic(req, res) {
   let urlPath = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
   if (urlPath === "/") urlPath = "/index.html";
-  const filePath = path.normalize(path.join(MOCK_DIR, urlPath));
-  if (!filePath.startsWith(MOCK_DIR)) {
+  const filePath = path.normalize(path.join(APP_DIR, urlPath));
+  if (!filePath.startsWith(APP_DIR)) {
     res.writeHead(403);
     res.end("Forbidden");
     return;
@@ -119,6 +119,6 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Alice servidor rodando em http://0.0.0.0:${PORT}`);
+  console.log(`Denaro servidor rodando em http://0.0.0.0:${PORT}`);
   console.log(`Banco: ${DB_FILE}`);
 });

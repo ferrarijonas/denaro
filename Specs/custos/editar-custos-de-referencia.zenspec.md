@@ -1,20 +1,20 @@
 # Editar custos de referência (`costsPanel`)
 
-ZenSpec de componente de UI. Este programa existe para que **a Alice mantenha os custos fixos, insumos, embalagens, taxas e margens atualizados** em um lugar só.
+ZenSpec de componente de UI. Este programa existe para que **a ceramista mantenha os custos fixos, insumos, embalagens, taxas e margens atualizados** em um lugar só.
 
-Modo UI-first: a casca visual usa **mock provisório** (marcado aqui como provisório). A persistência real vive em `guardar-custos-de-referencia.zenspec.md`.
+A persistência vai para o `storage` (Firestore doc `alice/estado` + `localStorage`) — não há API própria.
 
 ---
 
 ## Intenção
 
-Esta feature existe para que **Alice** consiga **cadastrar e ajustar os custos usados no precificador** sem precisar de **planilha ou lembrar de atualizar em vários lugares**.
+Esta feature existe para que **a ceramista** consiga **cadastrar e ajustar os custos usados no precificador** sem precisar de **planilha ou lembrar de atualizar em vários lugares**.
 
 ---
 
 ## Conceito
 
-O `costsPanel` é a tela de "configuração" do Alice. Ela edita os **custos fixos** (organizados em categorias como Espaço, Energia, Pessoal), o preço do kg de argila, o catálogo de insumos e embalagens, as taxas, margens e fatores de dificuldade. O que é salvo aqui alimenta o cálculo da calculadora (`pricingPanel`).
+O `costsPanel` é a tela de "configuração" do Denaro. Ela edita os **custos fixos** (organizados em categorias como Espaço, Energia, Pessoal), o preço do kg de argila, o catálogo de insumos e embalagens, as taxas, margens e fatores de dificuldade. O que é salvo aqui alimenta o cálculo da calculadora (`pricingPanel`).
 
 Os **custos fixos são mensais** e divididos em **dois blocos**: **Mão de obra** (salário + parâmetros de horas → hora pessoa) e **4 categorias de despesas fixas do ateliê**. O salário vive na Mão de obra (um só lugar). Todos os valores derivados — total gastos, hora pessoa, hora total — são **calculados automaticamente** a partir da soma dos itens, nunca digitados.
 
@@ -35,14 +35,12 @@ costsPanel  →  (⇄ mover item)  →  desloca entre Mão de obra e categorias
 
 | Programa        | Recebe                        | Faz                                  | Manda para            |
 | --------------- | ----------------------------- | ------------------------------------ | --------------------- |
-| `costsPanel`    | toques da Alice               | carrega e edita os custos            | API `/api/costs`      |
+| `costsPanel`    | toques da ceramista           | carrega e edita os custos            | `storage`             |
 | `costsPanel`    | toque em "+ adicionar custo"  | abre folha de novo item fixo         | — (tela)              |
 | `costsPanel`    | toque em "⇄"                  | abre folha para mover item           | — (tela)              |
 | `costsPanel`    | toque em "+ nova categoria"   | cria categoria de despesa            | — (tela)              |
 | `costsPanel`    | toque em "⋯" da categoria     | renomeia ou exclui a categoria       | — (tela)              |
-| `costsPanel`    | resposta da API               | renderiza blocos com valores         | — (tela)              |
-
-> **Nota (mock provisório):** Na Fase 1, os valores vêm de um mock local com os **20 itens das planilhas** divididos em Mão de obra + 4 categorias, visivelmente marcados `MOCK`. A integração real com `/api/costs` ocorre na Fase 3 (T33).
+| `costsPanel`    | resposta do `storage`         | renderiza blocos com valores         | — (tela)              |
 
 ### Custos fixos — estrutura (padrão do v1)
 
@@ -64,13 +62,13 @@ costsPanel  →  (⇄ mover item)  →  desloca entre Mão de obra e categorias
 
 **Bloco Mão de obra & pessoal** — itens sugeridos (valor 0): Plano de saúde, Vale-refeição.
 
-**Regra de merge:** ao carregar dados salvos, itens sugeridos que ainda não existem são **adicionados com valor 0**, sem sobrescrever valores já preenchidos. A Alice pode remover com ✕ se não usar.
+**Regra de merge:** ao carregar dados salvos, itens sugeridos que ainda não existem são **adicionados com valor 0**, sem sobrescrever valores já preenchidos. A ceramista pode remover com ✕ se não usar.
 
-**Freelas & terceirizados são uma despesa fixa**, não entram na hora pessoa. A Alice pode renomear categorias, remover itens, adicionar novos e **mover itens entre a Mão de obra e as categorias**. Todos os custos fixos são **mensais**.
+**Freelas & terceirizados são uma despesa fixa**, não entram na hora pessoa. A ceramista pode renomear categorias, remover itens, adicionar novos e **mover itens entre a Mão de obra e as categorias**. Todos os custos fixos são **mensais**.
 
 ### Regras
 
-- Se a Alice toca **"Salvar"** e tudo é válido → guarda e mostra feedback `verde-argila` "Custos salvos".
+- Se a ceramista toca **"Salvar"** e tudo é válido → guarda e mostra feedback `verde-argila` "Custos salvos".
 - Se algum valor é inválido (nome vazio, valor < 0, margem fora de 0–100, fator fora de 0.5–3) → campo marcado em `terracota` com mensagem `12px`; nada é salvo.
 - **Subtotal por categoria, total gastos, hora pessoa e hora total são calculados automaticamente** pela soma dos itens — ninguém digita total.
 - **Total gastos = Mão de obra & pessoal + soma das 5 categorias**; alimenta a "hora total" (`totalGastos ÷ horasMes`).
@@ -81,14 +79,14 @@ costsPanel  →  (⇄ mover item)  →  desloca entre Mão de obra e categorias
 - **Mover item**: o item é deslocado entre Mão de obra e categorias preservando nome e valor; subtotais dos dois blocos recalculam na hora.
 - **"+ nova categoria"** (em Despesas fixas): cria uma categoria de despesa vazia, que já aparece como card e persiste.
 - **"⋯" na categoria**: abre folha para **renomear** ou **excluir** a categoria. Excluir pede confirmação e apaga a categoria com todos os itens. A Mão de obra **não** é excluível nem renomeável via "⋯" (é o bloco fixo).
-- A tela abre com os valores **atuais** (mock ou API) preenchidos — nunca vazia.
+- A tela abre com os valores **atuais** (do `storage`) preenchidos — nunca vazia.
 - Alterações não salvas: botão "Salvar" fica em `argila`; após salvar, vira "Salvos ✓" por 2s.
 - Voltar sem salvar: se houve alteração, perguntar "Descartar alterações?" (confirmação nativa simples).
 - Remover um item → confirmação nativa "Remover este custo?" antes de apagar.
 
 ### Contrato
 
-Entrada (carregamento — da API/mock):
+Entrada (carregamento — do `storage`):
 
 - `maoDeObra`: `{ id, categoria: "Mão de obra & pessoal", itens: [{ nome: string, valor: number }] }`
 - `custosFixos`: `[{ id, categoria: string, itens: [{ nome: string, valor: number }] }]` (5 categorias de despesa)
@@ -141,7 +139,7 @@ Erros:
 
 ```
 ┌──────────────────────────────┐
-│  ←  Alice                   │  ← topo com seta de voltar
+│  ←  Denaro                   │  ← topo com seta de voltar
 ├──────────────────────────────┤
 │  Custos de referência        │
 │  [Fixos][Insumos][Embalagens][Taxas]│

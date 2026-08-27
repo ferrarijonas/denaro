@@ -1,6 +1,6 @@
-# Padrão ouro 2026 — Pesquisa internacional para a UI do Alice
+# Padrão ouro 2026 — Pesquisa internacional para a UI do Denaro
 
-Pesquisa de estado-da-arte (agosto/2026) para embasar decisões de UI e modelo de negócio do Alice. O projeto serve **uma ceramista com TDAH que odeia planilhas** — a UI precisa ser **quase um assistente**, **poka-yoke** (à prova de erro) e esconder todos os cálculos. Este documento é a fonte das decisões registradas nos ZenSpecs e no `Alice-sensei.md`.
+Pesquisa de estado-da-arte (agosto/2026) para embasar decisões de UI e modelo de negócio do Denaro. O projeto serve **uma ceramista com TDAH que odeia planilhas** — a UI precisa ser **quase um assistente**, **poka-yoke** (à prova de erro) e esconder todos os cálculos. Este documento é a fonte das decisões registradas nos ZenSpecs.
 
 ---
 
@@ -10,9 +10,9 @@ Pesquisa de estado-da-arte (agosto/2026) para embasar decisões de UI e modelo d
 
 - **Wizard é o padrão ouro em mobile para processo desconhecido/alto valor** (Lollypop, LinkedIn/UX): quebra a carga cognitiva, validação passo a passo, erros pegos na hora. É o correto para usuário leigo em processo não-diário.
 - A técnica tem nome: **Progressive Disclosure condicional** — "escolhe o tipo e abre só o que importa" (Lollypop).
-- **Quando NÃO usar wizard:** tarefa repetida e usuário experiente (power user) → tela única. No Alice, precificação é ação não-diária e a usuária é leiga → **wizard**.
+- **Quando NÃO usar wizard:** tarefa repetida e usuário experiente (power user) → tela única. No Denaro, precificação é ação não-diária e a usuária é leiga → **wizard**.
 - **Referência de fluxo:** listing do Airbnb (3 etapas macro, sub-passos progressivos, "voltar" e "salvar e sair" não punitivos).
-- **Tradução para o Alice:** tela inicial "**Vamos precificar?**" → 5 cards grandes (foto + nome). Tap → abre só as seções do tipo escolhido. Categoria é atributo, não primeira pergunta.
+- **Tradução para o Denaro:** tela inicial "**Vamos precificar?**" → 5 cards grandes (foto + nome). Tap → abre só as seções do tipo escolhido. Categoria é atributo, não primeira pergunta.
 
 ## 2. Taxonomia de categorias (cerâmica)
 
@@ -45,7 +45,7 @@ Fonte: NN/g "Preventing User Errors: Avoiding Unconscious Slips" + progressive d
 
 Padrão internacional (Etsy): o **comprador paga frete à parte** (transparente, no checkout) e o vendedor escolhe o **método de entrega** (local pickup / local delivery / shipping). O rateio entre múltiplas peças é **automático** no checkout (combined shipping), não é um método separado — misturar "método" com "rateio" no mesmo seletor confunde.
 
-| Cenário da Alice                     | Modelo padrão (Etsy)                                   | No app                                          |
+| Cenário da ceramista                 | Modelo padrão (Etsy)                                   | No app                                          |
 | ------------------------------------ | ------------------------------------------------------ | ----------------------------------------------- |
 | (a) Entrego eu mesma                 | "Local delivery" — frete fixo local                    | chip "Entrego eu mesma" + R$ por entrega        |
 | (b) Envio pelos Correios             | "Standard shipping" — frete calculado ou fixo          | chip "Vai pelos Correios" + R$ do frete         |
@@ -85,7 +85,7 @@ Pesquisa direta nas políticas de frete de ateliês documentados. **Consenso abs
 Cruzei 3 agentes personificando os ateliês estudados. **Consenso unânime:**
 
 1. **"Frete não é preço."** O frete é serviço à parte. "À parte" = repasse exato sem margem (East Fork). "Embutido" = absorção consciente, **nunca escondida** — o custo absorvido fica sempre documentado (Japão cede a precisão, EUA a transparência).
-2. **Separar físico de dinheiro em 2 perguntas:** (A) "Como a peça chega?" → método; (B) "Quem paga o caminho?" → à parte / frete grátis. O bug do mock era misturar os dois num seletor e dizer "quem compra paga" enquanto o cálculo embutia.
+2. **Separar físico de dinheiro em 2 perguntas:** (A) "Como a peça chega?" → método; (B) "Quem paga o caminho?" → à parte / frete grátis. O bug da versão antiga era misturar os dois num seletor e dizer "quem compra paga" enquanto o cálculo embutia.
 3. **Uma pergunta por vez, poka-yoke:** retirada pula B e o rateio; ML/Etsy travam "à parte" (plataforma cobra do comprador); impossível criar estado contraditório.
 4. **Resultado em um número só:** à parte → linha "Frete a cobrar à parte" (informativa, fora do preço); embutido → badge "Frete grátis pra ela" (custo absorvido no expansor); retirada → "sem frete".
 5. **Rateio automático** por peças no mesmo envio (default 1), divisão escondida.

@@ -1,6 +1,8 @@
-# Calcular ocupação do forno (`ocupacaoPanel`)
+# Calcular ocupação do forno (`ocupacaoEngine`)
 
-ZenSpec de programa. Este programa existe para que **Alice veja, em tempo real, quantas peças como a que ela faz ocupam o forno** — e quanto custa queimar de verdade com a **carga real** (forno cheio vs o que ela realmente queima). É um painel **separado** da precificação (não polui a tela de precificar), aberto a partir de **Fornos & queima** ou de **"ver no forno"** na peça.
+ZenSpec de programa. Este programa existe para que **a ceramista veja, em tempo real, quantas peças como a que ela faz ocupam o forno** — e quanto custa queimar de verdade com a **carga real** (forno cheio vs o que ela realmente queima).
+
+> **Estado atual:** o cálculo (`estimarCabem`) e o render-duplo (biscoito/esmalte) já existem **embutidos no bloco Tamanho da precificação** (ver `medir-tamanho-da-peca` e `desenhar-forno`). O **painel separado** de ocupação — com seletor de peça salva, chip de tipo e slider de carga real — é um programa **futuro**, aberto a partir de **Fornos & queima** ou de **"ver no forno"**. Esta ZenSpec cobre o núcleo (já implementado) e o alvo (painel).
 
 Requisitos: `editar-fornos-e-queima.zenspec.md` (fornos, `estimarCabem`, render SVG).
 
@@ -8,13 +10,13 @@ Requisitos: `editar-fornos-e-queima.zenspec.md` (fornos, `estimarCabem`, render 
 
 ## Intenção
 
-Esta feature existe para que **Alice** consiga **descobrir quantas peças cabem no forno e quanto custa cada queima de verdade** — sem conta manual e sem raciocínio espacial. O programa calcula a ocupação **ao vivo** e mostra o **custo por peça com a carga que ela realmente queima** (padrão ouro: forno meio vazio = queima por peça mais cara).
+Esta feature existe para que **a ceramista** consiga **descobrir quantas peças cabem no forno e quanto custa cada queima de verdade** — sem conta manual e sem raciocínio espacial. O programa calcula a ocupação **ao vivo** e mostra o **custo por peça com a carga que ela realmente queima** (padrão ouro: forno meio vazio = queima por peça mais cara).
 
 ---
 
 ## Conceito
 
-O `ocupacaoPanel` junta três coisas que já existem no Alice:
+O `ocupacaoEngine` junta três coisas que já existem no Denaro:
 1. **O forno** (da tela Fornos & queima) — medidas, capacidade, preço por tipo de queima.
 2. **A peça** (medidas → cubagem) — do bloco "Sobre a peça" da precificação.
 3. **O cálculo de ocupação** (`estimarCabem`) — peças por prateleira × nº de prateleiras.
@@ -86,7 +88,7 @@ Erros:
 ### Critérios de aceitação
 
 - Com os mesmos dados, a ocupação e o custo por peça são sempre iguais (determinístico).
-- A Alice entende "quantas cabem" e "quanto custa cada queima" sem nenhuma conta manual.
+- A ceramista entende "quantas cabem" e "quanto custa cada queima" sem nenhuma conta manual.
 - O render nunca mostra peça fora do forno (clamps do padrão de ilustração).
 - O aviso de forno meio vazio aparece quando a carga real < 70%.
 

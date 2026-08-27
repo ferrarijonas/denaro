@@ -1,12 +1,12 @@
-# Modelo de precificação do Alice
+# Modelo de precificação do Denaro
 
-Fonte da verdade da fórmula de cálculo, extraída e validada contra as planilhas `Orcamentos Alice.xlsx`, `Custos esmaltes .xlsx` e `ALICE - Custos Aquarelas .xlsx`. Todo cálculo do sistema segue este modelo, que é derivado de `AliceConceptSpec` e `AliceEngSpec`.
+Fonte da verdade da fórmula de cálculo, extraída e validada contra as planilhas `Orcamentos Alice.xlsx`, `Custos esmaltes .xlsx` e `ALICE - Custos Aquarelas .xlsx`. Todo cálculo do sistema segue este modelo, que é derivado de `DenaroConceptSpec` e `DenaroEngSpec`.
 
 ---
 
 ## 1. Dois tipos de item
 
-O Alice precifica **dois tipos** de item, como as planilhas fazem:
+O Denaro precifica **dois tipos** de item, como as planilhas fazem:
 
 | Tipo    | O que é                                  | Exemplo nas planilhas                       | Modelo de custo                          |
 | ------- | ---------------------------------------- | ------------------------------------------- | ---------------------------------------- |
@@ -51,7 +51,7 @@ Os custos fixos são **mensais** e divididos em **dois blocos** (conforme `edita
 
 - `custoHoraPessoa` é usado na **mão de obra de montagem de produtos**.
 - `custoHoraTotal` é usado na **mão de obra de peças** (já inclui o custo fixo rateado).
-- **Regra:** `totalCustosFixos`, `custoHoraPessoa` e `custoHoraTotal` são **sempre derivados** da soma dos itens — a tela não permite digitá-los. A Alice edita apenas itens, categorias e parâmetros de hora (horas/dia, dias/mês).
+- **Regra:** `totalCustosFixos`, `custoHoraPessoa` e `custoHoraTotal` são **sempre derivados** da soma dos itens — a tela não permite digitá-los. A ceramista edita apenas itens, categorias e parâmetros de hora (horas/dia, dias/mês).
 - **Rateio e faturamento médio não existem mais** na tela: `custoHoraTotal` já embute os custos fixos por hora, e faturamento médio não participa de nenhum cálculo.
 
 ### 2.2 Insumos / matérias-primas

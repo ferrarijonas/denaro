@@ -1,14 +1,14 @@
 # Listar e reusar peças (`piecesListPanel`)
 
-ZenSpec de componente de UI. Este programa existe para que **a Alice reaproveite peças já precificadas** sem recalcular do zero.
+ZenSpec de componente de UI. Este programa existe para que **a ceramista reaproveite peças já precificadas** sem recalcular do zero.
 
-Modo UI-first: a casca visual usa **mock provisório** (marcado aqui como provisório). A persistência real vive em `salvar-e-listar-pecas.zenspec.md`.
+A lista lê e grava no `storage` (Firestore + `localStorage`) — não há API própria.
 
 ---
 
 ## Intenção
 
-Esta feature existe para que **Alice** consiga **abrir uma peça já precificada e copiá-la ou editá-la** sem precisar de **refazer os cálculos ou procurar em papel**.
+Esta feature existe para que **a ceramista** consiga **abrir uma peça já precificada e copiá-la ou editá-la** sem precisar de **refazer os cálculos ou procurar em papel**.
 
 ---
 
@@ -31,22 +31,20 @@ piecesListPanel  →  (tocar peça)  →  abre pricingPanel preenchido
 
 | Programa            | Recebe                     | Faz                                    | Manda para              |
 | ------------------- | -------------------------- | -------------------------------------- | ----------------------- |
-| `piecesListPanel`   | toques da Alice            | carrega e lista as peças salvas        | API `/api/pieces`       |
+| `piecesListPanel`   | toques da ceramista        | carrega e lista as peças salvas        | `storage`               |
 | `piecesListPanel`   | seleção de uma peça        | abre `pricingPanel` com os dados       | `pricingPanel`          |
-
-> **Nota (mock provisório):** Na Fase 1, a lista usa peças mock provisórias (marcadas `MOCK`), ex.: "Vaso florido", "Caneca", "Pote pequeno". A integração real com `/api/pieces` ocorre na Fase 3 (T27).
 
 ### Regras
 
 - Se a lista está vazia → estado vazio com mensagem "Nenhuma peça ainda. Precifique a primeira." + botão para `pricingPanel`.
 - Cada linha mostra: nome, preço escolhido (destaque), e metadados (peso, dificuldade, data) em `tinta-suave`.
 - Tocar numa peça → abre `pricingPanel` **preenchido** com os dados da peça (não abre tela separada de detalhe no v1).
-- Copiar peça: ao abrir a peça no `pricingPanel`, a Alice pode alterar dados e tocar "Salvar peça" → gera uma **nova** peça (não sobrescreve a original).
+- Copiar peça: ao abrir a peça no `pricingPanel`, a ceramista pode alterar dados e tocar "Salvar peça" → gera uma **nova** peça (não sobrescreve a original).
 - Botão apagar (gesto de deslizar ou "⋯"): pede confirmação "Apagar esta peça?" antes de remover.
 
 ### Contrato
 
-Entrada (listagem — da API/mock):
+Entrada (listagem — do `storage`):
 
 - `pieces`: array de `PieceListItem`:
   - `id`: string
@@ -84,7 +82,7 @@ Erros:
 
 ```
 ┌──────────────────────────────┐
-│  Alice                (+)    │  ← topo; "+" abre a calculadora nova
+│  Denaro                (+)   │  ← topo; "+" abre a calculadora nova
 ├──────────────────────────────┤
 │  Minhas peças                │  ← título de tela 20px
 │                              │

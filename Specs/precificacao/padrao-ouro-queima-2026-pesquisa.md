@@ -1,6 +1,6 @@
 # Padrão ouro 2026 — Pesquisa: custo de queima (forno) em ateliês do Japão, Alemanha, EUA e Itália
 
-Pesquisa de estado-da-arte (agosto/2026) sobre **como ateliês renomados calculam e cobram a queima** — a parte que falta no modelo de precificação do Alice. Complementa `padrao-ouro-2026-pesquisa.md` (§4–8 cobrem frete/canais/imposto; este documento cobre **só a queima**). Inclui os 3 cenários da Alice: **queimar no próprio forno**, **queimar fora (serviço externo)** e **peças sem queima**.
+Pesquisa de estado-da-arte (agosto/2026) sobre **como ateliês renomados calculam e cobram a queima** — a parte que falta no modelo de precificação do Denaro. Complementa `padrao-ouro-2026-pesquisa.md` (§4–8 cobrem frete/canais/imposto; este documento cobre **só a queima**). Inclui os 3 cenários da ceramista: **queimar no próprio forno**, **queimar fora (serviço externo)** e **peças sem queima**.
 
 ---
 
@@ -17,7 +17,7 @@ Preço/tarifa da queima  = custo direto + rateio de overhead + reserva de risco 
 - Reservas separadas recomendadas: (a) elementos/controles, (b) prateleiras/pinos/utensílios, (c) amortização/reposição do forno. Revisar anualmente.
 - Exemplo real consolidado (Lakeside Pottery EUA): energia €13,48 + ventilador €1 + amortização forno €6,25 + manutenção €5,75 + espaço €21,60 + seguro €20 + miscelânea €2 = **~$70 por queima** — energia é ~20% do custo real.
 
-**Decisão para o Alice:** o custo de queima de uma peça NUNCA é "só a energia". O forno tem custo de desgaste, mão de obra de carregar/descarregar e participação do overhead — mesmo que a conta de luz não apareça.
+**Decisão para o Denaro:** o custo de queima de uma peça NUNCA é "só a energia". O forno tem custo de desgaste, mão de obra de carregar/descarregar e participação do overhead — mesmo que a conta de luz não apareça.
 
 ---
 
@@ -38,7 +38,7 @@ Custo energia  = kWh × preço do kWh
   - Japão: tarifas por **tamanho do forno** (elétrico 3/4/5/12/15 kW): bisque ¥1.360–7.770, queima principal ¥1.620–9.070 por carga (Shigaraki Share Studio).
   - Itália: não publica energia, cobra direto por kg/peça/forno.
 
-**Decisão para o Alice:** entrada poka-yoke = "qual é o teu forno?" (potência kW ou medido em kWh) + "quanto custa teu kWh" + tipo de queima → o app calcula a energia. Quem não sabe o kW → default sugerido de forno médio.
+**Decisão para o Denaro:** entrada poka-yoke = "qual é o teu forno?" (potência kW ou medido em kWh) + "quanto custa teu kWh" + tipo de queima → o app calcula a energia. Quem não sabe o kW → default sugerido de forno médio.
 
 ---
 
@@ -57,7 +57,7 @@ Nenhum ateliê sério trata "queima" como uma coisa só. Todos separam **1ª que
 - Single-fire (esmalte no cru) ou raku = **1 ciclo**; padrão = **2 ciclos**. O multiplicador de ciclos é a regra (ClayCalc Unit Cost): `custo queima/peça = (custo da queima ÷ peças na carga) × nº de ciclos`.
 - **Peça sem queima = zero ciclos = custo de queima 0.** Nunca confundir com "queima grátis" — simplesmente não há queima.
 
-**Decisão para o Alice:** o app pergunta "quantas queimas essa peça leva?" → 0 (sem queima), 1 (single-fire/raku), 2 (bisque+esmalte). Cada ciclo com sua carga própria de peças.
+**Decisão para o Denaro:** o app pergunta "quantas queimas essa peça leva?" → 0 (sem queima), 1 (single-fire/raku), 2 (bisque+esmalte). Cada ciclo com sua carga própria de peças.
 
 ---
 
@@ -90,13 +90,13 @@ Ateliês de todos os países rateiam o custo do forno por uma destas unidades �
 
 **Regra de ouro (ClayCalc):** por-peça é ruim quando caneca e escultura dividem o mesmo preço. Usar faixas de tamanho + mínimo de manuseio, ou volume/peso, ou fração de forno. **Publicar a regra** e usar espaço útil (depois de prateleiras, pinos e folgas).
 
-**Decisão para o Alice:** o app deixa escolher a unidade (kg, volume, faixa de peça, fração de forno) uma vez por configuração, e usa sempre a mesma. Para peças da própria Alice, o custo sai da fração de forno que a peça ocupa × custo por queima — não por "chute".
+**Decisão para o Denaro:** o app deixa escolher a unidade (kg, volume, faixa de peça, fração de forno) uma vez por configuração, e usa sempre a mesma. Para peças da própria ceramista, o custo sai da fração de forno que a peça ocupa × custo por queima — não por "chute".
 
 ---
 
 ## 5. Quem queima comigo (compartilhado) vs quem queima fora (serviço externo)
 
-Este é o ponto mais rico da pesquisa e casa direto com o cenário da Alice (pessoas que queimam com ela / pessoas que queimam fora).
+Este é o ponto mais rico da pesquisa e casa direto com o cenário da ceramista (pessoas que queimam com ela / pessoas que queimam fora).
 
 ### 5.1 Diferencial membro vs externo: **universal, 1,5–2×**
 Todos os 4 países cobram mais de quem é de fora do que de quem participa do estúdio:
@@ -119,10 +119,10 @@ O Japão institucionalizou em duas formas — **貸窯 (kashigama = aluguel de f
 5. **Forno cheio = preço fixo** (quando 1 pessoa ocupa tudo); **compartilhado = rateio por unidade**.
 6. **Mínimo por pedido** para cobrir manuseio (receber, medir, carregar, avisar).
 
-### 5.4 Quando a Alice queima FORA (serviço externo)
+### 5.4 Quando a ceramista queima FORA (serviço externo)
 O custo é **o preço do serviço** (por kg/volume/fração) — entra no custo da peça como **custo direto de queima**, igual a matéria-prima. Não inventar: usar a tarifa real do fornecedor.
 
-**Decisão para o Alice:** a queima tem dois papéis na mesma tela:
+**Decisão para o Denaro:** a queima tem dois papéis na mesma tela:
 - **"Queimo no meu forno"** → custo interno (energia+desgaste+MO ÷ peças na carga × ciclos) entra no custo da peça.
 - **"Queimo fora"** → custo = tarifa do serviço externo (por kg ou peça) entra no custo.
 - **"Alguém queima no meu forno"** → não é custo de peça, é **receita do forno**: tarifa (custo × margem, externo 2×) cobrada de quem traz peça. Não entra no preço das peças dela — mas **enche o forno** e dilui o custo por peça das cargas dela.
@@ -143,9 +143,9 @@ A queima consome trabalho antes do botão: agendar, checar secura/esmalte, carre
 - **Requeima/refire e 3º fogo custam extra** (EUA re-fire 3¢/pol³; Itália terzo fuoco separado; Japão 本焼RF = queima de redução com ágio ~1,3×).
 
 ### 6.3 Eficiência de carga é a alavanca nº 1
-Forno cheio vs meio cheio custa o MESMO. Custo/peça cai com densidade: $15,41 numa carga de 35 canecas = $0,44/peça; com 15 = $1,03 (Kiln Shed). Compartilhar o forno (o cenário da Alice) é exatamente o mecanismo que reduz o custo/peça de todos.
+Forno cheio vs meio cheio custa o MESMO. Custo/peça cai com densidade: $15,41 numa carga de 35 canecas = $0,44/peça; com 15 = $1,03 (Kiln Shed). Compartilhar o forno (o cenário da ceramista) é exatamente o mecanismo que reduz o custo/peça de todos.
 
-**Decisão para o Alice:** a tela de queima pergunta pouco: forno (ou serviço externo), nº de peças na carga, nº de ciclos (0/1/2). **Mão de obra de queima, desgaste, mínimo e risco ficam embutidos na tarifa configurada** — nunca somados à mão visível à usuária.
+**Decisão para o Denaro:** a tela de queima pergunta pouco: forno (ou serviço externo), nº de peças na carga, nº de ciclos (0/1/2). **Mão de obra de queima, desgaste, mínimo e risco ficam embutidos na tarifa configurada** — nunca somados à mão visível à usuária.
 
 ---
 

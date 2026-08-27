@@ -1,16 +1,16 @@
 # Editar fornos e queima (`fornosPanel`)
 
-ZenSpec de componente de UI. Este programa existe para que **a Alice mantenha os fornos, serviços de queima e a conta da queima atualizados** em um lugar só, amigável — sem planilha e sem decoreba de fórmulas.
+ZenSpec de componente de UI. Este programa existe para que **a ceramista mantenha os fornos, serviços de queima e a conta da queima atualizados** em um lugar só, amigável — sem planilha e sem decoreba de fórmulas.
 
 Decisões de pesquisa que embasam esta tela: `padrao-ouro-queima-2026-pesquisa.md` (R19–R24).
 
-Modo UI-first: a casca visual usa **mock provisório** (marcado aqui como provisório). A persistência real vive em `guardar-fornos-e-queima.zenspec.md`.
+A persistência vai para o `storage` (Firestore doc `alice/estado` + `localStorage`); o painel não conversa com API própria.
 
 ---
 
 ## Intenção
 
-Esta feature existe para que **Alice** consiga **descobrir quanto custa queimar uma peça** com precisão — servindo tanto a uma iniciante que queima no forno da vizinha quanto a um ateliê robusto com 5 fornos — sem precisar de **fórmula, planilha ou decoreba**.
+Esta feature existe para que **a ceramista** consiga **descobrir quanto custa queimar uma peça** com precisão — servindo tanto a uma iniciante que queima no forno da vizinha quanto a um ateliê robusto com 5 fornos — sem precisar de **fórmula, planilha ou decoreba**.
 
 A peça precificada pergunta só o essencial: **onde queima**, **quantas queimas** e **o tamanho/peso** (o app estima quantas cabem na carga). Todo o resto (kW, duty cycle, capacidade, tarifas) vive **aqui**, escondido, amigável.
 
@@ -31,7 +31,7 @@ tarifa da queima       = custo direto + overhead + risco + margem
 
 Para o v1, só a **energia** entra no cálculo de peça (e a opção "eu sei quanto gasta"). **Desgaste, mão de obra, overhead, margem e depreciação ficam para uma fase futura** (R25) — mantidos aqui como estrutura conceitual, não como campos.
 
-### Estudo: por que "quantas peças cabem no forno?" trava a Alice
+### Estudo: por que "quantas peças cabem no forno?" trava a ceramista
 
 A pergunta "quantas peças vão na carga?" é o maior atrito do modelo. Motivos:
 
@@ -57,14 +57,14 @@ pricingPanel →  (onde queima? quantas queimas? tamanho/peso)  →  estima peç
 
 | Programa      | Recebe                      | Faz                                          | Manda para                |
 | ------------- | --------------------------- | -------------------------------------------- | ------------------------- |
-| `fornosPanel` | toques da Alice             | carrega e edita fornos, serviços e a conta   | API `/api/costs`          |
+| `fornosPanel` | toques da ceramista         | carrega e edita fornos, serviços e a conta   | `storage`                 |
 | `fornosPanel` | toque em "+ adicionar forno"| abre folha de novo forno (formato + medidas) | — (tela)                  |
 | `fornosPanel` | toque em "eu sei" / "me ajuda a calcular" | alterna o modo de custo do forno | — (tela) |
 | `fornosPanel` | toque em "+ queimar fora"   | abre folha de serviço externo (cobrança)     | — (tela)                  |
 | `pricingPanel`| onde queima + ciclos + tamanho/peso | estima peças na carga e calcula `(custo por queima ÷ peças) × ciclos` | custo da peça |
 | `pricingPanel`| slider "cabe ~N"            | ajusta a estimativa sem recalcular fórmula   | custo da peça |
 
-> **Nota (mock provisório):** Na Fase 1, os valores vêm de um mock local com um **forno médio de exemplo** e defaults amigáveis, visivelmente marcados `MOCK`. A integração real com `/api/costs` ocorre na Fase 3.
+> A integração dos valores é direta com o `storage` (Firestore + `localStorage`); não há API intermediária.
 
 ### Estrutura da tela (3 blocos no v1; 2 avançados em futuro)
 
@@ -115,12 +115,12 @@ pricingPanel →  (onde queima? quantas queimas? tamanho/peso)  →  estima peç
 - **Energia duplicada com os custos fixos (poka-yoke):** o custo fixo atual tem "CEMIG / luz (600)". Se marcar `a energia do forno já está no custo fixo`, o app usa **energia = 0**. Ao cadastrar o primeiro forno com a opção desmarcada, o app sugere reduzir o "CEMIG/luz" dos Fixos pela parcela do forno.
 - **Volume útil** (R23): cilíndrico `π(d/2)²×h`; quadrado `L×P×A`; ~70% do nominal (prateleiras, pinos, folgas). Capacidade em kg sugerida = `volume útil (L) × 0,25` (massa verde empacotada, faixa 0,2–0,3 kg/L).
 - **Derivados são automáticos**: volume útil, capacidade em kg, custo por queima (por tipo), peças na carga estimadas — ninguém digita.
-- Se a Alice toca **"Salvar"** e tudo é válido → guarda e mostra feedback `verde-argila` "Fornos salvos". Campos inválidos → `terracota` com mensagem; nada salvo.
+- Se a ceramista toca **"Salvar"** e tudo é válido → guarda e mostra feedback `verde-argila` "Fornos salvos". Campos inválidos → `terracota` com mensagem; nada salvo.
 - Toda alteração **persiste automaticamente** (Firestore `alice/estado`; `localStorage` como cache/offline).
 
 ### Contrato
 
-Entrada (carregamento — da API/mock):
+Entrada (carregamento — do `storage`):
 
 - `fornos`: `[{ id, nome, formato: "cilindrico"|"quadrado", medidas: { diametroCm?, alturaCm?, larguraCm?, profundidadeCm? }, capacidadeKg?, potenciaKw?, modoCusto: "digitar"|"calcular", custoBisque?, custoEsmalte? }]`
 - `servicosFora`: `[{ id, nome, unidade: "kg"|"peca"|"carga", preco, minimo? }]`
@@ -167,7 +167,7 @@ Erros:
 
 ```
 ┌──────────────────────────────┐
-│  ←  Alice                   │
+│  ←  Denaro                  │
 ├──────────────────────────────┤
 │  Fornos & queima             │
 │                              │
@@ -217,7 +217,7 @@ Cabe no forno ~ 30 peças            ← estimativa automática
 
 ### Ilustração do forno (padrão ouro de visual)
 
-A vista da peça no forno é **SVG puro gerado por JavaScript** — sem imagens externas, sem bibliotecas, determinístico. É o estilo de ilustração do Alice daqui pra frente: **belo, delicado, preciso**.
+A vista da peça no forno é **SVG puro gerado por JavaScript** — sem imagens externas, sem bibliotecas, determinístico. É o estilo de ilustração do Denaro daqui pra frente: **belo, delicado, preciso**.
 
 **Tecnologia:** função `renderFornoSVG()` injeta `<svg>` inline no DOM (`host.innerHTML`), redesenhado ao vivo ao mudar medidas/formato.
 
@@ -235,8 +235,7 @@ A vista da peça no forno é **SVG puro gerado por JavaScript** — sem imagens 
    | Estado | Visual |
    |---|---|
    | `main` | preenchida `rgba(91,68,50,0.92)`, contorno `#5b4432` — a peça em destaque |
-   | `copy` | preenchimento fraco `rgba(91,68,50,0.22)` — as demais da fornada |
-   | `ghost` | só contorno tracejado `#ab9881` — as repetições da pilha |
+   | `copy` | preenchimento fraco `rgba(91,68,50,0.18)` — as demais da fornada |
 
 5. **Escala proporcional real**: o tamanho na tela é proporcional ao tamanho real (peça ÷ forno) — a peça ocupa na tela o que ocupa no forno.
 6. **Determinístico**: posições calculadas, sem aleatoriedade — mesmo render a cada carga.
