@@ -2,7 +2,7 @@
 
 ZenSpec de programa. Este programa existe para que **a ceramista veja o custo de uma peça** (material + acessórios + embalagem + mão de obra + queima + risco + frete + taxas) **e o preço em cada linha comercial** — sem conta manual.
 
-Programa puro (regra `DenaroEngSpec.md` §3): `calcularCustoPeca(inputs, config)` devolve um **objeto resultado** (nunca escreve DOM). A fórmula exata vive em `modelo-de-precificacao.md` §3 (validada número a número contra as planilhas).
+Programa puro (regra `DenaroEngSpec.md` §3): `calcularCustoPeca(inputs, config)` devolve um **objeto resultado** (nunca escreve DOM). A fórmula exata vive em `07-modelo-de-precificacao.md` §3 (validada número a número contra as planilhas).
 
 ---
 
@@ -32,7 +32,7 @@ pricingPanel → normalizar → calcularCustoPeca(inputs, config) → PricingRes
 | --------------- | ----------------- | ------------------------------------------ | ---------------- |
 | `calcularCustoPeca` | `inputs` + config | calcula custo + preços por linha de peça   | `pricingPanel`   |
 
-### Regras (ordem exata — `modelo-de-precificacao.md` §3.3)
+### Regras (ordem exata — `07-modelo-de-precificacao.md` §3.3)
 
 ```
 custoArgila     = kgsArgila × precoKgArgila (catálogo)
@@ -49,7 +49,7 @@ custoComTaxas   = custoTotal ÷ (1 − taxas)
 precoPorLinha   = custoComTaxas ÷ (1 − margemDaLinha)
 ```
 
-> A mão de obra de peça usa `custoHoraTotal` (já embute os custos fixos rateados); a de produto usa `custoHoraPessoa`. `horaAtelie` e `custoHoraTotal` vêm dos custos fixos (ver `Specs/custos/costsPanel.zenspec.md`).
+> A mão de obra de peça usa `custoHoraTotal` (já embute os custos fixos rateados); a de produto usa `custoHoraPessoa`. `horaAtelie` e `custoHoraTotal` vêm dos custos fixos (ver `Specs/custos/00-costsPanel.md`).
 
 ### Contrato
 
@@ -90,14 +90,14 @@ Erros:
 
 ### Critérios de aceitação
 
-- Mesmos inputs → mesmos custos e preços (determinístico; validado pelo harness contra `modelo-de-precificacao.md` §3.4).
+- Mesmos inputs → mesmos custos e preços (determinístico; validado pelo harness contra `07-modelo-de-precificacao.md` §3.4).
 - Exemplo conferido: peso 0,4 · esmalte R$5 · tempo 0,5h · dificuldade 1 · embalagem papel R$2 + etiqueta R$1 → custoTotal R$ 35,23 · c/taxas R$ 37,08 (imposto 5%) · exclusiva R$ 92,70 · padrão R$ 67,42 · revenda R$ 52,97.
 
 ---
 
 ## Interface
 
-Sem interface própria — o resultado é renderizado pelo `pricingPanel` (custo detalhado + linhas de preço). Ver `pricingPanel.zenspec.md`.
+Sem interface própria — o resultado é renderizado pelo `pricingPanel` (custo detalhado + linhas de preço). Ver `01-pricingPanel.md`.
 
 ### Acessibilidade
 

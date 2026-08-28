@@ -146,6 +146,18 @@
     transition: border-color 150ms, transform 150ms;
   }
   .intro-card:active { transform: scale(0.97); border-color: var(--argila); }
+  .intro-card.bloqueado { opacity: 0.55; cursor: not-allowed; pointer-events: none; }
+  .intro-breve {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--tinta-suave);
+    border: 1px solid var(--linha);
+    border-radius: 999px;
+    padding: 2px 7px;
+    margin-top: 4px;
+  }
   .intro-icone { width: 34px; height: 34px; color: var(--argila); }
   .intro-nome { font-size: 13px; font-weight: 700; color: var(--tinta); }
   .intro-desc { font-size: 10.5px; color: var(--tinta-suave); text-align: center; line-height: 1.3; }
@@ -1230,7 +1242,7 @@
             <span class="nome-app">Denaro</span>
           </div>
           <span class="sync-tag" id="sync-status" title="Status de sincronização dos dados">…</span>
-          <span class="versao-tag">v3</span>
+          <span class="versao-tag" data-ver>28/08/26 01:21</span>
         </div>
         <h1>Precificar</h1>
         <div class="intro" id="intro-inicio">
@@ -1242,30 +1254,35 @@
               <span class="intro-nome">Peças &amp; Objetos</span>
               <span class="intro-desc">uso na mesa e na casa</span>
             </button>
-            <button type="button" class="intro-card" data-intro="superficies">
+            <button type="button" class="intro-card bloqueado" data-intro="superficies" disabled>
               <svg class="icone intro-icone"><use href="#i-esmalte"></use></svg>
               <span class="intro-nome">Acabamentos &amp; Superfícies</span>
               <span class="intro-desc">esmaltes, texturas, revestimentos</span>
+              <span class="intro-breve">em breve</span>
             </button>
-            <button type="button" class="intro-card" data-intro="materiais">
+            <button type="button" class="intro-card bloqueado" data-intro="materiais" disabled>
               <svg class="icone intro-icone"><use href="#i-ferramenta"></use></svg>
               <span class="intro-nome">Materiais &amp; Ferramentas</span>
               <span class="intro-desc">argilas, insumos, ferramentas p/ criar</span>
+              <span class="intro-breve">em breve</span>
             </button>
-            <button type="button" class="intro-card" data-intro="aulas">
+            <button type="button" class="intro-card bloqueado" data-intro="aulas" disabled>
               <svg class="icone intro-icone"><use href="#i-aula"></use></svg>
               <span class="intro-nome">Aulas &amp; Experiências</span>
               <span class="intro-desc">oficinas, cursos, vivências</span>
+              <span class="intro-breve">em breve</span>
             </button>
-            <button type="button" class="intro-card" data-intro="encomendas">
+            <button type="button" class="intro-card bloqueado" data-intro="encomendas" disabled>
               <svg class="icone intro-icone"><use href="#i-ilustracao"></use></svg>
               <span class="intro-nome">Arte &amp; Encomendas</span>
               <span class="intro-desc">sob medida, autoral, projetos</span>
+              <span class="intro-breve">em breve</span>
             </button>
-            <button type="button" class="intro-card" data-intro="conhecimento">
+            <button type="button" class="intro-card bloqueado" data-intro="conhecimento" disabled>
               <svg class="icone intro-icone"><use href="#i-livro"></use></svg>
               <span class="intro-nome">Livros &amp; Conhecimento</span>
               <span class="intro-desc">publicações, PDFs, o saber fazer</span>
+              <span class="intro-breve">em breve</span>
             </button>
           </div>
         </div>
@@ -1613,7 +1630,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag">v3</span>
+          <span class="versao-tag" data-ver>28/08/26 01:21</span>
         </div>
         <h1>Orçamentos</h1>
       </header>
@@ -1636,7 +1653,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag">v3</span>
+          <span class="versao-tag" data-ver>28/08/26 01:21</span>
         </div>
         <h1>Custos de referência</h1>
       </header>
@@ -1741,7 +1758,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag">v3</span>
+          <span class="versao-tag" data-ver>28/08/26 01:21</span>
         </div>
         <h1>Fornos &amp; queima</h1>
       </header>
@@ -1790,6 +1807,7 @@
 <script src="js/config.js"></script>
 <script src="js/modelo.js"></script>
 <script src="js/desenho.js"></script>
+<script src="js/storage.js"></script>
 <script>
 
   const LS_EMBAGEM_ITENS_KEY = "alice-mock-embalagem-itens-v1";
@@ -1862,11 +1880,10 @@ function totalCustosFixos() {
     info.innerHTML = "Usando <b>" + a.nome + "</b> a <b>R$ " + a.preco.toFixed(2).replace(".", ",") + "/kg</b>" + (a.fornecedor ? " (" + a.fornecedor + ")" : "");
   }
 
-  /* ===== persistência: Firestore (nuvem, gratuito) + localStorage (cache local) ===== */
+  /* ===== persistência: storage (Firestore doc alice/estado + localStorage) ===== */
   const LS_KEY = "alice-mock-custos-v3";
 
   let firestoreDisponivel = false;
-  let fsDoc = null;
   let fbStorage = null;
 
   function initFirestore() {
@@ -1874,11 +1891,21 @@ function totalCustosFixos() {
       if (!window.firebase || !window.ALICE_FIREBASE || !window.ALICE_FIREBASE.apiKey) return;
       if (window.ALICE_FIREBASE.apiKey.indexOf("COLE_AQUI") === 0) return;
       firebase.initializeApp(window.ALICE_FIREBASE);
-      fsDoc = firebase.firestore().collection("alice").doc("estado");
       if (window.firebase.storage) fbStorage = firebase.storage();
       firestoreDisponivel = true;
     } catch (e) { firestoreDisponivel = false; }
   }
+  initFirestore();
+
+  /* módulo genérico de persistência (DOM-free, app/js/storage.js): doc único
+     em duas fontes, vence a mais recente (salvoEm). A UI monta o doc e aplica. */
+  let storage = criaStorage({
+    chave: LS_KEY,
+    localStorage: window.localStorage,
+    firestore: firestoreDisponivel ? firebase.firestore() : null,
+    colecao: "alice",
+    docId: "estado",
+  });
 
   function setStatusNuvem(ok) {
     const el = document.getElementById("sync-status");
@@ -1946,26 +1973,7 @@ function totalCustosFixos() {
     return d;
   }
 
-  async function salvarFirestore() {
-    if (!firestoreDisponivel) return false;
-    try {
-      const dados = JSON.parse(JSON.stringify(dadosParaSalvar()));
-      await normalizarFotosParaNuvem(dados);
-      await fsDoc.set(paraNuvem(dados));
-      setStatusNuvem(true);
-      return true;
-    } catch (e) { setStatusNuvem(false); return false; }
-  }
-
-  function salvarLocalStorage() {
-    try {
-      localStorage.setItem(LS_KEY, JSON.stringify(dadosParaSalvar()));
-    } catch (e) { /* storage indisponível — segue em memória */ }
-    salvarFirestore();
-  }
-
   /* ===== autosave: grava sozinho após cada mudança (debounce 700ms) ===== */
-  let autosaveTimer = null;
   let suprimindoAutosave = false;
   function sincronizarCustosDoForm() {
     const h = document.getElementById("f-horas-dia");
@@ -1973,25 +1981,35 @@ function totalCustosFixos() {
     if (h) CONFIG.horasDia = Number(h.value) || 8;
     if (d) CONFIG.diasMes = Number(d.value) || 22;
   }
+  async function gravarEstado() {
+    const nuvemOk = await storage.gravar(dadosParaSalvar(), async (doc) => {
+      const c = JSON.parse(JSON.stringify(doc));
+      await normalizarFotosParaNuvem(c);
+      return paraNuvem(c);
+    });
+    setStatusNuvem(nuvemOk);
+    return nuvemOk;
+  }
+  function salvarLocalStorage() { gravarEstado(); }
+  const autosave = storage.autosave(() => {
+    sincronizarCustosDoForm();
+    gravarEstado();
+  }, 700);
   function agendarAutosave() {
     if (suprimindoAutosave) return;
-    if (autosaveTimer) clearTimeout(autosaveTimer);
-    autosaveTimer = setTimeout(() => {
-      autosaveTimer = null;
-      sincronizarCustosDoForm();
-      salvarLocalStorage();
-    }, 700);
+    autosave.agendar();
   }
   document.addEventListener("input", agendarAutosave);
   document.addEventListener("change", agendarAutosave);
   document.addEventListener("click", (e) => { if (e.target.closest(".app")) agendarAutosave(); });
-  window.addEventListener("pagehide", () => {
-    if (!suprimindoAutosave) {
-      if (autosaveTimer) clearTimeout(autosaveTimer);
-      sincronizarCustosDoForm();
-      salvarLocalStorage();
-    }
-  });
+  function autosaveFlush() {
+    if (suprimindoAutosave) return;
+    sincronizarCustosDoForm();
+    autosave.flush();
+  }
+  window.addEventListener("pagehide", autosaveFlush);
+  /* mobile: app vai pra segundo plano / aba trocada → grava na hora */
+  document.addEventListener("visibilitychange", () => { if (document.hidden) autosaveFlush(); });
 
   /* rascunho dos formulários (peça/produto) — captura o estado atual */
   function capturarRascunho() {
@@ -2089,26 +2107,22 @@ function totalCustosFixos() {
 
   async function carregarLocalStorage() {
     suprimindoAutosave = true;
-    let nuvemOk = false;
-    if (firestoreDisponivel) {
-      try {
-        const snap = await fsDoc.get();
-        if (snap.exists && snap.data()) {
-          aplicarDados(reanexarFotos(snap.data()));
-          nuvemOk = true;
-          setStatusNuvem(true);
-        }
-      } catch (e) { setStatusNuvem(false); }
-    }
-    if (!nuvemOk) {
-      try {
-        const raw = localStorage.getItem(LS_KEY);
-        if (raw) aplicarDados(JSON.parse(raw));
-      } catch (e) { /* segue com padrões */ }
+    /* timeout: uma leitura de nuvem pendurada não pode travar o autosave
+       (nem o render) — cai no local e segue. */
+    const r = await Promise.race([
+      storage.carregar(),
+      new Promise((resolve) => setTimeout(() => resolve(null), 2500)),
+    ]);
+    let dados = null, origem = null, nuvemOk = false;
+    if (r) { dados = r.dados; origem = r.origem; nuvemOk = r.nuvemOk; }
+    else { dados = storage.lerLocal(); origem = dados ? "local" : null; }
+    setStatusNuvem(nuvemOk);
+    if (dados) {
+      try { aplicarDados(origem === "nuvem" ? reanexarFotos(dados) : dados); }
+      catch (e) { /* segue com padrões */ }
     }
   }
 
-  initFirestore();
   setStatusNuvem(false);
 
 function dadosParaSalvar() {
@@ -2232,6 +2246,7 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     document.querySelectorAll(".nav-item").forEach((i) => i.classList.toggle("ativo", i.dataset.tela === tela));
     document.querySelectorAll(".tela").forEach((t) => t.classList.toggle("ativa", t.id === "tela-" + tela));
     if (tela === "salvos") renderSalvos();
+    autosaveFlush();
   }
   document.querySelectorAll(".nav-item").forEach((b) => b.addEventListener("click", () => navegar(b.dataset.tela)));
   document.querySelectorAll("[data-ir]").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); navegar(a.dataset.ir); }));
@@ -2252,6 +2267,7 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     conhecimento: { icone: "#i-livro", nome: "Livros & Conhecimento", desc: "publicações, PDFs, o saber fazer", flow: "produto" },
   };
   function setTipo(tipo, comScroll) {
+    if (tipo !== "peca") return;
     estado.tipo = tipo;
     const info = TIPOS_INFO[tipo];
     document.getElementById("intro-inicio").classList.add("escondido");
@@ -3698,21 +3714,26 @@ document.getElementById("btn-salvar-custos").addEventListener("click", () => {
   });
 
   /* carrega dados salvos (servidor ou cache local) antes de renderizar */
-  carregarLocalStorage().then(() => {
-    sincronizarCamposCustos();
-    sincronizarQueimaForm();
-    renderCustos();
-    renderFornos();
-    renderServicos();
-    populateFornoRender();
-    renderQueimas();
-    renderTamanho();
-    atualizarNivelRates();
-    renderFornoSVG();
-    calcularPeca();
-    calcularProduto();
-    suprimindoAutosave = false;
-  });
+  carregarLocalStorage()
+    .then(() => {
+      try {
+        sincronizarCamposCustos();
+        sincronizarQueimaForm();
+        renderCustos();
+        renderFornos();
+        renderServicos();
+        populateFornoRender();
+        renderQueimas();
+        renderTamanho();
+        atualizarNivelRates();
+        renderFornoSVG();
+        calcularPeca();
+        calcularProduto();
+      } finally {
+        suprimindoAutosave = false;
+      }
+    })
+    .catch(() => { suprimindoAutosave = false; });
 
   /* reflete o CONFIG nos campos de entrada */
   function sincronizarCamposCustos() {

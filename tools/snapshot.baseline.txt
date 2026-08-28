@@ -53,3 +53,10 @@ peca §3.4 — linhas: Exclusiva=92.70 | Padrão=67.42 | Revenda=52.97
 produto — custoTotal: 22.48
 produto — custoComTaxas: 25.55
 produto — linhas: Autoral=76.64 | Profissional=63.86 | Essencial=51.09
+=== storage (frescor salvoEm) ===
+local mais novo: local
+nuvem mais nova: nuvem
+sem salvoEm → nuvem: nuvem
+só local: local
+só nuvem: nuvem
+nenhuma: null

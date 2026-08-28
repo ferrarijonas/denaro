@@ -19,4 +19,9 @@ if git diff --cached | grep -E "$SECRETS" >/dev/null 2>&1; then
   exit 1
 fi
 
+# Versao no topo do app: grava data/hora desta atualizacao na tag data-ver.
+STAMP=$(date '+%d/%m/%y %H:%M')
+sed -i "s|data-ver>[^<]*</span>|data-ver>$STAMP</span>|" app/index.html
+git add app/index.html
+
 exit 0

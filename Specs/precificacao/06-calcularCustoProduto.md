@@ -2,7 +2,7 @@
 
 ZenSpec de programa. Este programa existe para que **a ceramista veja o custo de um produto** (lote fabricado a partir de uma receita em gramas) **e o preço em cada linha** — sem conta manual.
 
-Programa puro (regra `DenaroEngSpec.md` §3): `calcularCustoProduto(inputs, config)` devolve um **objeto resultado** (nunca escreve DOM). Fórmula em `modelo-de-precificacao.md` §4.
+Programa puro (regra `DenaroEngSpec.md` §3): `calcularCustoProduto(inputs, config)` devolve um **objeto resultado** (nunca escreve DOM). Fórmula em `07-modelo-de-precificacao.md` §4.
 
 ---
 
@@ -42,7 +42,7 @@ custoComTaxas    = custoTotal ÷ (1 − taxas)
 precoPorLinha    = custoComTaxas × multiplicadorDaLinha
 ```
 
-> **Nota de divergência (registrada):** `modelo-de-precificacao.md` §4.2 prevê `montagem × custoHoraPessoa`, mas o código usa `custoHoraTotal` (embute os fixos rateados). Como o comportamento atual é o que a ceramista aprovou, **o código é a realidade**; o exemplo do modelo (§4.3) precisa de revisão quando o modelo for atualizado. Não mudar o número sem decisão explícita (regra: nada do visual muda).
+> **Nota de divergência (registrada):** `07-modelo-de-precificacao.md` §4.2 prevê `montagem × custoHoraPessoa`, mas o código usa `custoHoraTotal` (embute os fixos rateados). Como o comportamento atual é o que a ceramista aprovou, **o código é a realidade**; o exemplo do modelo (§4.3) precisa de revisão quando o modelo for atualizado. Não mudar o número sem decisão explícita (regra: nada do visual muda).
 
 ### Contrato
 
@@ -83,4 +83,4 @@ Erros:
 
 ## Interface
 
-Sem interface própria — renderizado pelo `pricingPanel`. Ver `pricingPanel.zenspec.md`.
+Sem interface própria — renderizado pelo `pricingPanel`. Ver `01-pricingPanel.md`.

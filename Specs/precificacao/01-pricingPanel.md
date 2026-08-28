@@ -55,7 +55,7 @@ toggle Peça/Produto → seções → (cálculo local, ao vivo ou botão) → cu
 
 ### Contrato
 
-Entrada (pedido de cálculo — peça): `tipo: "peca"` + os campos normalizados do formulário (`PricingInput` — ver `lerMedidas.zenspec.md`).
+Entrada (pedido de cálculo — peça): `tipo: "peca"` + os campos normalizados do formulário (`PricingInput` — ver `02-lerMedidas.md`).
 
 Entrada (pedido de cálculo — produto): `tipo: "produto"` + `receita`, `unidadesProduzidas`, `embalagem`, `tempoMontagemHoras`.
 
@@ -85,7 +85,7 @@ Erros:
 ### Critérios de aceitação
 
 - Uma peça vira preço em poucos toques (tipo, insumos, tempo, dificuldade, calcular).
-- Toda linha de preço tem origem rastreável no custo detalhado (conforme `modelo-de-precificacao.md`).
+- Toda linha de preço tem origem rastreável no custo detalhado (conforme `07-modelo-de-precificacao.md`).
 - O render do forno e o custo de queima usam a mesma `estimarCabem` (nunca divergem).
 
 ---

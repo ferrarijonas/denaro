@@ -24,13 +24,13 @@ O domínio `precificacao` reúne os motores de cálculo e o painel. Cada program
 
 | Programa (arquivo = nome)                       | Recebe                                        | Devolve                          |
 | ----------------------------------------------- | --------------------------------------------- | -------------------------------- |
-| `lerMedidas` (`lerMedidas.zenspec.md`)          | raw do formulário                             | `PricingInput` (objeto plano)    |
-| `calcularCustoPeca` (`calcularCustoPeca.zenspec.md`) | `PricingInput` + config                  | `PricingResult` (custo + linhas) |
-| `calcularCustoProduto` (`calcularCustoProduto.zenspec.md`) | `ProductPricingInput` + config    | `PricingResult`                  |
-| `cubagemDe` (`cubagemDe.zenspec.md`)            | formato + medidas (cm)                        | `medidas` + `cubagemCm3`         |
-| `estimarCabem` (`Specs/queima/estimarCabem.zenspec.md`) | tipo + forno + medidas                | `{ total, porNivel, niveis, mode }` |
-| `desenharForno` (`desenharForno.zenspec.md`)    | medidas + forno + `estimarCabem`              | string SVG                        |
-| `pricingPanel` (`pricingPanel.zenspec.md`)      | toques + resultados                           | estados visuais                   |
+| `lerMedidas` (`02-lerMedidas.md`)     | raw do formulário                             | `PricingInput` (objeto plano)    |
+| `calcularCustoPeca` (`05-calcularCustoPeca.md`) | `PricingInput` + config                  | `PricingResult` (custo + linhas) |
+| `calcularCustoProduto` (`06-calcularCustoProduto.md`) | `ProductPricingInput` + config    | `PricingResult`                  |
+| `cubagemDe` (`03-cubagemDe.md`)       | formato + medidas (cm)                        | `medidas` + `cubagemCm3`         |
+| `estimarCabem` (`Specs/queima/01-estimarCabem.md`) | tipo + forno + medidas                | `{ total, porNivel, niveis, mode }` |
+| `desenharForno` (`04-desenharForno.md`) | medidas + forno + `estimarCabem`              | string SVG                        |
+| `pricingPanel` (`01-pricingPanel.md`)  | toques + resultados                           | estados visuais                   |
 
 Fluxo geral:
 
@@ -49,7 +49,7 @@ formulário → lerMedidas (medidas) → estimarCabem (ocupação) → desenharF
 - Se tempo de execução = 0 → custo de mão de obra = 0.
 - Preço por linha = `custoComTaxas ÷ (1 − margem)` (peça) ou `custoComTaxas × multiplicador` (produto).
 - `estimarCabem` é a **fonte única** de "quantas cabem" — usada pelo custo de queima e pelo render.
-- O modelo completo, número a número, vive em `modelo-de-precificacao.md`.
+- O modelo completo, número a número, vive em `07-modelo-de-precificacao.md`.
 
 ---
 
@@ -57,13 +57,13 @@ formulário → lerMedidas (medidas) → estimarCabem (ocupação) → desenharF
 
 Os contratos campo-a-campo dos programas vivem nas ZenSpecs filhas desta pasta:
 
-- `cubagemDe.zenspec.md` — formato, medidas, cubagem, slider proporcional + bind por campo.
-- `desenharForno.zenspec.md` — render SVG determinístico do forno (biscoito/esmalte).
-- `calcularCustoPeca.zenspec.md` — calcula custo e preços por linha de peça.
-- `calcularCustoProduto.zenspec.md` — calcula custo e preços por linha de produto.
-- `lerMedidas.zenspec.md` — normaliza o formulário em objetos planos.
-- `pricingPanel.zenspec.md` — a tela de precificação (UI).
-- Ocupação e fornos: `Specs/queima/estimarCabem.zenspec.md` e `Specs/queima/fornosPanel.zenspec.md`.
+- `03-cubagemDe.md` — formato, medidas, cubagem, slider proporcional + bind por campo.
+- `04-desenharForno.md` — render SVG determinístico do forno (biscoito/esmalte).
+- `05-calcularCustoPeca.md` — calcula custo e preços por linha de peça.
+- `06-calcularCustoProduto.md` — calcula custo e preços por linha de produto.
+- `02-lerMedidas.md` — normaliza o formulário em objetos planos.
+- `01-pricingPanel.md` — a tela de precificação (UI).
+- Ocupação e fornos: `Specs/queima/01-estimarCabem.md` e `Specs/queima/00-fornosPanel.md`.
 
 ---
 
@@ -86,7 +86,7 @@ Os contratos campo-a-campo dos programas vivem nas ZenSpecs filhas desta pasta:
 
 ## Interface
 
-A tela de precificação (mobile-first) é detalhada na ZenSpec de `pricingPanel` (`pricingPanel.zenspec.md`). Resumo:
+A tela de precificação (mobile-first) é detalhada na ZenSpec de `pricingPanel` (`01-pricingPanel.md`). Resumo:
 
 - Escolha do tipo: **Peça / Produto** (cards iniciais).
 - Seções da peça: Insumos (argila + esmalte + tamanho + acessórios), Mão de obra, Queima, Canais, Entrega.

@@ -1,7 +1,7 @@
 # Denaro Stack Spec
 
 Escolhas técnicas claras, sem ambiguidade. Stack Spec diz **com o quê**; Eng Spec diz **a estrutura**; ZenSpec diz **o comportamento**; código diz **como**.
-Este documento segue o template de `ZenStackSpec.md` e é derivado de `DenaroConceptSpec` e `DenaroEngSpec`.
+Este documento segue o template de `ZenSpecKit/ZenStackSpec.md` e é derivado de `DenaroConceptSpec` e `DenaroEngSpec`.
 
 ---
 

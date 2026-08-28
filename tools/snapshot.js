@@ -19,7 +19,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const ROOT = path.join(__dirname, "..");
-const FILES = ["app/js/config.js", "app/js/modelo.js", "app/js/desenho.js"];
+const FILES = ["app/js/config.js", "app/js/modelo.js", "app/js/desenho.js", "app/js/storage.js"];
 const BASELINE = path.join(__dirname, "snapshot.baseline.txt");
 
 /* ---------- cenários fixos ---------- */
@@ -42,12 +42,12 @@ function carregarProgramas() {
   const context = { window: {} };
   context.globalThis = context;
   vm.createContext(context);
-  const ex = code + "\n;globalThis.__d = { cubagemDe, estimarCabem, desenharForno, calcularCustoPeca, calcularCustoProduto, CONFIG };";
+  const ex = code + "\n;globalThis.__d = { cubagemDe, estimarCabem, desenharForno, calcularCustoPeca, calcularCustoProduto, criaStorage, CONFIG };";
   vm.runInContext(ex, context, { filename: "denaro-puros.js" });
   return context.__d;
 }
 
-function snapshotDe(p) {
+async function snapshotDe(p) {
   const out = [];
 
   out.push("=== cubagemDe (cm3) ===");
@@ -75,7 +75,7 @@ function snapshotDe(p) {
   }
 
   out.push("=== motores (pricingEngine / productEngine) ===");
-  /* referencia do modelo-de-precificacao.md §3.4 (validada contra as planilhas) */
+  /* referencia do 07-modelo-de-precificacao.md §3.4 (validada contra as planilhas) */
   const C = p.CONFIG;
   const salario = C.maoDeObra.itens.find((i) => i.nome === "Salário").valor;
   const totalFixos = C.custosFixos.reduce((s, cat) => s + cat.itens.reduce((x, i) => x + i.valor, 0), 0)
@@ -115,42 +115,65 @@ function snapshotDe(p) {
   out.push(`produto — custoComTaxas: ${resProd.custoComTaxas.toFixed(2)}`);
   out.push(`produto — linhas: ${resProd.linhas.map((l) => `${l.nome}=${l.preco.toFixed(2)}`).join(" | ")}`);
 
+  out.push("=== storage (frescor salvoEm) ===");
+  const fakeLocal = (doc) => { let raw = doc ? JSON.stringify(doc) : null; return { getItem: () => raw, setItem: (k, v) => { raw = v; } }; };
+  const fakeFirestore = (docData) => ({
+    collection: () => ({ doc: () => ({ get: () => Promise.resolve({ exists: !!docData, data: () => docData }), set: () => Promise.resolve() }) }),
+  });
+  const casos = [
+    { nome: "local mais novo", local: { salvoEm: 200, rascunho: { nomePeca: "A" } }, nuvem: { salvoEm: 100, rascunho: { nomePeca: "B" } }, esperado: "local" },
+    { nome: "nuvem mais nova", local: { salvoEm: 100, rascunho: { nomePeca: "A" } }, nuvem: { salvoEm: 200, rascunho: { nomePeca: "B" } }, esperado: "nuvem" },
+    { nome: "sem salvoEm → nuvem", local: { rascunho: { nomePeca: "A" } }, nuvem: { rascunho: { nomePeca: "B" } }, esperado: "nuvem" },
+    { nome: "só local", local: { salvoEm: 100, rascunho: { nomePeca: "A" } }, nuvem: null, esperado: "local" },
+    { nome: "só nuvem", local: null, nuvem: { salvoEm: 100, rascunho: { nomePeca: "B" } }, esperado: "nuvem" },
+    { nome: "nenhuma", local: null, nuvem: null, esperado: "null" },
+  ];
+  for (const c of casos) {
+    const st = p.criaStorage({
+      chave: "k", localStorage: fakeLocal(c.local),
+      firestore: c.nuvem ? fakeFirestore(c.nuvem) : null, colecao: "c", docId: "d",
+    });
+    const r = await st.carregar();
+    const got = r.origem === null ? "null" : r.origem;
+    out.push(`${c.nome}: ${got}${got === c.esperado ? "" : "  FALHOU (esperado " + c.esperado + ")"}`);
+  }
+
   return out.join("\n");
 }
 
 const mode = process.argv[2] || "";
 
 const p = carregarProgramas();
-const snap = snapshotDe(p);
-
-if (mode === "--write") {
-  fs.writeFileSync(BASELINE, snap, "utf8");
-  console.log("Baseline gravado em", BASELINE);
-} else if (mode === "--check") {
-  if (!fs.existsSync(BASELINE)) {
-    console.error("Sem baseline. Rode primeiro: node tools/snapshot.js --write");
-    process.exit(2);
-  }
-  const prev = fs.readFileSync(BASELINE, "utf8");
-  if (prev === snap) {
-    console.log("OK — snapshot idêntico ao baseline (nada do visual mudou).");
-    process.exit(0);
-  }
-  const prevLines = prev.split("\n");
-  const curLines = snap.split("\n");
-  const max = Math.max(prevLines.length, curLines.length);
-  let diffs = 0;
-  for (let i = 0; i < max; i++) {
-    if (prevLines[i] !== curLines[i]) {
-      console.log(`linha ${i + 1}:`);
-      console.log(`  ANTES: ${prevLines[i]}`);
-      console.log(`  AGORA: ${curLines[i]}`);
-      diffs++;
-      if (diffs > 20) { console.log("  … (diferenças truncadas)"); break; }
+snapshotDe(p).then((snap) => {
+  if (mode === "--write") {
+    fs.writeFileSync(BASELINE, snap, "utf8");
+    console.log("Baseline gravado em", BASELINE);
+  } else if (mode === "--check") {
+    if (!fs.existsSync(BASELINE)) {
+      console.error("Sem baseline. Rode primeiro: node tools/snapshot.js --write");
+      process.exit(2);
     }
+    const prev = fs.readFileSync(BASELINE, "utf8");
+    if (prev === snap) {
+      console.log("OK — snapshot idêntico ao baseline (nada do visual mudou).");
+      process.exit(0);
+    }
+    const prevLines = prev.split("\n");
+    const curLines = snap.split("\n");
+    const max = Math.max(prevLines.length, curLines.length);
+    let diffs = 0;
+    for (let i = 0; i < max; i++) {
+      if (prevLines[i] !== curLines[i]) {
+        console.log(`linha ${i + 1}:`);
+        console.log(`  ANTES: ${prevLines[i]}`);
+        console.log(`  AGORA: ${curLines[i]}`);
+        diffs++;
+        if (diffs > 20) { console.log("  … (diferenças truncadas)"); break; }
+      }
+    }
+    console.error(`DIVERGIU — ${diffs} linha(s) diferentes.`);
+    process.exit(1);
+  } else {
+    process.stdout.write(snap + "\n");
   }
-  console.error(`DIVERGIU — ${diffs} linha(s) diferentes.`);
-  process.exit(1);
-} else {
-  process.stdout.write(snap + "\n");
-}
+});

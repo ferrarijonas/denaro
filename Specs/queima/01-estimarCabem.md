@@ -4,7 +4,7 @@ ZenSpec de programa. Este programa existe para que **a ceramista veja, em tempo 
 
 > **Estado atual:** o cálculo (`estimarCabem`) e o render-duplo (biscoito/esmalte) já existem **embutidos no bloco Tamanho da precificação** (ver `cubagemDe` e `desenharForno`). O **painel separado** de ocupação — `ocupacaoPanel` (tela futura, nome próprio de tela, não de função) — com seletor de peça salva, chip de tipo e slider de carga real, é um programa **futuro**, aberto a partir de **Fornos & queima** ou de **"ver no forno"**. Esta ZenSpec cobre o núcleo (já implementado, `estimarCabem`) e o alvo (painel).
 
-Requisitos: `fornosPanel.zenspec.md` (fornos, `estimarCabem`, render SVG).
+Requisitos: `00-fornosPanel.md` (fornos, `estimarCabem`, render SVG).
 
 ---
 

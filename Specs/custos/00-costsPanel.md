@@ -129,7 +129,7 @@ Erros:
 
 - Toda alteração salva reflete no próximo cálculo do `pricingPanel` (sem reiniciar).
 - Nenhum valor é salvo com estado inválido.
-- Total gastos e derivados batem com a soma dos itens (verificado contra `modelo-de-precificacao.md`).
+- Total gastos e derivados batem com a soma dos itens (verificado contra `07-modelo-de-precificacao.md`).
 
 ---
 

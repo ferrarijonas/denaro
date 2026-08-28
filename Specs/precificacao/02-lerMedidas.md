@@ -34,7 +34,7 @@ pricingPanel → raw do formulário → normalizar → PricingInput | error com 
 - **Esmalte**: `number ≥ 0`, em **reais** (R$), `step 0.50`.
 - **Tempo**: entrado em **horas e minutos** (steppers/atalhos); interno = `h + m/60` (decimal).
 - **Dificuldade**: 1–5 na UI → fator interno `CONFIG.fatores` (1,0/1,2/1,4/1,6/1,8).
-- **Medidas (`lerMedidas`)**: lê os inputs do formato ativo e devolve `{ formato, diametro?, altura?, largura?, profundidade?, alturaQ? }` (number ≥ 0, cm). Ver `cubagemDe.zenspec.md`.
+- **Medidas (`lerMedidas`)**: lê os inputs do formato ativo e devolve `{ formato, diametro?, altura?, largura?, profundidade?, alturaQ? }` (number ≥ 0, cm). Ver `03-cubagemDe.md`.
 - **Seleções**: acessórios/embalagem viram `{ item, qtd }` (qtd ≥ 1) com o preço do catálogo.
 - **Queima**: `queimas: [{ tipo, forno }]` + flag `semQueima`.
 - **Frete**: `fretePagante` (`cliente|atele`) + `pecasNoEnvio ≥ 1`.

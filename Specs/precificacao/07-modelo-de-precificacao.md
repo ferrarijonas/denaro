@@ -23,7 +23,7 @@ Os custos de referência vêm de três blocos que as planilhas já têm, e alime
 
 ### 2.1 Custos fixos → custo da hora
 
-Os custos fixos são **mensais** e divididos em **dois blocos** (conforme `costsPanel.zenspec.md`):
+Os custos fixos são **mensais** e divididos em **dois blocos** (conforme `00-costsPanel.md`):
 
 **Bloco Mão de obra & pessoal** — salário + impostos sobre o salário + tempo de trabalho:
 
@@ -103,7 +103,7 @@ Tabela `Nome | Unidade | Preço`. Exemplos reais:
 - `dificuldade`: 1 | 2 | 3 | 4 | 5 (UI) → fator interno
 - `acessorios`: lista `{ item, qtd }` (ex.: fio, motor)
 - `embalagem`: lista `{ item, qtd }` (caixas, papéis, etiquetas, bolha, transporte)
-- `queima`: `{ onde: "forno"|"servico"|"nenhuma", ciclos: 0|1|2, pecasNaCarga: number }` (config de fornos em `fornosPanel`, ver `Specs/queima/fornosPanel.zenspec.md`)
+- `queima`: `{ onde: "forno"|"servico"|"nenhuma", ciclos: 0|1|2, pecasNaCarga: number }` (config de fornos em `fornosPanel`, ver `Specs/queima/00-fornosPanel.md`)
 - custos de referência: `precoKgArgila` (**vem do catálogo de insumos**, item "Argila Comum", não é cadastrado na aba Fixos), `custoHoraTotal`, `taxas`, `margensPorLinha`, `taxaPerda`, `fatorDificuldade`, `rateioFrete`
 
 ### 3.2 Fator de dificuldade
@@ -136,7 +136,7 @@ precoPorLinha   = custoComTaxas ÷ (1 − margemDaLinha)   ← margem é % do pr
 
 > **Escala de perda (R14):** `taxaPerda` é uma escala de 3 níveis (`CONFIG.perdas`): **Baixa 15%**, **Média 30%** (default), **Alta 45%**. Justificativa internacional: a perda real de ateliê soma **alocação de matéria-prima (15–20%)** + **quebra/refação (10–20%)** + **promocionais e seconds monetizados com desconto** (East Fork vende a 30%), que a literatura internacional trata separadamente mas o ateliê sente junto. A escala usa o valor do nível selecionado (`CONFIG.perdaNivel`).
 
-> **Queima (R19–R24):** `custoPorQueima` vem do `fornosPanel` (`Specs/queima/fornosPanel.zenspec.md`) — forno próprio (no v1: energia `kW × horas × dutyCycle × precoKwh`, ou valor digitado; desgaste/mão de obra/overhead em R25) ou serviço externo (tarifa por kg/peça/carga). `peçasNaCarga` é **estimada** pelo app (R24): por peso (capacidade do forno em kg ÷ `kgsArgila`) ou por tamanho para peças largas (prato/travessa). `ciclos`: 0 (sem queima), 1 (single-fire/raku) ou 2 (bisque + esmalte, padrão). Peça sem queima → custo 0. Onde a energia do forno já está no custo fixo, energia = 0 (sem dupla contagem). `custoQueima` também entra na base do risco/refação (a quebra acontece na queima).
+> **Queima (R19–R24):** `custoPorQueima` vem do `fornosPanel` (`Specs/queima/00-fornosPanel.md`) — forno próprio (no v1: energia `kW × horas × dutyCycle × precoKwh`, ou valor digitado; desgaste/mão de obra/overhead em R25) ou serviço externo (tarifa por kg/peça/carga). `peçasNaCarga` é **estimada** pelo app (R24): por peso (capacidade do forno em kg ÷ `kgsArgila`) ou por tamanho para peças largas (prato/travessa). `ciclos`: 0 (sem queima), 1 (single-fire/raku) ou 2 (bisque + esmalte, padrão). Peça sem queima → custo 0. Onde a energia do forno já está no custo fixo, energia = 0 (sem dupla contagem). `custoQueima` também entra na base do risco/refação (a quebra acontece na queima).
 
 ### 3.4 Verificação contra os custos fixos pré-cadastrados
 
@@ -243,7 +243,7 @@ precoPorLinha    = custoComTaxas × multiplicadorDaLinha
 - **Tarifas de quem queima comigo** (receita do forno) — config existente no `fornosPanel`, mas a tela de "fechar fornada" (quanto cobrar de cada pessoa) fica para um módulo futuro.
 - Contabilidade/financeiro completo, estoque.
 
-> **Queima dentro do escopo:** o custo de queima por peça individual **entrou no modelo** (R19–R23, §3.3) via `fornosPanel` — `Specs/queima/fornosPanel.zenspec.md`. Antes a queima só entrava no custo fixo via `custoHoraTotal`; agora é custo direto opcional, com guarda anti-dupla-contagem com a "luz" dos Fixos.
+> **Queima dentro do escopo:** o custo de queima por peça individual **entrou no modelo** (R19–R23, §3.3) via `fornosPanel` — `Specs/queima/00-fornosPanel.md`. Antes a queima só entrava no custo fixo via `custoHoraTotal`; agora é custo direto opcional, com guarda anti-dupla-contagem com a "luz" dos Fixos.
 
 ---
 

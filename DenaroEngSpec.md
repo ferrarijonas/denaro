@@ -1,7 +1,7 @@
 # Denaro Eng Spec
 
 Arquitetura clara, sem ambiguidade. Eng Spec diz **a estrutura**; ZenSpec diz **o comportamento**; código diz **como**.
-Este documento segue o template de `ZenEngSpec.md` e é derivado de `DenaroConceptSpec`.
+Este documento segue o template de `ZenSpecKit/ZenEngSpec.md` e é derivado de `DenaroConceptSpec`.
 
 ---
 
@@ -23,7 +23,7 @@ Este documento segue o template de `ZenEngSpec.md` e é derivado de `DenaroConce
 | `Dificuldade`      | Nível artístico 1–5 (UI) mapeado para multiplicador interno 1,0–1,8 que ajusta a mão de obra. |
 | `Margem`           | Percentual que, subtraído do preço de venda, deixa o custo: `preco = custoComTaxas ÷ (1 − margem)`. |
 | `Esmalte (R$)`     | Custo do esmalte da peça informado em **reais** (não em %). |
-| `Cálculo`          | Resultado determinístico dos motores `calcularCustoPeca`/`calcularCustoProduto` a partir do modelo em `modelo-de-precificacao.md`. |
+| `Cálculo`          | Resultado determinístico dos motores `calcularCustoPeca`/`calcularCustoProduto` a partir do modelo em `07-modelo-de-precificacao.md`. |
 | `Armazenamento`    | Onde os dados vivem: o **Firestore** (doc `alice/estado`) com **`localStorage`** como cache/fallback local. A UI usa o SDK do Firebase compat direto no navegador — sem servidor. |
 
 > **Chave interna:** o doc do Firestore chama-se `alice/estado` por continuidade de dados (não é o nome do produto — o produto é **Denaro**). Não renomear sem migração dos dados existentes.
@@ -51,60 +51,64 @@ Para cada componente: nome em `código`, metáfora em **negrito**, resumo e cont
 
 ### 4.1 Núcleo (domínio `precificacao`) — programas puros em `app/js/modelo.js`
 
-O modelo exato de cálculo vive em `Specs/precificacao/modelo-de-precificacao.md` (extraído das planilhas, validado número a número).
+O modelo exato de cálculo vive em `Specs/precificacao/07-modelo-de-precificacao.md` (extraído das planilhas, validado número a número).
 
 > **Regra de nome:** o nome do programa (no spec) é o nome da função no código. Um programa, um nome.
+>
+> **Regra de ordem:** o arquivo de spec pode ter prefixo numérico (`NN-`), que é **só ordem de leitura** — a função é o nome após o prefixo. A ordem é mantida por `tools/reorder.js --check` (valida) / `--fix` (renumera); arquivo novo entra na lista `ORDEM` do tool.
 
 - `calcularCustoPeca` — **calculadora de peças**
   Computa o custo de uma **peça** (argila + esmalte + mão de obra + embalagem + acessórios + queima + risco + taxas) e os preços por linha (Exclusiva/Padrão/Revenda). Função pura: `(estado, config, inputs) → { custo, custoComTaxas, linhas }`.
-  `Contrato: calcularCustoPeca.zenspec.md`.
+  `Contrato: Specs/precificacao/05-calcularCustoPeca.md`.
 
 - `calcularCustoProduto` — **calculadora de produtos**
   Computa o custo de um **produto** (receita em gramas ÷ unidades + embalagem + montagem + taxas) e os preços por linha (Autoral/Profissional/Essencial). Função pura.
-  `Contrato: calcularCustoProduto.zenspec.md`.
+  `Contrato: Specs/precificacao/06-calcularCustoProduto.md`.
 
 - `lerMedidas` (+ leitura do formulário) — **tradutor**
   Lê os campos do formulário e devolve objetos planos validados (peso, esmalte em R$, tempo h:min → decimal, medidas da peça). É a fronteira entre DOM e núcleo.
-  `Contrato: lerMedidas.zenspec.md`.
+  `Contrato: Specs/precificacao/02-lerMedidas.md`.
 
 - `estimarCabem` — **"quantas cabem"**
   Estima quantas peças como a atual ocupam um forno (por prateleira × níveis, empilhamento e encaixe), usando o config `OCUPACAO`. Função pura. Fonte única de "quantas cabem" — usada pelo custo de queima **e** pelo render.
-  `Contrato: Specs/queima/estimarCabem.zenspec.md`.
+  `Contrato: Specs/queima/01-estimarCabem.md`.
 
 ### 4.2 Desenho (domínio `queima`) — programa puro em `app/js/desenho.js`
 
 - `desenharForno` — **ilustrador do forno**
   Recebe `(medidas, forno)` e devolve a **string SVG** das duas vistas (biscoito/esmalte) com a peça principal + cópias, determinístico, nada fora do forno. Não toca DOM.
-  `Contrato: Specs/precificacao/desenharForno.zenspec.md`.
+  `Contrato: Specs/precificacao/04-desenharForno.md`.
 
 ### 4.3 Config — `app/js/config.js`
 
 - `config` — **gaveta de fichas**
   Valores padrão e catálogos declarados: `ARGILAS`, `MATERIAS_PRIMAS`, `CATALOGO_*`, `CONFIG` (custos, fornos, margens, taxas), `OCUPACAO`, `PACKING`, `RENDER`. Sem lógica; só dados.
 
-### 4.4 Persistência (domínio `custos`) — camada fina na UI
+### 4.4 Persistência (domínio `custos`) — programa em `app/js/storage.js`
 
 - `storage` — **arquivo local + nuvem**
-  Firestore (doc `alice/estado`) como fonte de verdade + `localStorage` (`LS_KEY = "alice-mock-custos-v3"`) como cache/fallback e guarda da base64 das fotos. Fotos sobem para o Firebase Storage (`alice-fotos/`) e o doc guarda a URL.
-  Persistência de peças/produtos/custos vive nessa mesma camada (não há `pieceStore`/`productStore` separados; o doc único guarda `salvos` + `rascunho` + config).
+  Doc único `alice/estado` no Firestore como fonte de verdade + `localStorage` (`LS_KEY = "alice-mock-custos-v3"`) como cache/fallback e guarda da base64 das fotos. Fotos sobem para o Firebase Storage (`alice-fotos/`) e o doc guarda a URL.
+  Todo doc gravado carrega `salvoEm` (timestamp). No carregamento **vence a fonte mais recente** (nuvem vs local, `salvoEm` maior); sem `salvoEm`, nuvem primeiro — evita que uma escrita de nuvem perdida (fechamento durante o `set` async) engula um rascunho local mais novo.
+  Módulo genérico e DOM-free: `criaStorage({ chave, firestore, colecao, docId })` → `carregar()` / `gravar(dados)` / `autosave(fn, ms)`. O shape do app (`CONFIG`/`salvos`/`rascunho`), o DOM e as fotos ficam na UI (`app/index.html`), que monta o doc e aplica o dado restaurado. O doc único guarda `salvos` + `rascunho` + config (não há `pieceStore`/`productStore` separados).
+  `Contrato: Specs/persistencia/00-storage.md`.
 
 ### 4.5 UI (mobile-first) — fiação no `app/index.html`
 
 - `pricingPanel` — **balcão do precificador**
   Tela principal com toggle **Peça / Produto**, seções (Insumos, Mão de obra, Tamanho, Queima, Embalagem, Frete), custo detalhado + preços por linha. Escreve no DOM os resultados dos motores.
-  `Contrato: Specs/precificacao/pricingPanel.zenspec.md`.
+  `Contrato: Specs/precificacao/01-pricingPanel.md`.
 
 - `costsPanel` — **gaveta visível**
   Tela de cadastro/edição dos custos de referência (Fixos → custo hora, Insumos, Embalagens/Acessórios, Taxas & Margens).
-  `Contrato: Specs/custos/costsPanel.zenspec.md`.
+  `Contrato: Specs/custos/00-costsPanel.md`.
 
 - `fornosPanel` — **parede da garagem**
   Tela de fornos e serviços de queima.
-  `Contrato: Specs/queima/fornosPanel.zenspec.md`.
+  `Contrato: Specs/queima/00-fornosPanel.md`.
 
 - `piecesListPanel` — **caderno aberto**
   Tela que lista peças e produtos salvos, com filtro por tipo, e permite abrir/copiar/editar.
-  `Contrato: Specs/pecas/piecesListPanel.zenspec.md`.
+  `Contrato: Specs/pecas/00-piecesListPanel.md`.
 
 ---
 
@@ -126,7 +130,7 @@ formulário → lerMedidas → estimarCabem (ocupação) → desenharForno (SVG)
 | `calcularCustoProduto` | `inputs` + config                     | calcula custo e preços por linha de produto  | `pricingPanel` (render)     |
 | `estimarCabem`         | tipo + forno + medidas                | peças por prateleira × níveis (empilha/encaixa) | `desenharForno` + custo de queima |
 | `desenharForno`        | medidas + forno + `estimarCabem`      | gera a string SVG das 2 vistas               | `pricingPanel` (injeção)    |
-| `storage`              | comandos de salvar/carregar           | Firestore + `localStorage` (fotos no Storage) | — (persistência)            |
+| `storage`              | comandos de salvar/carregar           | nuvem vs local mais recente (`salvoEm`); fotos no Storage | — (persistência)            |
 | `costsPanel`/`fornosPanel` | toques da usuária                 | edita config e grava via `storage`           | `storage`                   |
 | `piecesListPanel`      | toques da usuária                     | lista/abre/copia/edita itens salvos          | `storage`                   |
 
@@ -144,10 +148,10 @@ Regra: toda seta do diagrama aparece na tabela. Sem atalhos; nenhum programa de 
 
 | Estado            | O que acontece                                              | Se falhar                          |
 | ----------------- | ----------------------------------------------------------- | ---------------------------------- |
-| `carregar`        | Lê Firestore (`alice/estado`); se vazio/offline, cai no `localStorage` | segue com defaults + badge "nuvem off" |
+| `carregar`        | Lê Firestore (`alice/estado`) e `localStorage`; aplica a fonte com `salvoEm` maior (sem `salvoEm`, nuvem primeiro); leitura da nuvem com timeout 2,5s → cai no local | segue com defaults + badge "nuvem off" |
 | `restaurar`       | Aplica config e rascunho salvos; re-render das telas        | segue com defaults locais          |
 | `interação`       | Input/chip/stepper → recálculo + render ao vivo             | erro de validação no campo, sem parcial |
-| `autosave`        | Debounce 700ms → grava `localStorage` + Firestore; `pagehide` salva na hora | badge "nuvem off"; local mantém |
+| `autosave`        | Debounce 700ms → grava `localStorage` + Firestore; flush na hora ao trocar de tela, no `pagehide` e no `visibilitychange` | badge "nuvem off"; local mantém |
 
 ---
 
@@ -169,7 +173,7 @@ Regra: toda situação de erro listada é rastreável a um programa ou estado do
 
 ## 8. Decisões e alternativas descartadas
 
-> **Decisão:** O cálculo segue o modelo exato das planilhas (`modelo-de-precificacao.md`): custo de peça = `argila + esmalte(em R$) + embalagem + acessórios + mão de obra + queima + risco + rateio frete`, com preço por linha = `custoComTaxas ÷ (1 − margem)`. Produtos usam receita em gramas ÷ unidades + embalagem + montagem, com preço = `custoComTaxas × multiplicador`.
+> **Decisão:** O cálculo segue o modelo exato das planilhas (`07-modelo-de-precificacao.md`): custo de peça = `argila + esmalte(em R$) + embalagem + acessórios + mão de obra + queima + risco + rateio frete`, com preço por linha = `custoComTaxas ÷ (1 − margem)`. Produtos usam receita em gramas ÷ unidades + embalagem + montagem, com preço = `custoComTaxas × multiplicador`.
 > **Alternativa descartada:** esmalte como percentual sobre a argila e margem como markup sobre custo (`custo × (1 + margem)`).
 > **Motivo:** a planilha usa esmalte em **reais** e margem como **% do preço** (`÷ (1 − m)`); os valores da planilha foram conferidos número a número com esta regra.
 
@@ -212,6 +216,6 @@ Regra: toda situação de erro listada é rastreável a um programa ou estado do
 - Multi-tenancy, autenticação por usuário e permissões (o Firestore hoje usa regras que restringem ao doc `alice/estado`; auth entra numa versão futura).  
 - Conflitos de edição simultânea real-time (o Firestore sincroniza por documento; editar ao mesmo tempo em dois aparelhos pode sobrescrever).  
 - Controle de quais fotos podem ser apagadas no Storage (hoje o arquivo é mantido mesmo se o orçamento for apagado, por segurança).  
-- Importação das planilhas atuais (fica no escopo futuro do conceito; os valores de referência do v1 vêm de `modelo-de-precificacao.md`).  
-- Painel separado de ocupação do forno (hoje o render-duplo vive embutido na precificação; o painel com slider de carga real é futuro — ver `Specs/queima/estimarCabem.zenspec.md`).  
+- Importação das planilhas atuais (fica no escopo futuro do conceito; os valores de referência do v1 vêm de `07-modelo-de-precificacao.md`).  
+- Painel separado de ocupação do forno (hoje o render-duplo vive embutido na precificação; o painel com slider de carga real é futuro — ver `Specs/queima/01-estimarCabem.md`).  
 - Cálculos de lucro por mês, relatórios e dashboards.

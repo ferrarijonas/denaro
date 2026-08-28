@@ -92,7 +92,7 @@ Metáfora: começa como uma **etiquetadora de preços**, evolui para um **cadern
 - **Preço auditável.** Dá pra ver exatamente **de onde veio cada valor** do preço final.  
   Metáfora: **conta mostrada na lousa**, não mágica no bolso.
 
-- **Documentação como contrato.** Spec antes de código, seguindo o ZenSpecKit.  
+- **Documentação como contrato.** Spec antes de código, seguindo o `ZenSpecKit/`. Base em `ZenSpecKit/ZenSpec.md`; templates em `ZenSpecKit/ZenConceptSpec.md`, `ZenEngSpec.md` e `ZenStackSpec.md`.  
   Metáfora: construir com **planta aprovada**, não "puxadinho" improvisado.
 
 - **Programas puros e composíveis.** O cálculo vive em funções puras com contrato (entrada → saída), como ferramentas Unix: pequenas, únicas e ligadas em pipeline. A tela só injeta os resultados.  
