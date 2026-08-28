@@ -210,7 +210,7 @@ precoPorLinha    = custoComTaxas × multiplicadorDaLinha
 
 ## 5. Taxas e canais (configuráveis)
 
-> **Modelo 2026 (registro R10):** as taxas agora vêm de **dois lugares**: o **regime fiscal** (informal/MEI/Simples → imposto por venda) e o **canal de venda** (ficha pré-salva com a pilha de comissões do canal). Elo7 encerrou em 05/2026 e foi substituído por Mercado Livre e Etsy no seletor. Detalhes e tabelas de taxas reais em `padrao-ouro-2026-pesquisa.md` §5–6.
+> **Modelo 2026 (registro R10):** as taxas agora vêm de **dois lugares**: o **regime fiscal** (informal/MEI/Simples → imposto por venda) e o **canal de venda** (ficha pré-salva com a pilha de comissões do canal). Elo7 encerrou em 05/2026 e foi substituído por Mercado Livre e Etsy no seletor. Detalhes e tabelas de taxas reais em `referencias/padrao-ouro-2026-pesquisa.md` §5–6.
 
 | Taxa                    | Padrão 2026                        | Aplicada a            |
 | ----------------------- | ---------------------------------- | --------------------- |
@@ -260,4 +260,4 @@ O frete da peça segue o padrão internacional (Etsy shipping): **o comprador pa
 
 **Quem paga (R18, consenso 3 países):** decisão por peça em 2 perguntas — método (acima) + **pagante**: `à parte` (default) → frete NÃO entra no custo, é repasse informativo; `frete grátis` → frete entra no custo e sobe com margem, badge "Frete grátis pra ela". Retirada pula ambas. Regra: **frete nunca entra no preço sem escolha consciente**.
 
-Regra: o frete entra em `custoTotal` (antes das taxas) **somente quando embutido**, como `rateioFrete`. O modo default é "Entrego eu mesma" (R$ 0 até digitar). Detalhes em `padrao-ouro-2026-pesquisa.md` §4.
+Regra: o frete entra em `custoTotal` (antes das taxas) **somente quando embutido**, como `rateioFrete`. O modo default é "Entrego eu mesma" (R$ 0 até digitar). Detalhes em `referencias/padrao-ouro-2026-pesquisa.md` §4.

@@ -2,7 +2,7 @@
 
 ZenSpec de componente de UI. Este programa existe para que **a ceramista mantenha os fornos, serviços de queima e a conta da queima atualizados** em um lugar só, amigável — sem planilha e sem decoreba de fórmulas.
 
-Decisões de pesquisa que embasam esta tela: `padrao-ouro-queima-2026-pesquisa.md` (R19–R24).
+Decisões de pesquisa que embasam esta tela: `../precificacao/referencias/padrao-ouro-queima-2026-pesquisa.md` (R19–R24).
 
 A persistência vai para o `storage` (Firestore doc `alice/estado` + `localStorage`); o painel não conversa com API própria.
 
