@@ -24,7 +24,7 @@ Este documento segue o template de `ZenEngSpec.md` e é derivado de `DenaroConce
 | `Margem`           | Percentual que, subtraído do preço de venda, deixa o custo: `preco = custoComTaxas ÷ (1 − margem)`. |
 | `Esmalte (R$)`     | Custo do esmalte da peça informado em **reais** (não em %). |
 | `Cálculo`          | Resultado determinístico dos motores `calcularCustoPeca`/`calcularCustoProduto` a partir do modelo em `modelo-de-precificacao.md`. |
-| `Armazenamento`    | Onde os dados vivem: o **Firestore** (doc `alice/estado`) com **`localStorage`** como cache/fallback local. A UI usa o SDK do Firebase compat direto no navegador — sem servidor. O `server.js` (SQLite) é apenas legado opcional. |
+| `Armazenamento`    | Onde os dados vivem: o **Firestore** (doc `alice/estado`) com **`localStorage`** como cache/fallback local. A UI usa o SDK do Firebase compat direto no navegador — sem servidor. |
 
 > **Chave interna:** o doc do Firestore chama-se `alice/estado` por continuidade de dados (não é o nome do produto — o produto é **Denaro**). Não renomear sem migração dos dados existentes.
 
@@ -202,7 +202,6 @@ Regra: toda situação de erro listada é rastreável a um programa ou estado do
 ## 9. Distribuição e uso
 
 - **Formato (v1):** app web estático publicado no **GitHub Pages** (HTTPS, gratuito); acesso pelo navegador em `https://ferrarijonas.github.io/denaro/`. Dados sincronizados no **Firestore** (doc `alice/estado`) + **Storage** para fotos, com `localStorage` como cache local.
-- **Formato (modo local legado, opcional):** processo Node (`server.js`) na rede de casa via `pm2`; serve a mesma UI e expõe `GET/PUT /api/costs`. Não é usado pelo app publicado.
 - **Jornada mínima:** abrir o link → cadastrar custos de referência → precificar a primeira peça.
 - **Pré-requisitos:** repositório público no GitHub + projeto Firebase (Spark) com Firestore criado e regras publicadas.
 

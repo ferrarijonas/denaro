@@ -1695,7 +1695,6 @@
           <div class="sec" data-sec>
             <div class="sec-titulo"><span class="chev">▼</span> Taxas</div>
             <div class="sec-corpo">
-              <div class="field"><label>Imposto (%)</label><input type="number" id="t-imposto" value="5" min="0" max="40" step="1" inputmode="numeric" /></div>
               <div class="field">
                 <label>Perda / risco de refação</label>
                 <div class="chips" id="chips-perda">
@@ -1971,10 +1970,8 @@ function totalCustosFixos() {
   function sincronizarCustosDoForm() {
     const h = document.getElementById("f-horas-dia");
     const d = document.getElementById("f-dias-mes");
-    const t = document.getElementById("t-imposto");
     if (h) CONFIG.horasDia = Number(h.value) || 8;
     if (d) CONFIG.diasMes = Number(d.value) || 22;
-    if (t) CONFIG.imposto = (Number(t.value) || 0) / 100;
   }
   function agendarAutosave() {
     if (suprimindoAutosave) return;
@@ -2118,7 +2115,6 @@ function dadosParaSalvar() {
     return {
       horasDia: CONFIG.horasDia,
       diasMes: CONFIG.diasMes,
-      imposto: CONFIG.imposto,
       marketplace: CONFIG.marketplace,
       maquina: CONFIG.maquina,
       perdaNivel: CONFIG.perdaNivel,
@@ -2140,7 +2136,6 @@ function dadosParaSalvar() {
   function aplicarDados(d) {
     CONFIG.horasDia = d.horasDia || 8;
     CONFIG.diasMes = d.diasMes || 22;
-    CONFIG.imposto = d.imposto ?? 0.05;
     CONFIG.marketplace = d.marketplace ?? 0.0;
     CONFIG.maquina = d.maquina ?? 0.0;
 CONFIG.perdaNivel = d.perdaNivel || "media";
@@ -3599,7 +3594,6 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
 document.getElementById("btn-salvar-custos").addEventListener("click", () => {
     CONFIG.horasDia = Number(document.getElementById("f-horas-dia").value) || 8;
     CONFIG.diasMes = Number(document.getElementById("f-dias-mes").value) || 22;
-    CONFIG.imposto = (Number(document.getElementById("t-imposto").value) || 0) / 100;
     renderCustosDerivados();
     salvarLocalStorage();
     salvarFeedback("fb-custos", "Custos salvos");
@@ -3724,7 +3718,6 @@ document.getElementById("btn-salvar-custos").addEventListener("click", () => {
   function sincronizarCamposCustos() {
     document.getElementById("f-horas-dia").value = CONFIG.horasDia;
     document.getElementById("f-dias-mes").value = CONFIG.diasMes;
-    document.getElementById("t-imposto").value = Math.round(CONFIG.imposto * 100);
     renderPerda();
   }
 </script>

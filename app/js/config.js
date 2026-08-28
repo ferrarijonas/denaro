@@ -74,7 +74,7 @@ const CATALOGO_INSUMOS = [
 const CONFIG = {
   horasDia: 8, diasMes: 22,
   argilaPreco: 7.00,
-  imposto: 0.05, marketplace: 0.0, maquina: 0.0,
+  marketplace: 0.0, maquina: 0.0,
   perdaNivel: "media",
   perdas: { baixa: 0.15, media: 0.30, alta: 0.45 },
   canais: [

@@ -3,9 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Denaro — precificador de cerâmica (site estático GitHub Pages + Firestore Spark)",
-  "main": "server.js",
   "scripts": {
-    "start": "node server.js",
     "firebase:login": "firebase login",
     "deploy:rules": "firebase deploy --only firestore:rules,storage"
   },

@@ -28,7 +28,7 @@ Este documento segue o template de `ZenStackSpec.md` e é derivado de `DenaroCon
 | Categoria    | Decisão                                          | Alternativa descartada                    | Motivo                                                              |
 | ------------ | ------------------------------------------------ | ----------------------------------------- | ------------------------------------------------------------------- |
 | Linguagem    | `JavaScript` (Node) para ferramentas + HTML/JS da UI | `TypeScript` estrito em todo o stack      | O v1 reusa a UI aprovada como app; a estrutura é pequena e sem framework. |
-| Servidor     | Nenhum no v1 (site 100% estático no GitHub Pages). `server.js` (Node puro) fica como legado opcional | Fastify, Express, Hono                    | GitHub Pages não executa servidor; o Firestore cobre a persistência.   |
+| Servidor     | Nenhum no v1 (site 100% estático no GitHub Pages) | Fastify, Express, Hono                    | GitHub Pages não executa servidor; o Firestore cobre a persistência.   |
 | Persistência | `Firestore` (Spark, grátis) — doc `alice/estado` — com `localStorage` como cache/fallback local | `node:sqlite` no servidor, PostgreSQL, JSON em arquivo, só localStorage | Sincroniza os dados entre os aparelhos da ceramista e da ajudante, continua gratuito (Spark) e roda em site estático. |
 | Frontend     | `app/index.html` (UI aprovada) publicada no GitHub Pages, com os programas puros em `app/js/*` | Vite + TS + Tailwind                      | Não reconstruir UI que já foi validada.                                 |
 | Validação    | Validação leve no frontend (checagem manual)     | `zod` no stack inteiro                    | Sem servidor próprio; validação fica na camada do navegador.           |
@@ -51,11 +51,7 @@ Este documento segue o template de `ZenStackSpec.md` e é derivado de `DenaroCon
 | `localStorage` | Navegador (celular/desktop)    | Cache local/offline (fonte quando a nuvem falha) + guarda a base64 das fotos. |
 | Firebase Storage | Nuvem (mesmo projeto, Spark grátis) | Fotos dos orçamentos em `alice-fotos/` (a nuvem guarda a URL; base64 fica como cache no aparelho). |
 
-### 4.2 Modo local (legado, opcional — `server.js`)
-
-O servidor Node (`node:http` + `node:sqlite`, tabela `kv`) continua existindo no repositório como **legado opcional** para quem quiser rodar em rede de casa: serve a mesma UI do `app/` e expõe `GET/PUT /api/costs`. **O app publicado não depende mais dele** — a costura `BACKEND_URL` foi removida; a persistência real é o Firestore com fallback em `localStorage`.
-
-### 4.3 Dev/Test/Build
+### 4.2 Dev/Test/Build
 
 Sem build, sem linter, sem framework no v1. Testes: harness de snapshot (`tools/snapshot.js`) para os programas puros + teste manual via navegador. Ferramentas: `firebase-tools` (CLI) apenas para publicar as regras do Firestore.
 
@@ -65,7 +61,6 @@ Sem build, sem linter, sem framework no v1. Testes: harness de snapshot (`tools/
 
 | Comando            | O que faz                                              |
 | ------------------ | ------------------------------------------------------ |
-| `npm start`        | Sobe o `server.js` na porta 8787 (modo local legado, opcional). |
 | `npm run firebase:login` | Autentica a CLI Firebase na sua conta Google (uma vez por máquina). |
 | `npm run deploy:rules` | Publica `firestore.rules` no projeto (`firebase deploy --only firestore:rules`). |
 | `git push`         | Dispara o workflow do GitHub Pages, que publica `app/`. |
@@ -76,8 +71,7 @@ Sem build, sem linter, sem framework no v1. Testes: harness de snapshot (`tools/
 
 ```text
 .
-├── server.js          # Node puro: API (/api/costs) + serve estático do app (legado, opcional)
-├── package.json       # Scripts: start (legado) + login/deploy do Firestore
+├── package.json       # Scripts: login/deploy do Firestore
 ├── app/               # UI aprovada (index.html + logo.webp + firebase-config.js + js/) — publicada no GitHub Pages
 ├── app/js/            # Programas puros do núcleo (config.js, modelo.js, desenho.js)
 ├── tools/             # Harness de snapshot (garante que refatorações não mudem a saída)
@@ -85,7 +79,6 @@ Sem build, sem linter, sem framework no v1. Testes: harness de snapshot (`tools/
 ├── firestore.rules    # Regras de segurança do Firestore (versionadas, publicadas via CLI)
 ├── .firebaserc        # Aponta o projeto Firebase padrão
 ├── Specs/             # Spec de módulo + ZenSpecs filhas
-├── data/              # SQLite local (alice.db) — legado; ignorado no git
 ├── backup/            # Exports manuais antigos (legado, sem uso) — ignorado no git
 └── .github/workflows/ # Workflow que publica app/ no GitHub Pages
 ```
@@ -98,9 +91,8 @@ Sem build, sem linter, sem framework no v1. Testes: harness de snapshot (`tools/
 | --------------------------------- | --------------------------------------------------------------------------- |
 | Framework SPA (React/Next/etc.)   | A UI já aprovada roda sem framework; nada a reconstruir.             |
 | Framework HTTP (Fastify/Express)  | Sem servidor próprio; o Firestore cobre a persistência no site estático.    |
-| `better-sqlite3`                  | `node:sqlite` já vem no Node 22; e o SQLite é apenas legado local.          |
 | Sincronização manual entre aparelhos | Resolvida pelo Firestore (Spark) — sem custo e sem servidor para manter.    |
-| Build/TypeScript no v1            | Servidor e UI rodam direto; sem etapa de compilação.                        |
+| Build/TypeScript no v1            | UI roda direto, estática; sem etapa de compilação.                        |
 | Autenticação                      | Firestore sem login por enquanto; regras restringem o acesso ao doc `alice/estado`. Auth por usuário fica para o futuro. |
 
 ---
