@@ -1242,7 +1242,7 @@
             <span class="nome-app">Denaro</span>
           </div>
           <span class="sync-tag" id="sync-status" title="Status de sincronização dos dados">…</span>
-          <span class="versao-tag" data-ver>28/08/26 01:21</span>
+          <span class="versao-tag" data-ver>28/08/26 01:30</span>
         </div>
         <h1>Precificar</h1>
         <div class="intro" id="intro-inicio">
@@ -1630,7 +1630,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>28/08/26 01:21</span>
+          <span class="versao-tag" data-ver>28/08/26 01:30</span>
         </div>
         <h1>Orçamentos</h1>
       </header>
@@ -1653,7 +1653,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>28/08/26 01:21</span>
+          <span class="versao-tag" data-ver>28/08/26 01:30</span>
         </div>
         <h1>Custos de referência</h1>
       </header>
@@ -1758,7 +1758,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>28/08/26 01:21</span>
+          <span class="versao-tag" data-ver>28/08/26 01:30</span>
         </div>
         <h1>Fornos &amp; queima</h1>
       </header>
@@ -2064,6 +2064,9 @@ function totalCustosFixos() {
     };
     const inp = r.inputs || {};
     ["peso", "esmalte", "t-diametro", "t-altura", "t-largura", "t-profundidade", "t-altura-q", "frete-entrega", "frete-correios", "frete-rateio-pecas", "nome-produto", "unidades"].forEach((id) => setv(id, inp[id]));
+    /* nome/cliente vivem em estado (não em inputs) — devolver ao campo */
+    setv("nome-peca", e.nomePeca);
+    setv("cliente-peca", e.cliente);
     if (r.selAcessorios) Object.keys(r.selAcessorios).forEach((k) => { selAcessorios[k] = r.selAcessorios[k]; });
     if (r.selPeca) Object.keys(r.selPeca).forEach((k) => { selPeca[k] = r.selPeca[k]; });
     if (r.selProd) Object.keys(r.selProd).forEach((k) => { selProd[k] = r.selProd[k]; });
