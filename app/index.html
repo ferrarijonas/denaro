@@ -1087,54 +1087,56 @@
   }
   .sync-tag.ok { color: var(--verde); border-color: var(--verde); background: #f2f5ef; }
   .sync-tag.off { color: var(--terracota); border-color: var(--terracota); background: #faf1ed; }
-  /* barra de save retrô — disquete visível + autosave */
+  /* save sutil — combina com a UI (cartao/linha/tinta-suave) */
   .save-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 12px;
     margin: 12px 20px 0;
-    padding: 8px 10px;
-    background: #fffbe6;
-    border: 1.5px dashed #c9b896;
-    border-radius: 10px;
-    font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
+    padding: 9px 12px;
+    background: var(--cartao);
+    border: 1px solid var(--linha);
+    border-radius: 12px;
   }
   .save-bar-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .save-icone {
-    width: 28px; height: 28px;
+    width: 14px; height: 14px;
     display: flex; align-items: center; justify-content: center;
-    background: var(--argila);
-    color: #fffbe6;
-    border-radius: 6px;
-    font-size: 15px;
+    color: var(--tinta-suave);
     flex-shrink: 0;
-    line-height: 1;
   }
-  .save-icone.salvando { animation: flop 0.9s steps(2) infinite; }
-  @keyframes flop { 50% { opacity: 0.55; } }
-  .save-label { font-size: 12px; font-weight: 700; color: var(--tinta); white-space: nowrap; }
-  .save-hora { font-size: 11px; color: var(--tinta-suave); white-space: nowrap; }
+  .save-icone svg { width: 14px; height: 14px; display: block; }
+  .save-icone.salvando { opacity: 0.55; }
+  .save-label { font-size: 12px; font-weight: 500; color: var(--tinta-suave); white-space: nowrap; }
+  .save-hora { font-size: 11px; color: #b0a090; white-space: nowrap; }
+  .save-ponto {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--verde); flex-shrink: 0;
+  }
+  .save-ponto.salvando { background: #c9b896; animation: pulse 1s ease infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
   .btn-save-retro {
     flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border: 1.5px solid var(--argila);
-    background: var(--cartao);
+    border: none;
+    background: transparent;
     color: var(--argila);
     font-family: inherit;
     font-size: 12px;
-    font-weight: 700;
-    padding: 7px 12px;
-    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    padding: 4px 6px;
     cursor: pointer;
   }
-  .btn-save-retro:active { transform: scale(0.97); background: var(--papel); }
-  .item-salvo.rascunho { border-style: dashed; background: #fffbe6; border-color: #c9b896; }
+  .btn-save-retro:active { opacity: 0.6; }
+  .item-salvo.rascunho { border-style: dashed; background: var(--papel); }
   .badge-rascunho {
-    font-size: 9px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
-    background: var(--argila); color: #fffbe6; padding: 2px 6px; border-radius: 5px; margin-right: 6px;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--tinta-suave);
+    border: 1px solid var(--linha);
+    background: var(--papel);
+    padding: 2px 6px; border-radius: 999px; margin-right: 6px;
   }
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -1279,6 +1281,14 @@
         <path d="M8 14h1.6M14.4 14H16"/>
       </g>
     </symbol>
+    <symbol id="i-save" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 4.5h11l3 3v12h-14z"/>
+        <path d="M9 4.5v5h6v-5"/>
+        <path d="M8.5 18.5h7"/>
+        <path d="M11.5 15.5h2"/>
+      </g>
+    </symbol>
   </svg>
   <div class="app">
 
@@ -1291,7 +1301,7 @@
             <span class="nome-app">Denaro</span>
           </div>
           <span class="sync-tag" id="sync-status" title="Status de sincronização dos dados">…</span>
-          <span class="versao-tag" data-ver>03/09/26 15:20</span>
+          <span class="versao-tag" data-ver>03/09/26 15:23</span>
         </div>
         <h1>Precificar</h1>
         <div class="intro" id="intro-inicio">
@@ -1345,14 +1355,15 @@
             <span class="tipo-atual-troca">trocar</span>
           </button>
         </div>
-        <!-- barra save retrô — disquete visível + autosave -->
+        <!-- save sutil — autosave + disquete delicado -->
         <div class="save-bar" id="save-bar">
           <div class="save-bar-left">
-            <span class="save-icone" id="save-icone" title="salvamento automático">💾</span>
-            <span class="save-label" id="save-label">pronto</span>
+            <span class="save-icone" id="save-icone" title="salvamento automático"><svg class="icone"><use href="#i-save"></use></svg></span>
+            <span class="save-ponto" id="save-ponto"></span>
+            <span class="save-label" id="save-label">tudo salvo</span>
             <span class="save-hora" id="save-hora"></span>
           </div>
-          <button type="button" class="btn-save-retro" id="btn-salvar-agora" title="Gravar agora e ver em Orçamentos">💾 Salvar</button>
+          <button type="button" class="btn-save-retro" id="btn-salvar-agora" title="Gravar agora e ver em Orçamentos">Salvar</button>
         </div>
       </header>
       <main>
@@ -1688,7 +1699,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>03/09/26 15:20</span>
+          <span class="versao-tag" data-ver>03/09/26 15:23</span>
         </div>
         <h1>Orçamentos</h1>
       </header>
@@ -1711,7 +1722,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>03/09/26 15:20</span>
+          <span class="versao-tag" data-ver>03/09/26 15:23</span>
         </div>
         <h1>Custos de referência</h1>
       </header>
@@ -1816,7 +1827,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>03/09/26 15:20</span>
+          <span class="versao-tag" data-ver>03/09/26 15:23</span>
         </div>
         <h1>Fornos &amp; queima</h1>
       </header>
@@ -2045,9 +2056,11 @@ function totalCustosFixos() {
     const lb = document.getElementById("save-label");
     const hr = document.getElementById("save-hora");
     const ic = document.getElementById("save-icone");
+    const pt = document.getElementById("save-ponto");
     if (lb) lb.textContent = texto;
     if (hr) hr.textContent = texto.indexOf("Salvo") === 0 ? new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
     if (ic) ic.classList.toggle("salvando", !!salvando);
+    if (pt) pt.classList.toggle("salvando", !!salvando);
   }
   function horaAgora() { return new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }); }
   function precoAtualParaRascunho() {
@@ -2113,7 +2126,7 @@ function totalCustosFixos() {
     garantirRascunhoOrcamento();
     atualizarSaveBar(nuvemOk ? "Salvo ✓" : "Salvo local ✓", false);
     clearTimeout(saveBarTimer);
-    saveBarTimer = setTimeout(() => atualizarSaveBar("pronto · auto", false), 2500);
+    saveBarTimer = setTimeout(() => atualizarSaveBar("tudo salvo", false), 2500);
     return nuvemOk;
   }
   function salvarLocalStorage() { gravarEstado(); }
@@ -2124,7 +2137,7 @@ function totalCustosFixos() {
   function agendarAutosave() {
     if (suprimindoAutosave) return;
     autosave.agendar();
-    atualizarSaveBar("digitand…", false);
+    atualizarSaveBar("editando…", false);
   }
   document.addEventListener("input", agendarAutosave);
   document.addEventListener("change", agendarAutosave);
@@ -3880,12 +3893,12 @@ document.getElementById("btn-salvar-custos").addEventListener("click", () => {
         calcularProduto();
         // heurística rascunho: ao abrir já reflete nos Orçamentos
         if (temConteudoParaRascunho()) garantirRascunhoOrcamento();
-        atualizarSaveBar("pronto · auto", false);
+        atualizarSaveBar("tudo salvo", false);
       } finally {
         suprimindoAutosave = false;
       }
     })
-    .catch(() => { suprimindoAutosave = false; atualizarSaveBar("pronto · auto", false); });
+    .catch(() => { suprimindoAutosave = false; atualizarSaveBar("tudo salvo", false); });
 
   /* reflete o CONFIG nos campos de entrada */
   function sincronizarCamposCustos() {
