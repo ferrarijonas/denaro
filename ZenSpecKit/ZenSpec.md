@@ -137,6 +137,16 @@ Dentro do arquivo, o título pode incluir o nome técnico entre parênteses para
 
 Specs de módulo mantêm o nome `spec.md` (sem prefixo descritivo) porque representam o domínio inteiro.
 
+### Ordem de leitura
+
+A ordem de leitura das specs de um módulo vive em `Specs/.ordem.json` (fonte da verdade), mantida por `ZenSpecKit/reorder.js`:
+
+- `node ZenSpecKit/reorder.js --check` — valida ordem e arquivos (exit 1 se quebrou).
+- `node ZenSpecKit/reorder.js --fix` — renumera os arquivos (`NN-`) para bater com a ordem do json.
+- `node ZenSpecKit/reorder.js --self-test` — auto-teste do tool em pasta temporária.
+
+Arquivo novo de spec → registre a posição no `.ordem.json` antes de rodar `--fix`. O json é a fonte da verdade; o prefixo `NN-` é só projeção dele.
+
 ---
 
 ## Formato Zen

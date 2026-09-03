@@ -2,7 +2,7 @@
 
 Regra do projeto (ver `../DenaroEngSpec.md` §3–4): **o programa tem um único nome** — o mesmo no spec, na função no código e no nome do arquivo. Para reconhecer qualquer programa: o nome do arquivo `.md` (descontado o prefixo numérico `NN-`, que é só ordem de leitura) é exatamente a função que você procura no código.
 
-- Ordem das specs de um módulo: prefixo numérico sequencial (`00-`, `01-`, …), mantido por `tools/reorder.js --check` / `--fix`.
+- Ordem das specs de um módulo: prefixo numérico sequencial (`00-`, `01-`, …), mantido por `ZenSpecKit/reorder.js --check` / `--fix` (a ordem vive em `Specs/.ordem.json`).
 - Núcleo puro (não toca a tela): `app/js/`
 - UI / fiação (lê e escreve a tela): `app/index.html`
 

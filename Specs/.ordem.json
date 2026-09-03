@@ -1,0 +1,7 @@
+{
+  "precificacao": ["spec.md", "pricingPanel.md", "lerMedidas.md", "cubagemDe.md", "desenharForno.md", "calcularCustoPeca.md", "calcularCustoProduto.md", "modelo-de-precificacao.md"],
+  "queima": ["fornosPanel.md", "estimarCabem.md"],
+  "custos": ["costsPanel.md"],
+  "pecas": ["piecesListPanel.md"],
+  "persistencia": ["storage.md"]
+}

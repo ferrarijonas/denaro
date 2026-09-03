@@ -1087,6 +1087,55 @@
   }
   .sync-tag.ok { color: var(--verde); border-color: var(--verde); background: #f2f5ef; }
   .sync-tag.off { color: var(--terracota); border-color: var(--terracota); background: #faf1ed; }
+  /* barra de save retrô — disquete visível + autosave */
+  .save-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 12px 20px 0;
+    padding: 8px 10px;
+    background: #fffbe6;
+    border: 1.5px dashed #c9b896;
+    border-radius: 10px;
+    font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
+  }
+  .save-bar-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .save-icone {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--argila);
+    color: #fffbe6;
+    border-radius: 6px;
+    font-size: 15px;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .save-icone.salvando { animation: flop 0.9s steps(2) infinite; }
+  @keyframes flop { 50% { opacity: 0.55; } }
+  .save-label { font-size: 12px; font-weight: 700; color: var(--tinta); white-space: nowrap; }
+  .save-hora { font-size: 11px; color: var(--tinta-suave); white-space: nowrap; }
+  .btn-save-retro {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1.5px solid var(--argila);
+    background: var(--cartao);
+    color: var(--argila);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 7px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .btn-save-retro:active { transform: scale(0.97); background: var(--papel); }
+  .item-salvo.rascunho { border-style: dashed; background: #fffbe6; border-color: #c9b896; }
+  .badge-rascunho {
+    font-size: 9px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+    background: var(--argila); color: #fffbe6; padding: 2px 6px; border-radius: 5px; margin-right: 6px;
+  }
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -1242,7 +1291,7 @@
             <span class="nome-app">Denaro</span>
           </div>
           <span class="sync-tag" id="sync-status" title="Status de sincronização dos dados">…</span>
-          <span class="versao-tag" data-ver>28/08/26 01:30</span>
+          <span class="versao-tag" data-ver>03/09/26 15:20</span>
         </div>
         <h1>Precificar</h1>
         <div class="intro" id="intro-inicio">
@@ -1295,6 +1344,15 @@
             </span>
             <span class="tipo-atual-troca">trocar</span>
           </button>
+        </div>
+        <!-- barra save retrô — disquete visível + autosave -->
+        <div class="save-bar" id="save-bar">
+          <div class="save-bar-left">
+            <span class="save-icone" id="save-icone" title="salvamento automático">💾</span>
+            <span class="save-label" id="save-label">pronto</span>
+            <span class="save-hora" id="save-hora"></span>
+          </div>
+          <button type="button" class="btn-save-retro" id="btn-salvar-agora" title="Gravar agora e ver em Orçamentos">💾 Salvar</button>
         </div>
       </header>
       <main>
@@ -1630,7 +1688,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>28/08/26 01:30</span>
+          <span class="versao-tag" data-ver>03/09/26 15:20</span>
         </div>
         <h1>Orçamentos</h1>
       </header>
@@ -1653,7 +1711,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>28/08/26 01:30</span>
+          <span class="versao-tag" data-ver>03/09/26 15:20</span>
         </div>
         <h1>Custos de referência</h1>
       </header>
@@ -1758,7 +1816,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>28/08/26 01:30</span>
+          <span class="versao-tag" data-ver>03/09/26 15:20</span>
         </div>
         <h1>Fornos &amp; queima</h1>
       </header>
@@ -1981,13 +2039,81 @@ function totalCustosFixos() {
     if (h) CONFIG.horasDia = Number(h.value) || 8;
     if (d) CONFIG.diasMes = Number(d.value) || 22;
   }
+  /* ===== save-bar retrô + heurística de rascunho em Orçamentos ===== */
+  let saveBarTimer = null;
+  function atualizarSaveBar(texto, salvando) {
+    const lb = document.getElementById("save-label");
+    const hr = document.getElementById("save-hora");
+    const ic = document.getElementById("save-icone");
+    if (lb) lb.textContent = texto;
+    if (hr) hr.textContent = texto.indexOf("Salvo") === 0 ? new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
+    if (ic) ic.classList.toggle("salvando", !!salvando);
+  }
+  function horaAgora() { return new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }); }
+  function precoAtualParaRascunho() {
+    if (estado.precoSelecionado) return estado.precoSelecionado;
+    try {
+      const el = document.getElementById("r-custo-taxas");
+      if (el && el.textContent && el.textContent.indexOf("R$") >= 0) {
+        const n = parseFloat(el.textContent.replace(/[^\d,.-]/g, "").replace(".", "").replace(",", "."));
+        if (!isNaN(n) && n > 0) return n;
+      }
+    } catch (e) {}
+    return 0;
+  }
+  function temConteudoParaRascunho() {
+    const nome = (document.getElementById("nome-peca") ? document.getElementById("nome-peca").value.trim() : "") || (document.getElementById("nome-produto") ? document.getElementById("nome-produto").value.trim() : "");
+    if (nome) return true;
+    if (estado.foto) return true;
+    if (estado.precoSelecionado) return true;
+    const rc = document.getElementById("resultado-peca");
+    if (rc && rc.classList.contains("visivel")) return true;
+    const rp = document.getElementById("resultado-produto");
+    if (rp && rp.classList.contains("visivel")) return true;
+    return false;
+  }
+  function garantirRascunhoOrcamento() {
+    if (!temConteudoParaRascunho()) return;
+    // heurística: só mantém 1 rascunho no topo; atualiza se já existe
+    const tipo = estado.tipo === "peca" || document.getElementById("corpo-peca").classList.contains("escondido") === false ? "peca" : "produto";
+    const nomePeca = (document.getElementById("nome-peca") ? document.getElementById("nome-peca").value.trim() : "");
+    const nomeProd = (document.getElementById("nome-produto") ? document.getElementById("nome-produto").value.trim() : "");
+    const nome = (tipo === "peca" ? nomePeca : nomeProd) || (tipo === "peca" ? "Rascunho · peça sem nome" : "Rascunho · produto sem nome");
+    const preco = precoAtualParaRascunho();
+    const catLabel = { utilitario: "utilitário", escultura: "escultura", outros: "outros" }[estado.categoria] || estado.categoria;
+    const metaBase = tipo === "peca"
+      ? catLabel + " · " + (CONFIG.niveisNome && CONFIG.niveisNome[estado.nivel] ? CONFIG.niveisNome[estado.nivel] : estado.nivel) + " · " + fmtTempo(estado.tempoTotalMin)
+      : (estado.receita.length + " insumos · " + fmtTempo(estado.prodH * 60 + estado.prodM));
+    const cliente = (document.getElementById("cliente-peca") ? document.getElementById("cliente-peca").value.trim() : "");
+    const meta = metaBase + (cliente ? " · " + cliente : "") + " · rascunho auto";
+    const data = horaAgora() + " · hoje";
+    const existenteIdx = salvos.findIndex((s) => s.rascunho);
+    const foto = estado.foto || null;
+    const draft = { tipo, nome, preco, meta, data, foto, rascunho: true, atualizadoEm: Date.now() };
+    if (existenteIdx >= 0) {
+      // atualiza no lugar, mantendo topo
+      const cur = salvos[existenteIdx];
+      // preserva foto se draft não tem e cur tem
+      if (!draft.foto && cur.foto) draft.foto = cur.foto;
+      salvos[existenteIdx] = draft;
+      // move para topo se não estiver
+      if (existenteIdx !== 0) { salvos.splice(existenteIdx, 1); salvos.unshift(draft); }
+    } else {
+      salvos.unshift(draft);
+    }
+  }
   async function gravarEstado() {
+    atualizarSaveBar("salvando…", true);
     const nuvemOk = await storage.gravar(dadosParaSalvar(), async (doc) => {
       const c = JSON.parse(JSON.stringify(doc));
       await normalizarFotosParaNuvem(c);
       return paraNuvem(c);
     });
     setStatusNuvem(nuvemOk);
+    garantirRascunhoOrcamento();
+    atualizarSaveBar(nuvemOk ? "Salvo ✓" : "Salvo local ✓", false);
+    clearTimeout(saveBarTimer);
+    saveBarTimer = setTimeout(() => atualizarSaveBar("pronto · auto", false), 2500);
     return nuvemOk;
   }
   function salvarLocalStorage() { gravarEstado(); }
@@ -1998,6 +2124,7 @@ function totalCustosFixos() {
   function agendarAutosave() {
     if (suprimindoAutosave) return;
     autosave.agendar();
+    atualizarSaveBar("digitand…", false);
   }
   document.addEventListener("input", agendarAutosave);
   document.addEventListener("change", agendarAutosave);
@@ -2008,7 +2135,6 @@ function totalCustosFixos() {
     autosave.flush();
   }
   window.addEventListener("pagehide", autosaveFlush);
-  /* mobile: app vai pra segundo plano / aba trocada → grava na hora */
   document.addEventListener("visibilitychange", () => { if (document.hidden) autosaveFlush(); });
 
   /* rascunho dos formulários (peça/produto) — captura o estado atual */
@@ -3079,6 +3205,7 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
 
     document.getElementById("resultado-peca").classList.add("visivel");
     document.getElementById("btn-salvar-peca").disabled = true;
+    try { garantirRascunhoOrcamento(); } catch (e) {}
     if (comScroll) {
       const btnSalvar = document.getElementById("btn-salvar-peca");
       if (btnSalvar && typeof btnSalvar.scrollIntoView === "function") {
@@ -3131,6 +3258,7 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
 
     document.getElementById("resultado-produto").classList.add("visivel");
     document.getElementById("btn-salvar-produto").disabled = true;
+    try { garantirRascunhoOrcamento(); } catch (e) {}
   }
   document.getElementById("btn-calcular-produto").addEventListener("click", calcularProduto);
 
@@ -3175,9 +3303,12 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     const catLabel = { utilitario: "utilitário", escultura: "escultura", outros: "outros" }[estado.categoria] || "outros";
     const data = pegarData();
     const meta = catLabel + " · " + (CONFIG.niveisNome[estado.nivel] || estado.nivel) + " · " + fmtTempo(estado.tempoTotalMin) + (estado.cliente ? " · " + estado.cliente : "");
+    // promove rascunho → vira orçamento definitivo
+    salvos = salvos.filter((s) => !s.rascunho);
     salvos.unshift({ tipo: "peca", nome, preco: estado.precoSelecionado || 0, meta, data, foto: estado.foto });
     renderSalvos();
     salvarLocalStorage();
+    atualizarSaveBar("Salvo ✓", false);
     salvarFeedback("fb-peca", "Peça salva em " + data);
   });
   document.getElementById("btn-salvar-produto").addEventListener("click", () => {
@@ -3192,10 +3323,19 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     const un = Math.max(1, Number(document.getElementById("unidades").value) || 1);
     const data = pegarData();
     const meta = un + " un · montagem " + fmtTempo(estado.prodH * 60 + estado.prodM);
+    salvos = salvos.filter((s) => !s.rascunho);
     salvos.unshift({ tipo: "produto", nome, preco: estado.precoSelecionado || 0, meta, data });
     renderSalvos();
     salvarLocalStorage();
+    atualizarSaveBar("Salvo ✓", false);
     salvarFeedback("fb-produto", "Produto salvo em " + data);
+  });
+  // botão retrô 💾 — força rascunho agora + vai p/ orçamentos
+  const btnSalvarAgora = document.getElementById("btn-salvar-agora");
+  if (btnSalvarAgora) btnSalvarAgora.addEventListener("click", () => {
+    garantirRascunhoOrcamento();
+    gravarEstado();
+    navegar("salvos");
   });
 
   /* ===== itens salvos ===== */
@@ -3207,21 +3347,27 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     document.getElementById("vazio-salvos").classList.toggle("escondido", lista.length > 0);
     lista.forEach((s) => {
       const card = document.createElement("div");
-      card.className = "item-salvo";
+      card.className = "item-salvo" + (s.rascunho ? " rascunho" : "");
+      const badgeRasc = s.rascunho ? '<span class="badge-rascunho">rascunho</span>' : "";
       card.innerHTML =
         (s.foto ? '<img class="thumb" src="' + s.foto + '" alt="" />' : "") +
-        '<div><div class="nome"><span class="badge-tipo">' + (s.tipo === "peca" ? "peça" : "produto") + "</span>" + s.nome + '</div><div class="meta">' + s.meta + " · " + s.data + "</div></div>" +
+        '<div><div class="nome">' + badgeRasc + '<span class="badge-tipo">' + (s.tipo === "peca" ? "peça" : "produto") + "</span>" + s.nome + '</div><div class="meta">' + s.meta + " · " + s.data + "</div></div>" +
         '<div class="preco-wrap"><div class="preco">' + fmt(s.preco) + "</div></div>";
+      if (s.rascunho) {
+        card.title = "Rascunho auto — continua editando";
+        card.addEventListener("click", () => navegar("precificar"));
+      }
       const del = document.createElement("button");
       del.type = "button";
       del.className = "del-salvo";
-      del.textContent = "✕ apagar";
+      del.textContent = s.rascunho ? "✕ descartar" : "✕ apagar";
       del.addEventListener("click", (ev) => {
         ev.stopPropagation();
-        if (confirm("Apagar este orçamento?\n" + s.nome)) {
-          salvos = salvos.filter((x) => !(x.tipo === s.tipo && x.nome === s.nome && x.data === s.data));
+        if (confirm((s.rascunho ? "Descartar rascunho?\n" : "Apagar este orçamento?\n") + s.nome)) {
+          salvos = salvos.filter((x) => x !== s);
           salvarLocalStorage();
           renderSalvos();
+          if (s.rascunho) atualizarSaveBar("rascunho descartado", false);
         }
       });
       card.querySelector(".preco-wrap").appendChild(del);
@@ -3732,11 +3878,14 @@ document.getElementById("btn-salvar-custos").addEventListener("click", () => {
         renderFornoSVG();
         calcularPeca();
         calcularProduto();
+        // heurística rascunho: ao abrir já reflete nos Orçamentos
+        if (temConteudoParaRascunho()) garantirRascunhoOrcamento();
+        atualizarSaveBar("pronto · auto", false);
       } finally {
         suprimindoAutosave = false;
       }
     })
-    .catch(() => { suprimindoAutosave = false; });
+    .catch(() => { suprimindoAutosave = false; atualizarSaveBar("pronto · auto", false); });
 
   /* reflete o CONFIG nos campos de entrada */
   function sincronizarCamposCustos() {

@@ -55,7 +55,7 @@ O modelo exato de cálculo vive em `Specs/precificacao/07-modelo-de-precificacao
 
 > **Regra de nome:** o nome do programa (no spec) é o nome da função no código. Um programa, um nome.
 >
-> **Regra de ordem:** o arquivo de spec pode ter prefixo numérico (`NN-`), que é **só ordem de leitura** — a função é o nome após o prefixo. A ordem é mantida por `tools/reorder.js --check` (valida) / `--fix` (renumera); arquivo novo entra na lista `ORDEM` do tool.
+> **Regra de ordem:** o arquivo de spec pode ter prefixo numérico (`NN-`), que é **só ordem de leitura** — a função é o nome após o prefixo. A ordem vive em `Specs/.ordem.json`, mantida por `ZenSpecKit/reorder.js --check` (valida) / `--fix` (renumera); arquivo novo entra no `.ordem.json`.
 
 - `calcularCustoPeca` — **calculadora de peças**
   Computa o custo de uma **peça** (argila + esmalte + mão de obra + embalagem + acessórios + queima + risco + taxas) e os preços por linha (Exclusiva/Padrão/Revenda). Função pura: `(estado, config, inputs) → { custo, custoComTaxas, linhas }`.
