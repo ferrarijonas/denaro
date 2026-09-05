@@ -163,26 +163,6 @@
   .intro-nome { font-size: 13px; font-weight: 700; color: var(--tinta); }
   .intro-desc { font-size: 10.5px; color: var(--tinta-suave); text-align: center; line-height: 1.3; }
 
-  .tipo-atual { margin-top: 14px; }
-  .tipo-atual-botao {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border: 1px solid var(--linha);
-    background: var(--cartao);
-    border-radius: 12px;
-    padding: 10px 12px;
-    cursor: pointer;
-    font-family: inherit;
-    text-align: left;
-  }
-  .tipo-atual-icone { width: 24px; height: 24px; color: var(--argila); }
-  .tipo-atual-texto { flex: 1; display: flex; flex-direction: column; }
-  .tipo-atual-nome { font-size: 14px; font-weight: 700; color: var(--tinta); }
-  .tipo-atual-desc { font-size: 11px; color: var(--tinta-suave); }
-  .tipo-atual-troca { font-size: 12px; font-weight: 600; color: var(--argila); text-decoration: underline; }
-
   /* seções */
   .sec {
     margin-top: 22px;
@@ -1074,21 +1054,8 @@
   .sheet .row-acoes { display: flex; gap: 10px; margin-top: 16px; }
   .sheet .btn { margin: 0; flex: 1; }
   .sheet .btn.ghost { background: var(--cartao); border: 1px solid var(--linha); color: var(--tinta); }
-  .sync-tag {
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    border-radius: 6px;
-    padding: 2px 6px;
-    border: 1px solid var(--linha);
-    color: var(--tinta-suave);
-    background: var(--cartao);
-  }
-  .sync-tag.ok { color: var(--verde); border-color: var(--verde); background: #f2f5ef; }
-  .sync-tag.off { color: var(--terracota); border-color: var(--terracota); background: #faf1ed; }
-  /* doc-centric: marca → nome doc → status */
+  .marca-direita { display: flex; align-items: center; gap: 10px; }
+  /* doc-centric: marca → nome doc → metadados/status */
   .doc-voltar {
     display: inline-flex;
     align-items: center;
@@ -1105,31 +1072,35 @@
     padding: 0;
   }
   .doc-voltar:active { opacity: 0.6; }
-  .doc-linha {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    margin-top: 4px;
-  }
   .doc-titulo {
     font-family: "Plus Jakarta Sans", sans-serif;
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 700;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
     color: var(--tinta);
-    margin: 0;
+    margin: 6px 0 0;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    line-height: 1.2;
   }
+  .doc-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 2px 0 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--tinta-suave);
+    min-height: 18px;
+  }
+  .doc-meta .doc-meta-texto { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .doc-meta .doc-meta-sep { flex-shrink: 0; }
   .doc-status {
     display: flex;
     align-items: center;
     gap: 5px;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--tinta-suave);
     flex-shrink: 0;
   }
   .doc-status .save-icone {
@@ -1164,6 +1135,106 @@
   }
   .doc-status .btn-save-retro.offline { display: inline; }
   .doc-status .btn-save-retro:active { opacity: 0.6; }
+  /* doc-identidade: foto + título + metadata + tags */
+  .doc-identidade {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-top: 10px;
+  }
+  .doc-foto-btn {
+    flex: 0 0 56px;
+    width: 56px; height: 56px;
+    border: 1.5px dashed var(--linha);
+    border-radius: 12px;
+    background: var(--papel);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    padding: 0;
+  }
+  .doc-foto-btn:active { background: var(--cartao); }
+  .doc-foto-thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 12px; display: block; }
+  .doc-foto-placeholder { width: 22px; height: 22px; color: var(--tinta-suave); }
+  .doc-titular { flex: 1; min-width: 0; }
+  .doc-titulo-linha {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .doc-titulo {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--tinta);
+    margin: 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.2;
+  }
+  .doc-icone-editar {
+    width: 14px; height: 14px;
+    color: var(--tinta-suave);
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .doc-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 2px 0 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--tinta-suave);
+    min-height: 18px;
+  }
+  .doc-tags {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+  .doc-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--tinta-suave);
+    border: 1px solid var(--linha);
+    border-radius: 999px;
+    padding: 3px 9px;
+    background: var(--cartao);
+  }
+  .doc-tag-sub { font-weight: 400; color: #b0a090; }
+  /* tabs de navegação do documento */
+  .doc-tabs {
+    display: flex;
+    gap: 0;
+    margin-top: 14px;
+    border-bottom: 1px solid var(--linha);
+    overflow-x: auto;
+  }
+  .doc-tab {
+    flex: 1;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tinta-suave);
+    padding: 10px 4px;
+    cursor: pointer;
+    text-align: center;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: color 150ms, border-color 150ms;
+  }
+  .doc-tab.ativo { color: var(--argila); border-bottom-color: var(--argila); }
+  .doc-tab:active { opacity: 0.7; }
   .item-salvo.rascunho { border-style: dashed; background: var(--papel); }
   .badge-rascunho {
     font-size: 9px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
@@ -1351,20 +1422,43 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="sync-tag" id="sync-status" title="Status de sincronização dos dados">…</span>
-          <span class="versao-tag" data-ver>04/09/26 21:38</span>
-        </div>
-        <button type="button" class="doc-voltar" id="doc-voltar" data-ir="salvos">← Orçamentos</button>
-        <div class="doc-linha">
-          <h1 class="doc-titulo" id="doc-titulo">Novo orçamento</h1>
-          <div class="doc-status" id="doc-status" aria-live="polite">
-            <span class="save-icone" id="save-icone" title="salvamento automático"><svg class="icone"><use href="#i-nuvem-ok"></use></svg></span>
-            <span class="save-ponto" id="save-ponto"></span>
-            <span class="save-label" id="save-label">Tudo em ordem</span>
-            <span class="save-hora" id="save-hora"></span>
-            <button type="button" class="btn-save-retro" id="btn-salvar-agora" title="Gravar agora e ver em Orçamentos">Salvar agora</button>
+          <div class="marca-direita">
+            <div class="doc-status" id="doc-status" aria-live="polite">
+              <span class="save-icone" id="save-icone" title="salvamento automático"><svg class="icone"><use href="#i-nuvem-ok"></use></svg></span>
+              <span class="save-label" id="save-label">Salvo automaticamente</span>
+              <span class="save-ponto" id="save-ponto"></span>
+            </div>
+            <span class="versao-tag" data-ver>04/09/26 21:55</span>
           </div>
         </div>
+        <button type="button" class="doc-voltar" id="doc-voltar" data-ir="salvos">← Orçamentos</button>
+        <div class="doc-identidade">
+          <button type="button" class="doc-foto-btn" id="doc-foto-btn">
+            <img id="doc-foto-thumb" class="doc-foto-thumb escondido" alt="" />
+            <svg class="icone doc-foto-placeholder"><use href="#i-foto"></use></svg>
+          </button>
+          <div class="doc-titular">
+            <div class="doc-titulo-linha">
+              <h1 class="doc-titulo" id="doc-titulo">Novo orçamento</h1>
+              <svg class="icone doc-icone-editar" title="Editar nome"><use href="#i-ilustracao"></use></svg>
+            </div>
+            <div class="doc-meta" id="doc-meta">
+              <span class="doc-meta-texto" id="doc-meta-texto">Cliente: — · Categoria: —</span>
+            </div>
+            <div class="doc-tags" id="doc-tags">
+              <span class="doc-tag" id="doc-tag-tipo">Peças &amp; Objetos</span>
+              <span class="doc-tag doc-tag-sub" id="doc-tag-sub">uso na mesa e na casa</span>
+            </div>
+          </div>
+        </div>
+        <nav class="doc-tabs" id="doc-tabs">
+          <button type="button" class="doc-tab ativo" data-tela="precificar">Precificar</button>
+          <button type="button" class="doc-tab" data-tela="salvos">Orçamentos</button>
+          <button type="button" class="doc-tab" data-tela="fornos">Fornos</button>
+          <button type="button" class="doc-tab" data-tela="custos">Custos</button>
+        </nav>
+      </header>
+      <main>
         <div class="intro" id="intro-inicio">
           <p class="intro-pergunta">Vamos precificar?</p>
           <p class="intro-sub">O que você vai precificar?</p>
@@ -1405,16 +1499,6 @@
               <span class="intro-breve">em breve</span>
             </button>
           </div>
-        </div>
-        <div class="tipo-atual escondido" id="tipo-atual">
-          <button type="button" class="tipo-atual-botao" id="btn-trocar-tipo">
-            <svg class="icone tipo-atual-icone" id="tipo-atual-icone"><use href="#i-peca"></use></svg>
-            <span class="tipo-atual-texto">
-              <span class="tipo-atual-nome" id="tipo-atual-nome">Peças &amp; Objetos</span>
-              <span class="tipo-atual-desc" id="tipo-atual-desc">uso na mesa e na casa</span>
-            </span>
-            <span class="tipo-atual-troca">trocar</span>
-          </button>
         </div>
       </header>
       <main>
@@ -1750,7 +1834,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>04/09/26 21:38</span>
+          <span class="versao-tag" data-ver>04/09/26 21:55</span>
         </div>
         <h1>Orçamentos</h1>
       </header>
@@ -1773,7 +1857,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>04/09/26 21:38</span>
+          <span class="versao-tag" data-ver>04/09/26 21:55</span>
         </div>
         <h1>Custos de referência</h1>
       </header>
@@ -1878,7 +1962,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>04/09/26 21:38</span>
+          <span class="versao-tag" data-ver>04/09/26 21:55</span>
         </div>
         <h1>Fornos &amp; queima</h1>
       </header>
@@ -2028,11 +2112,13 @@ function totalCustosFixos() {
   });
 
   function setStatusNuvem(ok) {
-    const el = document.getElementById("sync-status");
-    if (!el) return;
-    if (!firestoreDisponivel) { el.textContent = "só local"; el.className = "sync-tag"; return; }
-    if (ok) { el.textContent = "nuvem ok"; el.className = "sync-tag ok"; return; }
-    el.textContent = "nuvem off"; el.className = "sync-tag off";
+    /* atualiza o doc-status no topo (novo layout) */
+    const use = document.querySelector("#doc-status use");
+    const lb = document.getElementById("save-label");
+    if (!lb) return;
+    if (!firestoreDisponivel) { if (use) use.setAttribute("href", "#i-nuvem-off"); lb.textContent = "Só local"; return; }
+    if (ok) { if (use) use.setAttribute("href", "#i-nuvem-ok"); lb.textContent = "Salvo automaticamente"; return; }
+    if (use) use.setAttribute("href", "#i-nuvem-off"); lb.textContent = "Nuvem off";
   }
 
   /* fotos: base64 sobe para o Firebase Storage (alice-fotos/) e vira URL na nuvem;
@@ -2096,14 +2182,43 @@ function totalCustosFixos() {
   /* ===== doc-centric: título = nome do objeto ===== */
   function atualizarTituloDoc() {
     const el = document.getElementById("doc-titulo");
+    const meta = document.getElementById("doc-meta-texto");
+    const tagTipo = document.getElementById("doc-tag-tipo");
+    const tagSub = document.getElementById("doc-tag-sub");
     if (!el) return;
     const nomePeca = (document.getElementById("nome-peca") || {}).value || "";
     const nomeProd = (document.getElementById("nome-produto") || {}).value || "";
     const nome = nomePeca.trim() || nomeProd.trim();
     el.textContent = nome || "Novo orçamento";
+    /* metadados: Cliente: X · Categoria: Y */
+    if (meta) {
+      const cliente = ((document.getElementById("cliente-peca") || {}).value || "").trim() || "—";
+      const catLabel = { utilitario: "Utilitário", escultura: "Escultura", outros: "Outros" }[estado.categoria] || "—";
+      meta.textContent = "Cliente: " + cliente + "  ·  Categoria: " + catLabel;
+    }
+    /* tags: tipo + descrição */
+    if (tagTipo) {
+      const info = { peca: { nome: "Peças & Objetos", desc: "uso na mesa e na casa" }, produto: { nome: "Produtos", desc: "receitas e lotes" } }[estado.tipo] || { nome: "Peças & Objetos", desc: "" };
+      tagTipo.textContent = info.nome;
+      if (tagSub) tagSub.textContent = info.desc;
+    }
+    /* foto thumbnail no header */
+    const thumb = document.getElementById("doc-foto-thumb");
+    const placeholder = document.querySelector(".doc-foto-placeholder");
+    if (thumb) {
+      if (estado.foto) {
+        thumb.src = estado.foto;
+        thumb.classList.remove("escondido");
+        if (placeholder) placeholder.style.display = "none";
+      } else {
+        thumb.classList.add("escondido");
+        if (placeholder) placeholder.style.display = "";
+      }
+    }
   }
   document.getElementById("nome-peca").addEventListener("input", atualizarTituloDoc);
   document.getElementById("nome-produto").addEventListener("input", atualizarTituloDoc);
+  document.getElementById("cliente-peca").addEventListener("input", atualizarTituloDoc);
 
   /* ===== autosave: grava sozinho após cada mudança (debounce 700ms) ===== */
   let suprimindoAutosave = false;
@@ -2468,12 +2583,19 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
   /* ===== navegação ===== */
   function navegar(tela) {
     document.querySelectorAll(".nav-item").forEach((i) => i.classList.toggle("ativo", i.dataset.tela === tela));
+    document.querySelectorAll(".doc-tab").forEach((i) => i.classList.toggle("ativo", i.dataset.tela === tela));
     document.querySelectorAll(".tela").forEach((t) => t.classList.toggle("ativa", t.id === "tela-" + tela));
     if (tela === "salvos") renderSalvos();
     autosaveFlush();
   }
   document.querySelectorAll(".nav-item").forEach((b) => b.addEventListener("click", () => navegar(b.dataset.tela)));
   document.querySelectorAll("[data-ir]").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); navegar(a.dataset.ir); }));
+  /* doc-tabs: navegação do documento */
+  document.querySelectorAll(".doc-tab").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll(".doc-tab").forEach((x) => x.classList.remove("ativo"));
+    b.classList.add("ativo");
+    navegar(b.dataset.tela);
+  }));
 
   /* ===== seções colapsáveis ===== */
   document.querySelectorAll(".sec[data-sec] .sec-titulo").forEach((t) => {
@@ -2495,10 +2617,11 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     estado.tipo = tipo;
     const info = TIPOS_INFO[tipo];
     document.getElementById("intro-inicio").classList.add("escondido");
-    document.getElementById("tipo-atual").classList.remove("escondido");
-    document.getElementById("tipo-atual-icone").innerHTML = '<use href="' + info.icone + '"></use>';
-    document.getElementById("tipo-atual-nome").textContent = info.nome;
-    document.getElementById("tipo-atual-desc").textContent = info.desc;
+    /* atualiza tags no header */
+    const tagTipo = document.getElementById("doc-tag-tipo");
+    const tagSub = document.getElementById("doc-tag-sub");
+    if (tagTipo) tagTipo.textContent = info.nome;
+    if (tagSub) tagSub.textContent = info.desc;
     document.getElementById("corpo-peca").classList.toggle("escondido", info.flow !== "peca");
     document.getElementById("corpo-produto").classList.toggle("escondido", info.flow !== "produto");
     if (comScroll) {
@@ -2506,12 +2629,6 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     }
   }
   document.querySelectorAll(".intro-card").forEach((c) => c.addEventListener("click", () => setTipo(c.dataset.intro, true)));
-  document.getElementById("btn-trocar-tipo").addEventListener("click", () => {
-    document.getElementById("intro-inicio").classList.remove("escondido");
-    document.getElementById("tipo-atual").classList.add("escondido");
-    document.getElementById("corpo-peca").classList.add("escondido");
-    document.getElementById("corpo-produto").classList.add("escondido");
-  });
 
   /* ===== mão de obra por etapas ===== */
   const ETAPAS = [
@@ -2976,8 +3093,10 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     document.querySelectorAll("#chips-categoria .chip").forEach((x) => x.classList.remove("selecionado"));
     c.classList.add("selecionado");
     estado.categoria = c.dataset.cat;
+    atualizarTituloDoc();
   }));
   document.getElementById("btn-foto-peca").addEventListener("click", () => document.getElementById("foto-peca").click());
+  document.getElementById("doc-foto-btn").addEventListener("click", () => document.getElementById("foto-peca").click());
   document.getElementById("foto-peca").addEventListener("change", (ev) => {
     const f = ev.target.files && ev.target.files[0];
     if (!f) return;
@@ -2987,6 +3106,7 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
       document.getElementById("foto-preview").src = r.result;
       document.getElementById("foto-preview").classList.remove("escondido");
       document.getElementById("btn-foto-peca").classList.add("escondido");
+      atualizarTituloDoc();
     };
     r.readAsDataURL(f);
   });

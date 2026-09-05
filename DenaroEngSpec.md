@@ -164,7 +164,7 @@ Regra: toda seta do diagrama aparece na tabela. Sem atalhos; nenhum programa de 
 | Entrada inválida (peso ≤ 0, tempo ≤ 0, dificuldade fora de 1–5, medidas ≤ 0) | campo marcado em `terracota` com mensagem; nada é calculado |
 | `calcularCustoPeca` recebe input que não passa na validação | falha explícita, nunca retorna preço parcial |
 | Custo de referência ausente (sem argila/hora cadastrados) | banner suave "Cadastre seus custos para valores reais" + link para `costsPanel` |
-| Firestore fora do ar | badge `#sync-status` "nuvem off"; tudo segue no `localStorage` |
+| Firestore fora do ar | nuvem off no `#doc-status`; tudo segue no `localStorage` |
 | Peça maior que o forno (`estimarCabem.total = 0`) | render vazio + legenda "não cabe · peça maior que o forno" |
 
 Regra: toda situação de erro listada é rastreável a um programa ou estado do ciclo de vida. Nunca sucesso parcial silencioso.

@@ -157,8 +157,13 @@ Erros:
 
 - Marca/aplicação: `tinta`, 18px, peso 600 (inalterado).
 - Link de volta (`doc-voltar`): `argila`, 12px, peso 600, `← Orçamentos`.
-- Nome do objeto (`doc-titulo`): `tinta`, 20px, peso 700, reflete `nome-peca`/`nome-produto` ao vivo; padrão `Novo orçamento`.
-- Status de salvamento (`doc-status`): `tinta-suave`, 11px, peso 500, **ao lado do nome do objeto**, com ícone de nuvem `13px` traço `1.7px`; hora `11px #b0a090` só quando há `Salvo`.
+- Nome do objeto (`doc-titulo`): `tinta`, 22px, peso 700, reflete `nome-peca`/`nome-produto` ao vivo; padrão `Novo orçamento`.
+- Ícone de editar (`doc-icone-editar`): `tinta-suave`, 14px, ao lado do título.
+- Linha de metadados (`doc-meta`): `tinta-suave`, 12px, peso 500, abaixo do título; formato `Cliente: X · Categoria: Y`.
+- Tags de tipo (`doc-tags`): pills inline com borda `1px linha`, `tinta-suave`, 11px, peso 600; sub-tag `11px #b0a090` peso 400.
+- Botão de foto (`doc-foto-btn`): 56×56px, borda `1.5px dashed linha`, cantos 12px; exibe thumbnail ou placeholder de foto.
+- Abas de navegação (`doc-tabs`): flex, separador `1px linha` inferior, abas `13px` peso 600, `tinta-suave`; aba ativa `argila` com borda inferior `2px argila`.
+- Status de salvamento (`doc-status`): `tinta-suave`, 11px, peso 500, **na barra de marca** (topo), com ícone de nuvem `13px` traço `1.7px`.
 - Cabeçalhos de seção: `tinta-suave`, 13px, peso 600, uppercase, com `▼` colapsável + número da seção.
 - Rótulos de campo: `tinta-suave`, 13px, peso 600, uppercase.
 - `CUSTO TOTAL`/`CUSTO C/ TAXAS`: `tinta`, 26px, peso 600; c/taxas em `argila`.
@@ -181,10 +186,16 @@ Erros:
 | `doc-status: salvo nuvem` | nuvem com check `13px` + texto `Salvo na nuvem · HH:MM` `11px tinta-suave`, hora `11px #b0a090`; após 2.5s vira `Tudo em ordem` |
 | `doc-status: salvo local` | nuvem `13px terracota` suave + texto `Salvo neste aparelho · HH:MM` `11px tinta-suave` + link `Salvar agora` `12px argila` só quando offline |
 | `doc-status: idle`      | texto `Tudo em ordem` `11px tinta-suave` sem hora, sem ponto pulsante   |
+| foto thumbnail          | `doc-foto-btn` 56×56px, borda `1.5px dashed linha`, cantos 12px; exibe `doc-foto-thumb` ou placeholder `i-foto` |
+| tag de tipo             | pill inline `doc-tag`, borda `1px linha`, `tinta-suave`, 11px, peso 600; sub-tag `doc-tag-sub` `11px #b0a090` peso 400 |
+| aba de navegação        | `doc-tab` `13px` peso 600 `tinta-suave`; aba ativa `argila` com borda inferior `2px argila` |
 
 ### Interações
 
 - `doc-status` é só informativo (`aria-live="polite"`), sem card nem borda; reflete o `storage.gravar` (autosave 700ms, flush no `pagehide`/`visibilitychange`/troca de tela); `Salvar agora` só aparece quando `nuvemOk=false`.
+- `doc-foto-btn` dispara o input `#foto-peca` (reutiliza o mesmo fluxo de foto existente).
+- `doc-tabs` navega entre telas via `navegar(tela)`, atualiza aba ativa e salva estado.
+- `doc-meta-texto` exibe `Cliente: X · Categoria: Y` ao vivo; `doc-tag-tipo` e `doc-tag-sub` refletem o tipo e descrição do produto.
 - Campos numéricos usam teclado numérico no celular (`inputmode="decimal"/"numeric"`).
 - Steppers de tempo: toques `−`/`+` (passo 15min nos minutos); atalhos rápidos preenchem horas/minutos.
 - Toggle de tipo preserva o estado do tipo não ativo.
