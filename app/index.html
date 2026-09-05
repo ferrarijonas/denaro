@@ -1073,55 +1073,36 @@
   }
   .doc-voltar:active { opacity: 0.6; }
 
-  /* foto + título lado a lado */
+  /* title row: [photo] [title] [spacer] [action] */
   .doc-identidade {
     display: flex;
-    gap: 12px;
     align-items: center;
-    margin-top: 10px;
+    gap: 8px;
+    margin-top: 8px;
   }
-  .doc-foto-btn {
-    flex: 0 0 52px;
-    width: 52px; height: 52px;
+  .doc-icone-foto {
+    flex: 0 0 28px;
+    width: 28px; height: 28px;
     border: 1.5px dashed var(--linha);
-    border-radius: 12px;
+    border-radius: 50%;
     background: var(--papel);
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
     overflow: hidden;
     padding: 0;
-    position: relative;
     transition: border-color 150ms;
   }
-  .doc-foto-btn:hover { border-color: var(--argila); }
-  .doc-foto-btn:active { background: var(--cartao); }
-  .doc-foto-btn.tem-foto { border-style: solid; border-color: transparent; }
-  .doc-foto-btn.tem-foto:hover { border-color: var(--linha); }
-  .doc-foto-thumb { width: 52px; height: 52px; object-fit: cover; border-radius: 10px; display: block; }
-  .doc-foto-mais {
-    font-size: 20px; font-weight: 300; color: var(--tinta-suave);
-    line-height: 1; pointer-events: none;
-  }
-  .doc-foto-menu {
-    position: absolute; top: 2px; right: 2px;
-    font-size: 14px; font-weight: 700; color: var(--tinta-suave);
-    background: rgba(255,255,255,0.85);
-    width: 20px; height: 20px; border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    pointer-events: none;
-    backdrop-filter: blur(4px);
-  }
+  .doc-icone-foto:hover { border-color: var(--argila); }
+  .doc-icone-foto:active { background: var(--cartao); }
+  .doc-icone-foto.tem-foto { border-style: solid; border-color: transparent; }
+  .doc-icone-foto.tem-foto:hover { border-color: var(--linha); }
+  .doc-foto-thumb { width: 28px; height: 28px; object-fit: cover; border-radius: 50%; display: block; }
+  .doc-foto-placeholder { width: 14px; height: 14px; color: var(--tinta-suave); }
 
-  /* titular */
-  .doc-titular { flex: 1; min-width: 0; }
-  .doc-titulo-linha {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
   .doc-titulo {
+    flex: 1;
     font-family: "Plus Jakarta Sans", sans-serif;
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 700;
     letter-spacing: -0.02em;
     color: var(--tinta);
@@ -1132,22 +1113,40 @@
     white-space: nowrap;
     line-height: 1.2;
   }
-  .doc-icone-editar {
-    width: 14px; height: 14px;
+  .doc-titulo.placeholder {
+    font-weight: 400;
     color: var(--tinta-suave);
-    flex-shrink: 0;
-    cursor: pointer;
   }
-  .doc-meta {
+
+  .doc-acao-titulo {
+    flex: 0 0 auto;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 2px;
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin: 2px 0 0;
+    justify-content: center;
+    color: var(--tinta-suave);
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+    line-height: 1;
+    border-radius: 4px;
+    transition: color 150ms;
+  }
+  .doc-acao-titulo:hover { color: var(--argila); }
+  .doc-acao-titulo:active { opacity: 0.6; }
+  .doc-acao-titulo .icone { width: 16px; height: 16px; }
+
+  /* subtitle */
+  .doc-meta {
     font-size: 12px;
     font-weight: 500;
     color: var(--tinta-suave);
+    margin: 2px 0 0 36px;
   }
-  .doc-meta:empty { display: none; }
+  .doc-meta:empty, .doc-meta.escondido { display: none; }
   .doc-meta .doc-meta-texto { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* save status */
@@ -1403,20 +1402,16 @@
         </div>
         <button type="button" class="doc-voltar" id="doc-voltar" data-ir="salvos">← Orçamentos</button>
         <div class="doc-identidade">
-          <button type="button" class="doc-foto-btn" id="doc-foto-btn" title="Adicionar foto">
+          <button type="button" class="doc-icone-foto" id="doc-foto-btn" title="Adicionar foto">
             <img id="doc-foto-thumb" class="doc-foto-thumb escondido" alt="" />
-            <span class="doc-foto-mais" id="doc-foto-mais">+</span>
-            <span class="doc-foto-menu escondido" id="doc-foto-menu">⋯</span>
+            <svg class="doc-foto-placeholder" id="doc-foto-placeholder"><use href="#i-foto"></use></svg>
           </button>
-          <div class="doc-titular">
-            <div class="doc-titulo-linha">
-              <h1 class="doc-titulo" id="doc-titulo">Novo orçamento</h1>
-              <svg class="icone doc-icone-editar" title="Editar nome"><use href="#i-ilustracao"></use></svg>
-            </div>
-            <div class="doc-meta" id="doc-meta">
-              <span class="doc-meta-texto" id="doc-meta-texto"></span>
-            </div>
-          </div>
+          <h1 class="doc-titulo" id="doc-titulo">Novo orçamento</h1>
+          <button type="button" class="doc-acao-titulo" id="doc-acao-editar" title="Editar nome"><svg class="icone"><use href="#i-ilustracao"></use></svg></button>
+          <button type="button" class="doc-acao-titulo escondido" id="doc-acao-menu" title="Opções da foto">⋯</button>
+        </div>
+        <div class="doc-meta escondido" id="doc-meta">
+          <span class="doc-meta-texto" id="doc-meta-texto"></span>
         </div>
         <nav class="doc-tabs" id="doc-tabs">
           <button type="button" class="doc-tab ativo" data-tela="precificar">Precificar</button>
@@ -1801,7 +1796,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>05/09/26 12:38</span>
+          <span class="versao-tag" data-ver>05/09/26 13:09</span>
         </div>
         <h1>Orçamentos</h1>
       </header>
@@ -1824,7 +1819,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>05/09/26 12:38</span>
+          <span class="versao-tag" data-ver>05/09/26 13:09</span>
         </div>
         <h1>Custos de referência</h1>
       </header>
@@ -1929,7 +1924,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>05/09/26 12:38</span>
+          <span class="versao-tag" data-ver>05/09/26 13:09</span>
         </div>
         <h1>Fornos &amp; queima</h1>
       </header>
@@ -2155,6 +2150,8 @@ function totalCustosFixos() {
     const nomeProd = (document.getElementById("nome-produto") || {}).value || "";
     const nome = nomePeca.trim() || nomeProd.trim();
     el.textContent = nome || "Novo orçamento";
+    /* placeholder style when empty */
+    el.classList.toggle("placeholder", !nome);
     /* metadados: só quando preenchido */
     if (meta && metaTxt) {
       const cliente = ((document.getElementById("cliente-peca") || {}).value || "").trim();
@@ -2170,23 +2167,26 @@ function totalCustosFixos() {
         meta.classList.add("escondido");
       }
     }
-    /* foto: toggle + / ⋯ */
+    /* foto: toggle icon + action button */
     const thumb = document.getElementById("doc-foto-thumb");
-    const mais = document.getElementById("doc-foto-mais");
-    const menu = document.getElementById("doc-foto-menu");
+    const placeholder = document.getElementById("doc-foto-placeholder");
     const btn = document.getElementById("doc-foto-btn");
+    const editar = document.getElementById("doc-acao-editar");
+    const menu = document.getElementById("doc-acao-menu");
     if (thumb) {
       if (estado.foto) {
         thumb.src = estado.foto;
         thumb.classList.remove("escondido");
-        if (mais) mais.classList.add("escondido");
-        if (menu) menu.classList.remove("escondido");
+        if (placeholder) placeholder.classList.add("escondido");
         if (btn) btn.classList.add("tem-foto");
+        if (editar) editar.classList.add("escondido");
+        if (menu) menu.classList.remove("escondido");
       } else {
         thumb.classList.add("escondido");
-        if (mais) mais.classList.remove("escondido");
-        if (menu) menu.classList.add("escondido");
+        if (placeholder) placeholder.classList.remove("escondido");
         if (btn) btn.classList.remove("tem-foto");
+        if (editar) editar.classList.remove("escondido");
+        if (menu) menu.classList.add("escondido");
       }
     }
   }
@@ -3062,6 +3062,14 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
   }));
   document.getElementById("btn-foto-peca").addEventListener("click", () => document.getElementById("foto-peca").click());
   document.getElementById("doc-foto-btn").addEventListener("click", () => document.getElementById("foto-peca").click());
+  document.getElementById("doc-acao-menu").addEventListener("click", () => {
+    if (confirm("Remover foto?")) {
+      estado.foto = null;
+      document.getElementById("foto-preview").classList.add("escondido");
+      document.getElementById("btn-foto-peca").classList.remove("escondido");
+      atualizarTituloDoc();
+    }
+  });
   document.getElementById("foto-peca").addEventListener("change", (ev) => {
     const f = ev.target.files && ev.target.files[0];
     if (!f) return;

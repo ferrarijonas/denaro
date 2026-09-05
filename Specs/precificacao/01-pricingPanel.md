@@ -157,10 +157,10 @@ Erros:
 
 - Marca/aplicação: `tinta`, 18px, peso 600 (inalterado).
 - Link de volta (`doc-voltar`): `argila`, 12px, peso 600, `← Orçamentos`.
-- Nome do objeto (`doc-titulo`): `tinta`, 22px, peso 700, reflete `nome-peca`/`nome-produto` ao vivo; padrão `Novo orçamento`.
-- Ícone de editar (`doc-icone-editar`): `tinta-suave`, 14px, ao lado do título.
-- Linha de metadados (`doc-meta`): `tinta-suave`, 12px, peso 500, abaixo do título; só aparece quando preenchido.
-- Botão de foto (`doc-foto-btn`): 52×52px, borda `1.5px dashed linha`, cantos 12px; vazio: `+` central; com foto: thumbnail `cover` + `⋯` overlay.
+- Nome do objeto (`doc-titulo`): `tinta`, 18px, peso 700, reflete `nome-peca`/`nome-produto` ao vivo; padrão `Novo orçamento` em `tinta-suave` peso 400.
+- Botão de foto (`doc-icone-foto`): 28×28px circular, borda `1.5px dashed linha`; vazio: placeholder `i-foto` 14px; com foto: thumbnail `cover`.
+- Ação do título: `✎` editar (`doc-acao-editar`) quando sem foto; `⋯` opções (`doc-acao-menu`) quando com foto.
+- Linha de metadados (`doc-meta`): `tinta-suave`, 12px, peso 500, indentada 36px; só aparece quando preenchido.
 - Abas de navegação (`doc-tabs`): flex, separador `1px linha` inferior, abas `13px` peso 600, `tinta-suave`; aba ativa `argila` com borda inferior `2px argila`.
 - Status de salvamento (`doc-status`): `tinta-suave`, 14px, na barra de marca; idle: ícone sozinho; salvando: `Salvando…` + ponto pulsante; salvo: `Salvo HH:MM`.
 - Cabeçalhos de seção: `tinta-suave`, 13px, peso 600, uppercase, com `▼` colapsável + número da seção.
@@ -185,16 +185,17 @@ Erros:
 | `doc-status: salvo nuvem` | nuvem ok `14px` + texto `Salvo HH:MM` `11px tinta-suave`; após 2.5s → idle |
 | `doc-status: offline`    | nuvem off `14px terracota` + texto `Sem nuvem` `11px tinta-suave` |
 | `doc-status: idle`      | nuvem ok `14px tinta-suave` sem texto, sem ponto |
-| foto vazia              | `doc-foto-btn` 52×52px, borda `1.5px dashed linha`, `+` central `20px tinta-suave` |
-| foto com conteúdo       | `doc-foto-btn` 52×52px, borda transparente; `doc-foto-thumb` `cover` + `⋯` overlay `20px` canto superior direito |
+| foto vazia              | `doc-icone-foto` 28×28 circular, borda `1.5px dashed linha`; placeholder `i-foto` 14px |
+| foto com conteúdo       | `doc-icone-foto` 28×28 circular, borda transparente; `doc-foto-thumb` `cover` |
 | aba de navegação        | `doc-tab` `13px` peso 600 `tinta-suave`; aba ativa `argila` com borda inferior `2px argila` |
 
 ### Interações
 
 - `doc-status` é só informativo (`aria-live="polite"`), sem card nem borda; reflete o `storage.gravar` (autosave 700ms, flush no `pagehide`/`visibilitychange`/troca de tela).
-- `doc-foto-btn`: vazio → abre file picker (adicionar); com foto → abre file picker (substituir). Remoção via botão no formulário.
+- `doc-icone-foto`: vazio → abre file picker (adicionar); com foto → abre file picker (substituir). `doc-acao-menu` (⋯) → confirma para remover.
 - `doc-tabs` navega entre telas via `navegar(tela)`, atualiza aba ativa e salva estado.
-- `doc-meta` só aparece quando `Cliente` ou `Categoria` está preenchido (sem dashes).
+- `doc-meta` só aparece quando `Cliente` ou `Categoria` está preenchido.
+- `doc-titulo` usa peso 400 + `tinta-suave` quando vazio (placeholder), peso 700 + `tinta` quando preenchido.
 - Campos numéricos usam teclado numérico no celular (`inputmode="decimal"/"numeric"`).
 - Steppers de tempo: toques `−`/`+` (passo 15min nos minutos); atalhos rápidos preenchem horas/minutos.
 - Toggle de tipo preserva o estado do tipo não ativo.
