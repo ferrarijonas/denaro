@@ -98,6 +98,7 @@
     letter-spacing: -0.01em;
     color: var(--tinta);
     margin: 0;
+    display: none; /* substituído por .doc-titulo */
   }
 
   main { flex: 1; padding: 0 20px 120px; }
@@ -1087,14 +1088,41 @@
   }
   .sync-tag.ok { color: var(--verde); border-color: var(--verde); background: #f2f5ef; }
   .sync-tag.off { color: var(--terracota); border-color: var(--terracota); background: #faf1ed; }
-  /* h1-titulo: título do doc + nuvem na mesma linha (Google Docs) */
-  .h1-titulo {
+  /* doc-centric: marca → nome doc → status */
+  .doc-voltar {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--argila);
+    text-decoration: none;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: inherit;
+    padding: 0;
+  }
+  .doc-voltar:active { opacity: 0.6; }
+  .doc-linha {
     display: flex;
     align-items: baseline;
     gap: 8px;
-    margin-top: 14px;
+    margin-top: 4px;
   }
-  .h1-titulo h1 { margin: 0; }
+  .doc-titulo {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--tinta);
+    margin: 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .doc-status {
     display: flex;
     align-items: center;
@@ -1324,10 +1352,11 @@
             <span class="nome-app">Denaro</span>
           </div>
           <span class="sync-tag" id="sync-status" title="Status de sincronização dos dados">…</span>
-          <span class="versao-tag" data-ver>04/09/26 21:27</span>
+          <span class="versao-tag" data-ver>04/09/26 21:38</span>
         </div>
-        <div class="h1-titulo">
-          <h1>Precificar</h1>
+        <button type="button" class="doc-voltar" id="doc-voltar" data-ir="salvos">← Orçamentos</button>
+        <div class="doc-linha">
+          <h1 class="doc-titulo" id="doc-titulo">Novo orçamento</h1>
           <div class="doc-status" id="doc-status" aria-live="polite">
             <span class="save-icone" id="save-icone" title="salvamento automático"><svg class="icone"><use href="#i-nuvem-ok"></use></svg></span>
             <span class="save-ponto" id="save-ponto"></span>
@@ -1721,7 +1750,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>04/09/26 21:27</span>
+          <span class="versao-tag" data-ver>04/09/26 21:38</span>
         </div>
         <h1>Orçamentos</h1>
       </header>
@@ -1744,7 +1773,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>04/09/26 21:27</span>
+          <span class="versao-tag" data-ver>04/09/26 21:38</span>
         </div>
         <h1>Custos de referência</h1>
       </header>
@@ -1849,7 +1878,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>04/09/26 21:27</span>
+          <span class="versao-tag" data-ver>04/09/26 21:38</span>
         </div>
         <h1>Fornos &amp; queima</h1>
       </header>
@@ -2063,6 +2092,18 @@ function totalCustosFixos() {
     } catch (e) { /* segue sem fotos */ }
     return d;
   }
+
+  /* ===== doc-centric: título = nome do objeto ===== */
+  function atualizarTituloDoc() {
+    const el = document.getElementById("doc-titulo");
+    if (!el) return;
+    const nomePeca = (document.getElementById("nome-peca") || {}).value || "";
+    const nomeProd = (document.getElementById("nome-produto") || {}).value || "";
+    const nome = nomePeca.trim() || nomeProd.trim();
+    el.textContent = nome || "Novo orçamento";
+  }
+  document.getElementById("nome-peca").addEventListener("input", atualizarTituloDoc);
+  document.getElementById("nome-produto").addEventListener("input", atualizarTituloDoc);
 
   /* ===== autosave: grava sozinho após cada mudança (debounce 700ms) ===== */
   let suprimindoAutosave = false;
@@ -2285,6 +2326,7 @@ function totalCustosFixos() {
     if (typeof renderReceita === "function") renderReceita();
     const ph = document.getElementById("p-h"); if (ph) ph.textContent = estado.prodH;
     const pm = document.getElementById("p-m"); if (pm) pm.textContent = estado.prodM;
+    atualizarTituloDoc();
   }
 
   async function carregarLocalStorage() {
@@ -3933,6 +3975,7 @@ document.getElementById("btn-salvar-custos").addEventListener("click", () => {
         calcularProduto();
         // heurística rascunho: ao abrir já reflete nos Orçamentos
         if (temConteudoParaRascunho()) garantirRascunhoOrcamento();
+        atualizarTituloDoc();
         atualizarSaveBar("Tudo em ordem", false);
       } finally {
         suprimindoAutosave = false;

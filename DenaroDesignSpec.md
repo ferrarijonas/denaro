@@ -46,6 +46,7 @@ Fonte do site (mantém a identidade da marca):
 
 Hierarquia construída com **peso e opacidade**, não só com tamanho:
 
+- Nome do documento aberto (`doc-titulo`): `20px`, peso 700, `tinta` — título principal, reflete a entidade atual.
 - Título de tela: `18px`, peso 600, `tinta`.
 - Rótulo de campo: `13px`, peso 600, `tinta-suave`, uppercase.
 - Valor/preço principal: `26px`, peso 600, `tinta` (ou `button-background` no preço selecionado).

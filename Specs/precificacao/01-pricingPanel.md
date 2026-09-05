@@ -96,8 +96,9 @@ Erros:
 
 ```
 ┌──────────────────────────────┐
-│  [logo] Denaro    (nuvem ok) │
-│  Precificar ☁ Salvo na nuvem │  ← h1 + doc-status na mesma linha (Google Docs)
+│  [logo] Denaro               │  ← marca/aplicação
+│  ← Orçamentos                │  ← link de volta à lista
+│  Lustre  ☁ Tudo em ordem     │  ← nome do objeto + status (doc-centric)
 │  Vamos precificar?           │
 │  [Peças] [Acabam.] [Mat.] …  │  ← cards de tipo
 │  Peças & Objetos  (trocar)   │
@@ -154,8 +155,10 @@ Erros:
 
 ### Hierarquia visual
 
-- Título da tela: `tinta`, 18px, peso 600.
-- Status de salvamento (`doc-status`): `tinta-suave`, 11px, peso 500, **ao lado do `h1` na mesma linha**, com ícone de nuvem `13px` traço `1.7px`; hora `11px #b0a090` só quando há `Salvo`.
+- Marca/aplicação: `tinta`, 18px, peso 600 (inalterado).
+- Link de volta (`doc-voltar`): `argila`, 12px, peso 600, `← Orçamentos`.
+- Nome do objeto (`doc-titulo`): `tinta`, 20px, peso 700, reflete `nome-peca`/`nome-produto` ao vivo; padrão `Novo orçamento`.
+- Status de salvamento (`doc-status`): `tinta-suave`, 11px, peso 500, **ao lado do nome do objeto**, com ícone de nuvem `13px` traço `1.7px`; hora `11px #b0a090` só quando há `Salvo`.
 - Cabeçalhos de seção: `tinta-suave`, 13px, peso 600, uppercase, com `▼` colapsável + número da seção.
 - Rótulos de campo: `tinta-suave`, 13px, peso 600, uppercase.
 - `CUSTO TOTAL`/`CUSTO C/ TAXAS`: `tinta`, 26px, peso 600; c/taxas em `argila`.
