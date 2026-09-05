@@ -1055,12 +1055,12 @@
   .sheet .btn { margin: 0; flex: 1; }
   .sheet .btn.ghost { background: var(--cartao); border: 1px solid var(--linha); color: var(--tinta); }
   .marca-direita { display: flex; align-items: center; gap: 10px; }
-  /* doc-centric: marca → nome doc → metadados/status */
+  /* ── doc-centric ── */
   .doc-voltar {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    margin-top: 12px;
+    margin-top: 10px;
     font-size: 12px;
     font-weight: 600;
     color: var(--argila);
@@ -1072,79 +1072,17 @@
     padding: 0;
   }
   .doc-voltar:active { opacity: 0.6; }
-  .doc-titulo {
-    font-family: "Plus Jakarta Sans", sans-serif;
-    font-size: 24px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--tinta);
-    margin: 6px 0 0;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    line-height: 1.2;
-  }
-  .doc-meta {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin: 2px 0 0;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--tinta-suave);
-    min-height: 18px;
-  }
-  .doc-meta .doc-meta-texto { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .doc-meta .doc-meta-sep { flex-shrink: 0; }
-  .doc-status {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    flex-shrink: 0;
-  }
-  .doc-status .save-icone {
-    width: 13px; height: 13px;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--tinta-suave);
-    flex-shrink: 0;
-  }
-  .doc-status .save-icone svg { width: 13px; height: 13px; display: block; }
-  .doc-status .save-icone.salvando { opacity: 0.55; }
-  .doc-status .save-label { font-size: 11px; font-weight: 500; color: var(--tinta-suave); white-space: nowrap; }
-  .doc-status .save-hora { font-size: 11px; color: #b0a090; white-space: nowrap; }
-  .doc-status .save-ponto {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--verde); flex-shrink: 0;
-  }
-  .doc-status .save-ponto.salvando { background: #c9b896; animation: pulse 1s ease infinite; }
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
-  .doc-status .btn-save-retro {
-    display: none;
-    flex-shrink: 0;
-    border: none;
-    background: transparent;
-    color: var(--argila);
-    font-family: inherit;
-    font-size: 11px;
-    font-weight: 600;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    padding: 2px 6px;
-    cursor: pointer;
-  }
-  .doc-status .btn-save-retro.offline { display: inline; }
-  .doc-status .btn-save-retro:active { opacity: 0.6; }
-  /* doc-identidade: foto + título + metadata + tags */
+
+  /* foto + título lado a lado */
   .doc-identidade {
     display: flex;
     gap: 12px;
-    align-items: flex-start;
+    align-items: center;
     margin-top: 10px;
   }
   .doc-foto-btn {
-    flex: 0 0 56px;
-    width: 56px; height: 56px;
+    flex: 0 0 52px;
+    width: 52px; height: 52px;
     border: 1.5px dashed var(--linha);
     border-radius: 12px;
     background: var(--papel);
@@ -1152,10 +1090,29 @@
     cursor: pointer;
     overflow: hidden;
     padding: 0;
+    position: relative;
+    transition: border-color 150ms;
   }
+  .doc-foto-btn:hover { border-color: var(--argila); }
   .doc-foto-btn:active { background: var(--cartao); }
-  .doc-foto-thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 12px; display: block; }
-  .doc-foto-placeholder { width: 22px; height: 22px; color: var(--tinta-suave); }
+  .doc-foto-btn.tem-foto { border-style: solid; border-color: transparent; }
+  .doc-foto-btn.tem-foto:hover { border-color: var(--linha); }
+  .doc-foto-thumb { width: 52px; height: 52px; object-fit: cover; border-radius: 10px; display: block; }
+  .doc-foto-mais {
+    font-size: 20px; font-weight: 300; color: var(--tinta-suave);
+    line-height: 1; pointer-events: none;
+  }
+  .doc-foto-menu {
+    position: absolute; top: 2px; right: 2px;
+    font-size: 14px; font-weight: 700; color: var(--tinta-suave);
+    background: rgba(255,255,255,0.85);
+    width: 20px; height: 20px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+    backdrop-filter: blur(4px);
+  }
+
+  /* titular */
   .doc-titular { flex: 1; min-width: 0; }
   .doc-titulo-linha {
     display: flex;
@@ -1189,28 +1146,43 @@
     font-size: 12px;
     font-weight: 500;
     color: var(--tinta-suave);
-    min-height: 18px;
   }
-  .doc-tags {
+  .doc-meta:empty { display: none; }
+  .doc-meta .doc-meta-texto { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* save status */
+  .doc-status {
     display: flex;
-    gap: 6px;
-    margin-top: 6px;
-    flex-wrap: wrap;
-  }
-  .doc-tag {
-    display: inline-flex;
     align-items: center;
-    gap: 4px;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--tinta-suave);
-    border: 1px solid var(--linha);
-    border-radius: 999px;
-    padding: 3px 9px;
-    background: var(--cartao);
+    gap: 5px;
+    flex-shrink: 0;
   }
-  .doc-tag-sub { font-weight: 400; color: #b0a090; }
-  /* tabs de navegação do documento */
+  .doc-status .save-icone {
+    width: 14px; height: 14px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--tinta-suave);
+    flex-shrink: 0;
+  }
+  .doc-status .save-icone svg { width: 14px; height: 14px; display: block; }
+  .doc-status .save-icone.off { color: var(--terracota); }
+  .doc-status .save-label {
+    font-size: 11px; font-weight: 500; color: var(--tinta-suave);
+    white-space: nowrap;
+  }
+  .doc-status .save-label:empty { display: none; }
+  .doc-status .save-ponto {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--verde); flex-shrink: 0;
+    display: none;
+  }
+  .doc-status .save-ponto.salvando {
+    display: block;
+    background: #c9b896;
+    animation: pulse 1s ease infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  /* tabs */
   .doc-tabs {
     display: flex;
     gap: 0;
@@ -1419,23 +1391,22 @@
       <header>
         <div class="marca">
           <div class="marca-esquerda">
-            <img class="logo" src="logo.webp" alt="Alice" />
-            <span class="nome-app">Denaro</span>
+            <img class="logo" src="logo.webp" alt="Denaro" />
           </div>
           <div class="marca-direita">
             <div class="doc-status" id="doc-status" aria-live="polite">
               <span class="save-icone" id="save-icone" title="salvamento automático"><svg class="icone"><use href="#i-nuvem-ok"></use></svg></span>
-              <span class="save-label" id="save-label">Salvo automaticamente</span>
+              <span class="save-label" id="save-label"></span>
               <span class="save-ponto" id="save-ponto"></span>
             </div>
-            <span class="versao-tag" data-ver>04/09/26 21:55</span>
           </div>
         </div>
         <button type="button" class="doc-voltar" id="doc-voltar" data-ir="salvos">← Orçamentos</button>
         <div class="doc-identidade">
-          <button type="button" class="doc-foto-btn" id="doc-foto-btn">
+          <button type="button" class="doc-foto-btn" id="doc-foto-btn" title="Adicionar foto">
             <img id="doc-foto-thumb" class="doc-foto-thumb escondido" alt="" />
-            <svg class="icone doc-foto-placeholder"><use href="#i-foto"></use></svg>
+            <span class="doc-foto-mais" id="doc-foto-mais">+</span>
+            <span class="doc-foto-menu escondido" id="doc-foto-menu">⋯</span>
           </button>
           <div class="doc-titular">
             <div class="doc-titulo-linha">
@@ -1443,11 +1414,7 @@
               <svg class="icone doc-icone-editar" title="Editar nome"><use href="#i-ilustracao"></use></svg>
             </div>
             <div class="doc-meta" id="doc-meta">
-              <span class="doc-meta-texto" id="doc-meta-texto">Cliente: — · Categoria: —</span>
-            </div>
-            <div class="doc-tags" id="doc-tags">
-              <span class="doc-tag" id="doc-tag-tipo">Peças &amp; Objetos</span>
-              <span class="doc-tag doc-tag-sub" id="doc-tag-sub">uso na mesa e na casa</span>
+              <span class="doc-meta-texto" id="doc-meta-texto"></span>
             </div>
           </div>
         </div>
@@ -1834,7 +1801,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>04/09/26 21:55</span>
+          <span class="versao-tag" data-ver>05/09/26 12:38</span>
         </div>
         <h1>Orçamentos</h1>
       </header>
@@ -1857,7 +1824,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>04/09/26 21:55</span>
+          <span class="versao-tag" data-ver>05/09/26 12:38</span>
         </div>
         <h1>Custos de referência</h1>
       </header>
@@ -1962,7 +1929,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>04/09/26 21:55</span>
+          <span class="versao-tag" data-ver>05/09/26 12:38</span>
         </div>
         <h1>Fornos &amp; queima</h1>
       </header>
@@ -2112,13 +2079,12 @@ function totalCustosFixos() {
   });
 
   function setStatusNuvem(ok) {
-    /* atualiza o doc-status no topo (novo layout) */
-    const use = document.querySelector("#doc-status use");
-    const lb = document.getElementById("save-label");
-    if (!lb) return;
-    if (!firestoreDisponivel) { if (use) use.setAttribute("href", "#i-nuvem-off"); lb.textContent = "Só local"; return; }
-    if (ok) { if (use) use.setAttribute("href", "#i-nuvem-ok"); lb.textContent = "Salvo automaticamente"; return; }
-    if (use) use.setAttribute("href", "#i-nuvem-off"); lb.textContent = "Nuvem off";
+    const ic = document.querySelector("#doc-status .save-icone");
+    const use = ic && ic.querySelector("use");
+    if (!use) return;
+    if (!firestoreDisponivel) { use.setAttribute("href", "#i-nuvem-off"); ic.classList.add("off"); return; }
+    ic.classList.remove("off");
+    use.setAttribute("href", ok ? "#i-nuvem-ok" : "#i-nuvem-off");
   }
 
   /* fotos: base64 sobe para o Firebase Storage (alice-fotos/) e vira URL na nuvem;
@@ -2182,37 +2148,45 @@ function totalCustosFixos() {
   /* ===== doc-centric: título = nome do objeto ===== */
   function atualizarTituloDoc() {
     const el = document.getElementById("doc-titulo");
-    const meta = document.getElementById("doc-meta-texto");
-    const tagTipo = document.getElementById("doc-tag-tipo");
-    const tagSub = document.getElementById("doc-tag-sub");
+    const meta = document.getElementById("doc-meta");
+    const metaTxt = document.getElementById("doc-meta-texto");
     if (!el) return;
     const nomePeca = (document.getElementById("nome-peca") || {}).value || "";
     const nomeProd = (document.getElementById("nome-produto") || {}).value || "";
     const nome = nomePeca.trim() || nomeProd.trim();
     el.textContent = nome || "Novo orçamento";
-    /* metadados: Cliente: X · Categoria: Y */
-    if (meta) {
-      const cliente = ((document.getElementById("cliente-peca") || {}).value || "").trim() || "—";
-      const catLabel = { utilitario: "Utilitário", escultura: "Escultura", outros: "Outros" }[estado.categoria] || "—";
-      meta.textContent = "Cliente: " + cliente + "  ·  Categoria: " + catLabel;
+    /* metadados: só quando preenchido */
+    if (meta && metaTxt) {
+      const cliente = ((document.getElementById("cliente-peca") || {}).value || "").trim();
+      const catLabel = { utilitario: "Utilitário", escultura: "Escultura", outros: "Outros" }[estado.categoria] || "";
+      if (cliente || catLabel) {
+        const partes = [];
+        if (cliente) partes.push(cliente);
+        if (catLabel) partes.push(catLabel);
+        metaTxt.textContent = partes.join("  ·  ");
+        meta.classList.remove("escondido");
+      } else {
+        metaTxt.textContent = "";
+        meta.classList.add("escondido");
+      }
     }
-    /* tags: tipo + descrição */
-    if (tagTipo) {
-      const info = { peca: { nome: "Peças & Objetos", desc: "uso na mesa e na casa" }, produto: { nome: "Produtos", desc: "receitas e lotes" } }[estado.tipo] || { nome: "Peças & Objetos", desc: "" };
-      tagTipo.textContent = info.nome;
-      if (tagSub) tagSub.textContent = info.desc;
-    }
-    /* foto thumbnail no header */
+    /* foto: toggle + / ⋯ */
     const thumb = document.getElementById("doc-foto-thumb");
-    const placeholder = document.querySelector(".doc-foto-placeholder");
+    const mais = document.getElementById("doc-foto-mais");
+    const menu = document.getElementById("doc-foto-menu");
+    const btn = document.getElementById("doc-foto-btn");
     if (thumb) {
       if (estado.foto) {
         thumb.src = estado.foto;
         thumb.classList.remove("escondido");
-        if (placeholder) placeholder.style.display = "none";
+        if (mais) mais.classList.add("escondido");
+        if (menu) menu.classList.remove("escondido");
+        if (btn) btn.classList.add("tem-foto");
       } else {
         thumb.classList.add("escondido");
-        if (placeholder) placeholder.style.display = "";
+        if (mais) mais.classList.remove("escondido");
+        if (menu) menu.classList.add("escondido");
+        if (btn) btn.classList.remove("tem-foto");
       }
     }
   }
@@ -2232,30 +2206,26 @@ function totalCustosFixos() {
   let saveBarTimer = null;
   function atualizarSaveBar(texto, salvando) {
     const lb = document.getElementById("save-label");
-    const hr = document.getElementById("save-hora");
     const ic = document.getElementById("save-icone");
     const pt = document.getElementById("save-ponto");
-    const btn = document.getElementById("btn-salvar-agora");
-    if (lb) lb.textContent = texto;
-    if (hr) {
-      const ehSalvo = texto.indexOf("Salvo") === 0;
-      hr.textContent = ehSalvo ? " · " + new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
+    const use = ic && ic.querySelector("use");
+    const agora = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    /* label: só quando tem conteúdo */
+    if (lb) {
+      if (salvando) lb.textContent = "Salvando…";
+      else if (texto.indexOf("Salvo") === 0 && texto.indexOf("aparelho") === -1) lb.textContent = "Salvo " + agora;
+      else if (texto.indexOf("aparelho") >= 0) lb.textContent = "Sem nuvem";
+      else lb.textContent = "";
     }
-    if (ic) {
-      ic.classList.toggle("salvando", !!salvando);
-      const use = ic.querySelector("use");
-      if (use) {
-        if (salvando) use.setAttribute("href", "#i-nuvem");
-        else if (texto.indexOf("Salvo neste aparelho") === 0) use.setAttribute("href", "#i-nuvem-off");
-        else use.setAttribute("href", "#i-nuvem-ok");
-      }
+    /* ícone */
+    if (use) {
+      if (salvando) use.setAttribute("href", "#i-nuvem");
+      else if (texto.indexOf("aparelho") >= 0) use.setAttribute("href", "#i-nuvem-off");
+      else use.setAttribute("href", "#i-nuvem-ok");
     }
-    if (pt) {
-      const offline = texto.indexOf("Salvo neste aparelho") === 0;
-      pt.style.display = offline || texto === "Tudo em ordem" || salvando ? "none" : "";
-      pt.classList.toggle("salvando", !!salvando);
-    }
-    if (btn) btn.classList.toggle("offline", texto.indexOf("Salvo neste aparelho") === 0);
+    if (ic) ic.classList.toggle("off", texto.indexOf("aparelho") >= 0 && !salvando);
+    /* ponto pulsante */
+    if (pt) pt.classList.toggle("salvando", !!salvando);
   }
   function horaAgora() { return new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }); }
   function precoAtualParaRascunho() {
@@ -2617,11 +2587,6 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     estado.tipo = tipo;
     const info = TIPOS_INFO[tipo];
     document.getElementById("intro-inicio").classList.add("escondido");
-    /* atualiza tags no header */
-    const tagTipo = document.getElementById("doc-tag-tipo");
-    const tagSub = document.getElementById("doc-tag-sub");
-    if (tagTipo) tagTipo.textContent = info.nome;
-    if (tagSub) tagSub.textContent = info.desc;
     document.getElementById("corpo-peca").classList.toggle("escondido", info.flow !== "peca");
     document.getElementById("corpo-produto").classList.toggle("escondido", info.flow !== "produto");
     if (comScroll) {
@@ -3546,12 +3511,6 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     salvarFeedback("fb-produto", "Produto salvo em " + data);
   });
   // botão retrô 💾 — força rascunho agora + vai p/ orçamentos
-  const btnSalvarAgora = document.getElementById("btn-salvar-agora");
-  if (btnSalvarAgora) btnSalvarAgora.addEventListener("click", () => {
-    garantirRascunhoOrcamento();
-    gravarEstado();
-    navegar("salvos");
-  });
 
   /* ===== itens salvos ===== */
   let filtroSalvos = "todos";
