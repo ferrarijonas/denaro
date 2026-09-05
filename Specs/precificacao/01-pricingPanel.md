@@ -97,7 +97,7 @@ Erros:
 ```
 ┌──────────────────────────────┐
 │  [logo] Denaro    (nuvem ok) │
-│  Precificar                  │
+│  Precificar ☁ Salvo na nuvem │  ← h1 + doc-status na mesma linha (Google Docs)
 │  Vamos precificar?           │
 │  [Peças] [Acabam.] [Mat.] …  │  ← cards de tipo
 │  Peças & Objetos  (trocar)   │
@@ -155,6 +155,7 @@ Erros:
 ### Hierarquia visual
 
 - Título da tela: `tinta`, 18px, peso 600.
+- Status de salvamento (`doc-status`): `tinta-suave`, 11px, peso 500, **ao lado do `h1` na mesma linha**, com ícone de nuvem `13px` traço `1.7px`; hora `11px #b0a090` só quando há `Salvo`.
 - Cabeçalhos de seção: `tinta-suave`, 13px, peso 600, uppercase, com `▼` colapsável + número da seção.
 - Rótulos de campo: `tinta-suave`, 13px, peso 600, uppercase.
 - `CUSTO TOTAL`/`CUSTO C/ TAXAS`: `tinta`, 26px, peso 600; c/taxas em `argila`.
@@ -173,9 +174,14 @@ Erros:
 | erro de campo           | borda `1.5px terracota` + mensagem 12px `terracota`                     |
 | botão primário          | fundo `argila`, texto `cartao`, 48px, cantos 10px                       |
 | feedback "salva"        | texto `verde-argila`, 13px, 2s                                          |
+| `doc-status: salvando`  | nuvem `13px tinta-suave` + ponto `6px #c9b896` com `pulse 1s`, texto `Salvando…` `11px tinta-suave` |
+| `doc-status: salvo nuvem` | nuvem com check `13px` + texto `Salvo na nuvem · HH:MM` `11px tinta-suave`, hora `11px #b0a090`; após 2.5s vira `Tudo em ordem` |
+| `doc-status: salvo local` | nuvem `13px terracota` suave + texto `Salvo neste aparelho · HH:MM` `11px tinta-suave` + link `Salvar agora` `12px argila` só quando offline |
+| `doc-status: idle`      | texto `Tudo em ordem` `11px tinta-suave` sem hora, sem ponto pulsante   |
 
 ### Interações
 
+- `doc-status` é só informativo (`aria-live="polite"`), sem card nem borda; reflete o `storage.gravar` (autosave 700ms, flush no `pagehide`/`visibilitychange`/troca de tela); `Salvar agora` só aparece quando `nuvemOk=false`.
 - Campos numéricos usam teclado numérico no celular (`inputmode="decimal"/"numeric"`).
 - Steppers de tempo: toques `−`/`+` (passo 15min nos minutos); atalhos rápidos preenchem horas/minutos.
 - Toggle de tipo preserva o estado do tipo não ativo.

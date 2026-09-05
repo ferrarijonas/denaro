@@ -89,6 +89,9 @@ Números sempre em figura tabular (monoespaçadas) para alinhar colunas de preç
 | `disabled` | Opacidade `0.4`, sem sombra; cursor desabilitado.                        |
 | `selecionado` | Card de margem escolhido: borda `button-background`, fundo `cartao`, preço em `button-background`. |
 | `erro`     | Borda `1.5px` `terracota` + mensagem em `12px` abaixo do campo.          |
+| `save: salvando` | Nuvem `13px tinta-suave` + ponto `6px #c9b896` pulsando, texto `Salvando…` `11px tinta-suave`. |
+| `save: salvo nuvem` | Nuvem com check `13px` + `Salvo na nuvem · HH:MM` `11px tinta-suave`, hora `#b0a090`; idle `Tudo em ordem` após 2.5s. |
+| `save: salvo local` | Nuvem `13px` + `Salvo neste aparelho · HH:MM` `11px tinta-suave` + `Salvar agora` `12px argila` só quando offline. |
 
 ---
 
