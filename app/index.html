@@ -1760,7 +1760,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>08/09/26 13:56</span>
+          <span class="versao-tag" data-ver>08/09/26 14:07</span>
         </div>
         <h1>Orçamentos</h1>
       </header>
@@ -1783,7 +1783,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>08/09/26 13:56</span>
+          <span class="versao-tag" data-ver>08/09/26 14:07</span>
         </div>
         <h1>Custos de referência</h1>
       </header>
@@ -1888,7 +1888,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>08/09/26 13:56</span>
+          <span class="versao-tag" data-ver>08/09/26 14:07</span>
         </div>
         <h1>Fornos &amp; queima</h1>
       </header>
@@ -3489,9 +3489,10 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     const catLabel = { utilitario: "utilitário", escultura: "escultura", outros: "outros" }[estado.categoria] || "outros";
     const data = pegarData();
     const meta = catLabel + " · " + (CONFIG.niveisNome[estado.nivel] || estado.nivel) + " · " + fmtTempo(estado.tempoTotalMin) + (estado.cliente ? " · " + estado.cliente : "");
-    // promove rascunho → vira orçamento definitivo
+    // promove rascunho → vira orçamento definitivo; guarda o snapshot p/ reabrir
     salvos = salvos.filter((s) => !s.rascunho);
-    salvos.unshift({ tipo: "peca", nome, preco: estado.precoSelecionado || 0, meta, data, foto: estado.foto });
+    const snapPeca = capturarRascunho(); snapPeca.foto = null;
+    salvos.unshift({ tipo: "peca", nome, preco: estado.precoSelecionado || 0, meta, data, foto: estado.foto, snap: snapPeca });
     renderSalvos();
     salvarLocalStorage();
     atualizarSaveBar("Salvo na nuvem", false);
@@ -3510,13 +3511,39 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     const data = pegarData();
     const meta = un + " un · montagem " + fmtTempo(estado.prodH * 60 + estado.prodM);
     salvos = salvos.filter((s) => !s.rascunho);
-    salvos.unshift({ tipo: "produto", nome, preco: estado.precoSelecionado || 0, meta, data });
+    const snapProd = capturarRascunho(); snapProd.foto = null;
+    salvos.unshift({ tipo: "produto", nome, preco: estado.precoSelecionado || 0, meta, data, snap: snapProd });
     renderSalvos();
     salvarLocalStorage();
     atualizarSaveBar("Salvo na nuvem", false);
     salvarFeedback("fb-produto", "Produto salvo em " + data);
   });
   // botão retrô 💾 — força rascunho agora + vai p/ orçamentos
+
+  /* ===== abrir orçamento salvo no precificador ===== */
+  function abrirOrcamento(s) {
+    if (s.rascunho) { navegar("precificar"); return; }
+    const tipo = s.tipo === "produto" ? "produto" : "peca";
+    navegar("precificar");
+    estado.tipo = tipo;
+    document.getElementById("intro-inicio").classList.add("escondido");
+    document.getElementById("corpo-peca").classList.toggle("escondido", tipo !== "peca");
+    document.getElementById("corpo-produto").classList.toggle("escondido", tipo !== "produto");
+    if (s.snap) {
+      restaurarRascunho(s.snap);
+      estado.foto = s.foto || null;
+      estado.fotos = estado.foto ? [estado.foto] : [];
+      renderGaleria();
+    } else {
+      const el = document.getElementById(tipo === "peca" ? "nome-peca" : "nome-produto");
+      if (el) el.value = s.nome || "";
+      if (s.foto) { estado.foto = s.foto; estado.fotos = [s.foto]; }
+      renderGaleria();
+    }
+    atualizarTituloDoc();
+    try { if (tipo === "peca") calcularPeca(); else calcularProduto(); } catch (e) { /* segue */ }
+    try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch (e) { /* jsdom */ }
+  }
 
   /* ===== itens salvos ===== */
   let filtroSalvos = "todos";
@@ -3533,10 +3560,8 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
         (s.foto ? '<img class="thumb" src="' + s.foto + '" alt="" />' : "") +
         '<div><div class="nome">' + badgeRasc + '<span class="badge-tipo">' + (s.tipo === "peca" ? "peça" : "produto") + "</span>" + s.nome + '</div><div class="meta">' + s.meta + " · " + s.data + "</div></div>" +
         '<div class="preco-wrap"><div class="preco">' + fmt(s.preco) + "</div></div>";
-      if (s.rascunho) {
-        card.title = "Rascunho auto — continua editando";
-        card.addEventListener("click", () => navegar("precificar"));
-      }
+      card.title = s.rascunho ? "Rascunho auto — continua editando" : "Abrir este orçamento no precificador";
+      card.addEventListener("click", () => abrirOrcamento(s));
       const del = document.createElement("button");
       del.type = "button";
       del.className = "del-salvo";

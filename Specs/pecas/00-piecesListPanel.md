@@ -38,7 +38,7 @@ piecesListPanel  →  (tocar peça)  →  abre pricingPanel preenchido
 
 - Se a lista está vazia → estado vazio com mensagem "Nenhuma peça ainda. Precifique a primeira." + botão para `pricingPanel`.
 - Cada linha mostra: nome, preço escolhido (destaque), e metadados (peso, dificuldade, data) em `tinta-suave`.
-- Tocar numa peça → abre `pricingPanel` **preenchido** com os dados da peça (não abre tela separada de detalhe no v1).
+- Tocar numa peça → abre `pricingPanel` **preenchido** com os dados da peça (não abre tela separada de detalhe no v1). O preenchimento usa o **snapshot** guardado no salvamento (`snap`); peças salvas antes do snapshot (legado) abrem com nome + foto e o restante é recalculado.
 - Copiar peça: ao abrir a peça no `pricingPanel`, a ceramista pode alterar dados e tocar "Salvar peça" → gera uma **nova** peça (não sobrescreve a original).
 - Botão apagar (gesto de deslizar ou "⋯"): pede confirmação "Apagar esta peça?" antes de remover.
 
@@ -54,6 +54,7 @@ Entrada (listagem — do `storage`):
   - `pesoArgilaKg`: number
   - `dificuldade`: 1 | 2 | 3 | 4 | 5
   - `criadoEm`: ISO datetime
+  - `snap`: snapshot completo do formulário (opcional, ausente em itens legados)
 
 Saída (ação):
 
