@@ -86,11 +86,12 @@ async function snapshotDe(p) {
   const horaNivel = custoHoraPessoa * (C.niveis.profissional || 1);
 
   const inPeca = {
-    peso: 0.4, esmalteReais: 5, frete: 0, tempoHoras: 0.5,
+    peso: 0.4, esmalteReais: 5, frete: 0,
     argilaPreco: 7,
     acessorios: [],
     embalagem: [{ qtd: 1, preco: 2 }, { qtd: 1, preco: 1 }],
-    horaNivel, horaAtelie,
+    etapas: [{ id: "todas", tempoH: 0.5, horaNivel }],
+    horaAtelie,
     queima: 0,
     taxaPerda: 0.30,
     fretePagante: "cliente",
@@ -106,7 +107,7 @@ async function snapshotDe(p) {
     tempoMontagemHoras: 0.5,
     receita: [{ gramas: 400, precoKg: 5.3 }, { gramas: 250, precoKg: 13 }, { gramas: 100, precoKg: 7 }],
     embalagem: [],
-    custoHoraTotal: totalFixos / horasMes,
+    montagemHoraNivel: custoHoraPessoa * (C.niveis.profissional || 1),
     taxaPerda: 0.30,
     imposto: 0.06, canalPct: 0.06,
   };

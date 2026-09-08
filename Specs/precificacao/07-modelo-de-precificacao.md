@@ -48,11 +48,13 @@ Os custos fixos são **mensais** e divididos em **dois blocos** (conforme `00-co
 | `horasMes`                     | horas/dia × dias/mês                 | 8 × 22 = 176               |
 | `custoHoraPessoa`              | `salarioMensal / horasMes`           | 3500/176 = R$ 19,89        |
 | `custoHoraTotal`               | `totalCustosFixos / horasMes`        | 5980/176 = R$ 33,98        |
+| `horaAtelie`                   | `(totalCustosFixos − salarioMensal) / horasMes` | 2480/176 = R$ 14,09 |
 
-- `custoHoraPessoa` é usado na **mão de obra de montagem de produtos**.
-- `custoHoraTotal` é usado na **mão de obra de peças** (já inclui o custo fixo rateado).
-- **Regra:** `totalCustosFixos`, `custoHoraPessoa` e `custoHoraTotal` são **sempre derivados** da soma dos itens — a tela não permite digitá-los. A ceramista edita apenas itens, categorias e parâmetros de hora (horas/dia, dias/mês).
-- **Rateio e faturamento médio não existem mais** na tela: `custoHoraTotal` já embute os custos fixos por hora, e faturamento médio não participa de nenhum cálculo.
+- **Mão de obra de peça (R26):** cada etapa usa `custoHoraPessoa × fatorNível[quemFaz]`; o ateliê entra como `horaAtelie` somado **uma vez** sobre o tempo total. `custoHoraPessoa + horaAtelie = custoHoraTotal` — com tudo em Profissional, o resultado é o mesmo do modelo antigo (que usava `custoHoraTotal` direto).
+- `custoHoraPessoa` é a base da **montagem de produtos**.
+- `custoHoraTotal` continua derivado (referência/paridade com planilhas), mas **não é mais usado direto** na mão de obra de peça.
+- **Regra:** `totalCustosFixos`, `custoHoraPessoa`, `horaAtelie` e `custoHoraTotal` são **sempre derivados** da soma dos itens — a tela não permite digitá-los. A ceramista edita apenas itens, categorias e parâmetros de hora (horas/dia, dias/mês).
+- **Rateio e faturamento médio não existem mais** na tela; faturamento médio não participa de nenhum cálculo.
 
 ### 2.2 Insumos / matérias-primas
 
@@ -99,24 +101,28 @@ Tabela `Nome | Unidade | Preço`. Exemplos reais:
 
 - `kgsArgila`: number > 0
 - `esmalteReais`: number ≥ 0 (custo do esmalte em **reais**, não em %)
-- `tempoHoras`: number > 0 (entrado em horas e minutos; convertido para decimal interno)
-- `dificuldade`: 1 | 2 | 3 | 4 | 5 (UI) → fator interno
+- `etapas`: lista de partes da mão de obra, cada uma `{ id, min, quemFaz }` (`quemFaz ∈ aprendiz|profissional|especialista`). Tempo total = `Σ min`, convertido para decimal interno (h + m/60). Etapas padrão: projeto, preparação, modelagem, esmaltação, decoração, forno.
 - `acessorios`: lista `{ item, qtd }` (ex.: fio, motor)
 - `embalagem`: lista `{ item, qtd }` (caixas, papéis, etiquetas, bolha, transporte)
 - `queima`: `{ onde: "forno"|"servico"|"nenhuma", ciclos: 0|1|2, pecasNaCarga: number }` (config de fornos em `fornosPanel`, ver `Specs/queima/00-fornosPanel.md`)
-- custos de referência: `precoKgArgila` (**vem do catálogo de insumos**, item "Argila Comum", não é cadastrado na aba Fixos), `custoHoraTotal`, `taxas`, `margensPorLinha`, `taxaPerda`, `fatorDificuldade`, `rateioFrete`
+- custos de referência: `precoKgArgila` (**vem do catálogo de insumos**, item "Argila Comum", não é cadastrado na aba Fixos), `custoHoraPessoa` e `horaAtelie` (derivados de §2.1), `taxas`, `margensPorLinha`, `taxaPerda`, `rateioFrete`
 
-### 3.2 Fator de dificuldade
+### 3.2 Quem faz cada etapa — níveis de habilidade
 
-| Dificuldade (UI) | Fator interno (multiplicador) |
-| ---------------- | ----------------------------- |
-| 1                | 1,0                           |
-| 2                | 1,2                           |
-| 3                | 1,4                           |
-| 4                | 1,6                           |
-| 5                | 1,8                           |
+Cada etapa da mão de obra escolhe **quem executa**; o valor-hora da etapa é `custoHoraPessoa × fatorNível`:
 
-O usuário vê **1 a 5**; o cálculo usa o multiplicador até **1,8**, como nas planilhas.
+| Nível (UI) | % da hora pessoa | valor (hora pessoa R$19,89) |
+| ---------- | ---------------- | --------------------------- |
+| Aprendiz   | 60%              | R$ 11,93                    |
+| Profissional | 100%           | R$ 19,89                    |
+| Especialista | 150%           | R$ 29,84                    |
+
+Regras:
+
+- **Não existe "dificuldade".** O tempo captura o esforço; o nível captura o valor da hora de **quem executa** cada etapa.
+- Default de toda etapa: **Profissional** (a ceramista). Etapa delegável → Aprendiz; etapa autoral → Especialista.
+- **Aprendiz só aparece** como opção se houver ajudante cadastrado nos custos (`maoDeObra` com item de aprendiz/ajudante > 0 — ver `00-costsPanel.md`).
+- O overhead do ateliê (`horaAtelie`) **soma uma vez sobre o tempo total**, independente de quem executa.
 
 ### 3.3 Contas (ordem exata)
 
@@ -125,7 +131,8 @@ custoArgila     = kgsArgila × precoKgArgila
 custoMaterial   = custoArgila + esmalteReais
 custoAcessorios = Σ (qtd × preco) dos acessórios
 custoEmbalagem  = Σ (qtd × preco) dos itens de embalagem
-maoDeObra       = tempoHoras × custoHoraTotal × fatorDificuldade
+maoDeObra       = Σ_etapas (min_i/60 × custoHoraPessoa × fatorNível[quemFaz_i])
+                  + (tempoTotalMin/60 × horaAtelie)          ← ateliê soma uma vez no total
 custoQueima     = (custoPorQueima ÷ pecasNaCarga) × ciclos      ← R20; sem queima = 0
 riscoRefacao    = taxaPerda × (custoMaterial + maoDeObra + custoQueima)
 custoTotal      = custoMaterial + custoAcessorios + custoEmbalagem + maoDeObra + custoQueima + riscoRefacao + rateioFrete
@@ -134,18 +141,20 @@ custoComTaxas   = custoTotal ÷ (1 − Σ taxas)      ← modo líquido (padrão
 precoPorLinha   = custoComTaxas ÷ (1 − margemDaLinha)   ← margem é % do preço de venda
 ```
 
+> **Mão de obra (R26):** cada etapa tem `tempo × hora de quem executa` (`custoHoraPessoa × nível`), e o ateliê (`horaAtelie`) é somado **uma vez** sobre o tempo total — porque o overhead não depende de quem faz. Com todas as etapas em **Profissional**, a fórmula reduz a `tempoTotal × (custoHoraPessoa + horaAtelie)` — idêntico ao modelo anterior.
+
 > **Escala de perda (R14):** `taxaPerda` é uma escala de 3 níveis (`CONFIG.perdas`): **Baixa 15%**, **Média 30%** (default), **Alta 45%**. Justificativa internacional: a perda real de ateliê soma **alocação de matéria-prima (15–20%)** + **quebra/refação (10–20%)** + **promocionais e seconds monetizados com desconto** (East Fork vende a 30%), que a literatura internacional trata separadamente mas o ateliê sente junto. A escala usa o valor do nível selecionado (`CONFIG.perdaNivel`).
 
 > **Queima (R19–R24):** `custoPorQueima` vem do `fornosPanel` (`Specs/queima/00-fornosPanel.md`) — forno próprio (no v1: energia `kW × horas × dutyCycle × precoKwh`, ou valor digitado; desgaste/mão de obra/overhead em R25) ou serviço externo (tarifa por kg/peça/carga). `peçasNaCarga` é **estimada** pelo app (R24): por peso (capacidade do forno em kg ÷ `kgsArgila`) ou por tamanho para peças largas (prato/travessa). `ciclos`: 0 (sem queima), 1 (single-fire/raku) ou 2 (bisque + esmalte, padrão). Peça sem queima → custo 0. Onde a energia do forno já está no custo fixo, energia = 0 (sem dupla contagem). `custoQueima` também entra na base do risco/refação (a quebra acontece na queima).
 
 ### 3.4 Verificação contra os custos fixos pré-cadastrados
 
-Com os 20 itens pré-cadastrados (§2.1): `totalCustosFixos=5.980`, `salario=3.500`, `horasMes=176` → `custoHoraTotal=33,98`. Com `kgsArgila=0,4`, `esmalte=R$5`, `tempo=0,5h`, `dificuldade=1` (fator 1,0), `embalagem= papel R$2 + etiqueta R$1`:
+Com os 20 itens pré-cadastrados (§2.1): `totalCustosFixos=5.980`, `salario=3.500`, `horasMes=176` → `custoHoraPessoa=19,89`, `horaAtelie=14,09`. Com `kgsArgila=0,4`, `esmalte=R$5`, `etapas` num total de `0,5h`, **todas em Profissional** (fator 1,0), `embalagem= papel R$2 + etiqueta R$1`:
 
 - custoArgila = 0,4 × 7 = 2,80
 - custoMaterial = 2,80 + 5,00 = 7,80
 - custoEmbalagem = 2,00 + 1,00 = 3,00
-- maoDeObra = 0,5 × 33,98 × 1,0 = 16,99
+- maoDeObra = Σ(etapas Profissional) + ateliê = 0,5 × 19,89 + 0,5 × 14,09 = 16,99
 - riscoRefacao = taxaPerda(média 0,3) × (7,80 + 16,99) = 7,44
 - custoTotal = 7,80 + 3,00 + 16,99 + 7,44 = 35,23
 - custoComTaxas = 35,23 ÷ 0,95 = 37,08 (imposto 5%)
@@ -154,6 +163,13 @@ Com os 20 itens pré-cadastrados (§2.1): `totalCustosFixos=5.980`, `salario=3.5
 **Conferência contra a planilha:** a mesma fórmula com o config da aba `Alice_Custos_FUNCIONA` (total 6.880 → hora total 39,09) reproduz os valores dela: custo 38,55 ✓, c/taxas 40,48 ✓, revenda 57,83 ✓, padrão 73,60 ✓, exclusiva 101,20 ✓. A fórmula é 1:1; muda apenas o config de custos fixos.
 
 Resultado idêntico ao da planilha quando os mesmos custos de referência são usados.
+
+**Exemplo com ajudante (ilustra a mão de obra por etapa):** mesma peça com 0,5h no total, mas `preparação (10min)` em **Aprendiz** e `modelagem (20min)` em Profissional:
+- pessoa = (10/60)×R$11,93 + (20/60)×R$19,89 = 1,99 + 6,63 = 8,62
+- ateliê = 0,5 × R$14,09 = 7,04 (não muda com quem faz)
+- maoDeObra = 8,62 + 7,04 = **15,66** (vs 16,99 toda em Profissional)
+
+Delegar uma etapa delegável ao Aprendiz **reduz** a mão de obra porque a hora dele é 60% da sua; o ateliê é constante.
 
 ### 3.5 Linhas de margem de peça (padrão sugerido)
 
@@ -172,6 +188,7 @@ Resultado idêntico ao da planilha quando os mesmos custos de referência são u
 - `receita`: lista `{ insumo, gramas }` (minerais da receita)
 - `unidadesProduzidas`: number > 0 (quantas unidades o lote rende)
 - `tempoMontagemHoras`: number ≥ 0 (mão de obra de montagem por lote ou por unidade — ver nota)
+- `quemFazMontagem`: `aprendiz | profissional | especialista` (default **profissional**; Aprendiz só se houver ajudante)
 - `embalagem`: lista `{ item, qtd }` (potes, caixas, papéis, etiquetas, bolha)
 - custos de referência: catálogo de insumos (preço/kg), `custoHoraPessoa`, `taxas`, `linhas`
 
@@ -181,11 +198,13 @@ Resultado idêntico ao da planilha quando os mesmos custos de referência são u
 custoReceita     = Σ (gramas/1000 × precoKg) de cada insumo
 custoPorUnidade  = custoReceita ÷ unidadesProduzidas
 custoEmbalagem   = Σ (qtd × preco) dos itens de embalagem (por unidade)
-maoMontagem      = tempoMontagemHoras × custoHoraPessoa × fatorDificuldade(1,0 se não aplicável)
+maoMontagem      = tempoMontagemHoras × custoHoraPessoa × fatorNível[quemFazMontagem]
 custoTotal       = custoPorUnidade + custoEmbalagem + maoMontagem
 custoComTaxas    = custoTotal ÷ (1 − Σ taxas)      ← divisor (convenção dos produtos)
 precoPorLinha    = custoComTaxas × multiplicadorDaLinha
 ```
+
+> A montagem do produto não tem etapas — é **uma tarefa**; escolhe **quem faz** (default Profissional). Não soma `horaAtelie` (a montagem de produto usa `custoHoraPessoa`, conforme §2.1).
 
 ### 4.3 Verificação contra `Aquarela_Caixa_7Elementos_JUN26`
 

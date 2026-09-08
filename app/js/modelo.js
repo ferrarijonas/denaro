@@ -154,13 +154,14 @@ function calcularCustoPeca(inputs, config) {
   const peso = inputs.peso;
   const esmalte = inputs.esmalteReais;
   const frete = inputs.frete;
-  const tempoH = inputs.tempoHoras;
 
   const custoArgila = peso * inputs.argilaPreco;
   const custoMaterial = custoArgila + esmalte;
   const custoAcessorios = inputs.acessorios.reduce((s, i) => s + i.qtd * i.preco, 0);
   const custoEmbalagem = inputs.embalagem.reduce((s, i) => s + i.qtd * i.preco, 0);
-  const maoDeObra = tempoH * (inputs.horaNivel + inputs.horaAtelie);
+  const tempoTotalH = inputs.etapas.reduce((s, e) => s + e.tempoH, 0);
+  const maoPessoa = inputs.etapas.reduce((s, e) => s + e.tempoH * e.horaNivel, 0);
+  const maoDeObra = maoPessoa + tempoTotalH * inputs.horaAtelie;
   const queima = inputs.queima;
   const risco = inputs.taxaPerda * (custoMaterial + maoDeObra + queima);
   const freteEmbutido = inputs.fretePagante === "atele";
@@ -185,7 +186,7 @@ function calcularCustoProduto(inputs, config) {
   const custoReceita = inputs.receita.reduce((s, r) => s + (r.gramas / 1000) * r.precoKg, 0);
   const porUnidade = custoReceita / un;
   const custoEmbalagem = inputs.embalagem.reduce((s, i) => s + i.qtd * i.preco, 0);
-  const montagem = montagemH * inputs.custoHoraTotal;
+  const montagem = montagemH * (inputs.montagemHoraNivel || 0);
   const risco = inputs.taxaPerda * (porUnidade + montagem);
   const custoTotal = porUnidade + custoEmbalagem + montagem + risco;
   const taxas = inputs.imposto + inputs.canalPct;

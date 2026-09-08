@@ -16,8 +16,8 @@ Esta feature existe para que **a ceramista** consiga **ver o custo e os preços 
 
 O `pricingPanel` é a tela principal do Denaro. A ceramista escolhe o **tipo** (Peça ou Produto) e preenche as seções do formulário:
 
-- **Peça**: seção **0. A peça** (identidade: galeria de fotos, nome, "pra quem é", categoria) + Insumos (argila kg + seletor de argila, esmalte em R$, tamanho/medidas + render no forno, acessórios), Mão de obra (tempo horas/minutos, dificuldade 1–5, nível), Queima (chips de tipo + seletor de forno + "sem queima"), Canais de venda, Entrega (método + quem paga + rateio).
-- **Produto**: Receita (insumos em gramas + unidades produzidas) + Embalagem & montagem.
+- **Peça**: seção **0. A peça** (identidade: galeria de fotos, nome, "pra quem é", categoria) + Insumos (argila kg + seletor de argila, esmalte em R$, tamanho/medidas + render no forno, acessórios), Mão de obra (**etapas com tempo e "quem faz"**), Queima (chips de tipo + seletor de forno + "sem queima"), Canais de venda, Entrega (método + quem paga + rateio).
+- **Produto**: Receita (insumos em gramas + unidades produzidas) + Embalagem & montagem (**montagem com "quem faz"**).
 
 O painel mostra, abaixo, o **custo detalhado** (linha a linha) e o **preço por linha comercial** (Exclusiva/Padrão/Revenda para peças; Autoral/Profissional/Essencial para produtos). Ela escolhe uma linha, salva e segue.
 
@@ -43,8 +43,8 @@ toggle Peça/Produto → seções → (cálculo local, ao vivo ou botão) → cu
 
 - Se a ceramista toca **"Calcular preço"** e todas as seções válidas → painel mostra custo detalhado + preços por linha.
 - Se algum campo está inválido → campo marcado em `terracota` com mensagem `12px`; nada é calculado.
-- **Tempo** é entrado em **horas e minutos** (steppers + atalhos "até 1h", "2–3h", "4–6h", "8–12h", "15–30h+"); convertido para decimal pelo normalizador (`h + m/60`).
-- **Dificuldade** é **1–5** na UI; o cálculo usa o fator interno (1,0–1,8).
+- **Tempo** é entrado por **etapa** (horas e minutos / atalhos rápidos), somado num total visível ("Tempo total"); convertido para decimal pelo normalizador (`h + m/60`).
+- **Quem faz** é escolhido **por etapa** (radio `Aprendiz · Profissional · Especialista`): define o valor-hora daquela etapa. Aprendiz só aparece se houver ajudante cadastrado nos custos. Default: **Profissional**. A montagem de produto tem o mesmo seletor único.
 - Linhas de preço vêm dos custos de referência (peça: Exclusiva/Padrão/Revenda; produto: Autoral/Profissional/Essencial).
 - Se não há custos de referência cadastrados → banner suave: "Cadastre seus custos para valores reais" com link para `costsPanel`.
 - Tocando numa linha de preço → ela fica **selecionada** (borda `argila`); o preço escolhido vira o preço do item ao salvar.
@@ -84,7 +84,7 @@ Erros:
 
 ### Critérios de aceitação
 
-- Uma peça vira preço em poucos toques (tipo, insumos, tempo, dificuldade, calcular).
+- Uma peça vira preço em poucos toques (tipo, insumos, tempo por etapa, quem faz, calcular).
 - Toda linha de preço tem origem rastreável no custo detalhado (conforme `07-modelo-de-precificacao.md`).
 - O render do forno e o custo de queima usam a mesma `estimarCabem` (nunca divergem).
 
@@ -123,10 +123,16 @@ Erros:
 │  Acessórios ▸ (chips)        │
 │                              │
 │  ▼ 2. MÃO DE OBRA            │
-│  TEMPO  [−] 0h 30min [+]     │
-│         até1h 2–3h 4–6h …    │
-│  DIFICULDADE (1)(2)(3)(4)(5) │
-│  NÍVEL  [profissional ▾]     │
+│  ⏱ Tempo total 1h 25min      │
+│  ┌ Projeto/desenho  15min ──┐│
+│  │ quem faz [Apr][•Prof][Esp]││
+│  ├ Preparação  10min ───────┤│
+│  │ quem faz [•Apr][Prof][Esp]││
+│  ├ Modelagem   30min ───────┤│
+│  │ quem faz [Apr][•Prof][Esp]││
+│  └ … (esmaltação, decoração,││
+│      forno) ────────────────┘│
+│  ★ Guardar como padrão       │
 │                              │
 │  ▼ 3. QUEIMA                 │
 │  [Biscoito] [Baixa] [Alta] … │
@@ -183,7 +189,7 @@ Erros:
 | ----------------------- | ---------------------------------------------------------------------- |
 | card de tipo ativo      | fundo `argila`, texto `cartao`                                          |
 | campo `focus`           | borda `1.5px argila` + halo `rgba(91,68,50,0.12)`                       |
-| chip dificuldade selec. | fundo `argila`; não selecionado: `cartao`, texto `tinta-suave`          |
+| seletor "quem faz" selec. | fundo `argila`; não selecionado: `cartao`, texto `tinta-suave`       |
 | stepper de tempo        | `cartao`, borda `1px linha`, botões ± 42px                              |
 | linha de preço selec.   | borda `1.5px argila`, preço em `argila`                                 |
 | erro de campo           | borda `1.5px terracota` + mensagem 12px `terracota`                     |
@@ -211,7 +217,7 @@ Erros:
 
 ### Acessibilidade
 
-- Chips de dificuldade funcionam como radio group (um por vez, navegável por seta).
+- Seletor "quem faz" por etapa funciona como radio group (um por vez, navegável por seta).
 - Steppers e checkboxes são alvos ≥ 44px.
 - Botões principais da galeria (capa, `+`, `trocar`) são alvos ≥ 44px; o `✕` de remoção é compacto (22px) e sempre pede confirmação antes de remover.
 - Contraste de texto sobre `cartao`/`papel`: sempre ≥ 4.5:1.

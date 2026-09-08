@@ -14,7 +14,7 @@ Esta feature existe para que **a ceramista** consiga **descobrir o custo real e 
 
 ## Conceito
 
-A peça soma: **material** (argila do catálogo × peso + esmalte em R$), **acessórios** e **embalagem** (Σ qtd × preço), **mão de obra** (tempo × custo da hora com fator de dificuldade), **queima** (do forno escolhido, via `estimarCabem`), **risco/refação** (taxa de perda sobre material + mão de obra + queima), **frete** (quando embutido) e **taxas** (regime fiscal + canal). O preço por linha é `custoComTaxas ÷ (1 − margem)`.
+A peça soma: **material** (argila do catálogo × peso + esmalte em R$), **acessórios** e **embalagem** (Σ qtd × preço), **mão de obra** (cada etapa: tempo × hora de quem executa, + ateliê uma vez no total), **queima** (do forno escolhido, via `estimarCabem`), **risco/refação** (taxa de perda sobre material + mão de obra + queima), **frete** (quando embutido) e **taxas** (regime fiscal + canal). O preço por linha é `custoComTaxas ÷ (1 − margem)`.
 
 Metáfora: é a **calculadora da peça** — entra o custo de fazer, sai o preço de vender.
 
@@ -39,7 +39,8 @@ custoArgila     = kgsArgila × precoKgArgila (catálogo)
 custoMaterial   = custoArgila + esmalteReais
 custoAcessorios = Σ (qtd × preco) dos acessórios
 custoEmbalagem  = Σ (qtd × preco) dos itens de embalagem
-maoDeObra       = tempoHoras × (custoHoraTotal × fatorNivel)  ← nível (aprendiz/profissional/especialista)
+maoDeObra       = Σ_etapas (etapa.tempoH × etapa.horaNivel)
+                  + (Σ tempoH) × horaAtelie            ← R26; ateliê soma uma vez no total
 queima          = custoQueimaTotal (Σ por tipo, via estimarCabem)
 riscoRefacao    = taxaPerda × (custoMaterial + maoDeObra + queima)
 freteNaConta    = frete ÷ max(1, pecasNoEnvio)  quando fretePagante = "atele" (frete grátis); senão 0
@@ -49,7 +50,7 @@ custoComTaxas   = custoTotal ÷ (1 − taxas)
 precoPorLinha   = custoComTaxas ÷ (1 − margemDaLinha)
 ```
 
-> A mão de obra de peça usa `custoHoraTotal` (já embute os custos fixos rateados); a de produto usa `custoHoraPessoa`. `horaAtelie` e `custoHoraTotal` vêm dos custos fixos (ver `Specs/custos/00-costsPanel.md`).
+> Cada `etapa` chega com `horaNivel` já resolvido (`custoHoraPessoa × CONFIG.niveis[quemFaz]`); `horaAtelie` é o rateio dos fixos fora do salário (ver `Specs/custos/00-costsPanel.md`). Com todas as etapas em Profissional, `maoDeObra = Σ tempoH × (custoHoraPessoa + horaAtelie)`.
 
 ### Contrato
 
@@ -58,18 +59,17 @@ Entrada (`inputs` — montado pelo `pricingPanel`, que resolve catálogo/taxas/q
 - `peso`: number ≥ 0 (kg de argila).
 - `esmalteReais`: number ≥ 0.
 - `frete`: number ≥ 0 (valor já rateado pelo método de entrega).
-- `tempoHoras`: number ≥ 0 (decimal; h + min/60).
+- `etapas`: `[{ id: string, tempoH: number, horaNivel: number }]` — cada parte da mão de obra com seu tempo (h) e o valor-hora de quem executa (resolvido na fronteira: `custoHoraPessoa × CONFIG.niveis[quemFaz]`).
+- `horaAtelie`: number (rateio dos fixos fora do salário — soma **uma vez** sobre o tempo total).
 - `argilaPreco`: number (R$/kg da argila selecionada, do catálogo).
 - `acessorios`, `embalagem`: `[{ qtd, preco }]` (itens do catálogo já resolvidos).
-- `horaNivel`: number (`custoHoraPessoa × CONFIG.niveis[nivel]`).
-- `horaAtelie`: number (rateio dos fixos fora do salário).
 - `queima`: number (Σ custo de queima — resolvido na fronteira via `estimarCabem`/unidade do forno).
 - `taxaPerda`: number (nível de perda `CONFIG.perdas`).
 - `fretePagante`: `"cliente" | "atele"`.
 - `imposto`: number (regime fiscal `CONFIG.impostosRegime`).
 - `canalPct`: number (Σ comissões do canal selecionado).
 
-`config` = `CONFIG` (usa `margensPeca`). Dificuldade/nível/medidas/queimas são resolvidos pelo `pricingPanel` antes de virar input.
+`config` = `CONFIG` (usa `margensPeca`). Medidas/queimas/quem-faz-por-etapa são resolvidos pelo `pricingPanel` antes de virar input.
 
 Saída (`PricingResult`):
 
@@ -91,7 +91,7 @@ Erros:
 ### Critérios de aceitação
 
 - Mesmos inputs → mesmos custos e preços (determinístico; validado pelo harness contra `07-modelo-de-precificacao.md` §3.4).
-- Exemplo conferido: peso 0,4 · esmalte R$5 · tempo 0,5h · dificuldade 1 · embalagem papel R$2 + etiqueta R$1 → custoTotal R$ 35,23 · c/taxas R$ 37,08 (imposto 5%) · exclusiva R$ 92,70 · padrão R$ 67,42 · revenda R$ 52,97.
+- Exemplo conferido: peso 0,4 · esmalte R$5 · etapas num total de 0,5h **todas Profissional** · embalagem papel R$2 + etiqueta R$1 → custoTotal R$ 35,23 · c/taxas R$ 37,08 (imposto 5%) · exclusiva R$ 92,70 · padrão R$ 67,42 · revenda R$ 52,97.
 
 ---
 

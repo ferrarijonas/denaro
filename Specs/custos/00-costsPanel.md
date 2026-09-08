@@ -14,7 +14,7 @@ Esta feature existe para que **a ceramista** consiga **cadastrar e ajustar os cu
 
 ## Conceito
 
-O `costsPanel` é a tela de "configuração" do Denaro. Ela edita os **custos fixos** (organizados em categorias como Espaço, Energia, Pessoal), o preço do kg de argila, o catálogo de insumos e embalagens, as taxas, margens e fatores de dificuldade. O que é salvo aqui alimenta o cálculo da calculadora (`pricingPanel`).
+O `costsPanel` é a tela de "configuração" do Denaro. Ela edita os **custos fixos** (organizados em categorias como Espaço, Energia, Pessoal), o preço do kg de argila, o catálogo de insumos e embalagens, as taxas, margens e **níveis de habilidade** ("quem faz cada etapa": Aprendiz/Profissional/Especialista, como % da hora pessoa). O que é salvo aqui alimenta o cálculo da calculadora (`pricingPanel`).
 
 Os **custos fixos são mensais** e divididos em **dois blocos**: **Mão de obra** (salário + parâmetros de horas → hora pessoa) e **4 categorias de despesas fixas do ateliê**. O salário vive na Mão de obra (um só lugar). Todos os valores derivados — total gastos, hora pessoa, hora total — são **calculados automaticamente** a partir da soma dos itens, nunca digitados.
 
@@ -69,7 +69,7 @@ costsPanel  →  (⇄ mover item)  →  desloca entre Mão de obra e categorias
 ### Regras
 
 - Se a ceramista toca **"Salvar"** e tudo é válido → guarda e mostra feedback `verde-argila` "Custos salvos".
-- Se algum valor é inválido (nome vazio, valor < 0, margem fora de 0–100, fator fora de 0.5–3) → campo marcado em `terracota` com mensagem `12px`; nada é salvo.
+- Se algum valor é inválido (nome vazio, valor < 0, margem fora de 0–100, nível fora de 0,3–2,0) → campo marcado em `terracota` com mensagem `12px`; nada é salvo.
 - **Subtotal por categoria, total gastos, hora pessoa e hora total são calculados automaticamente** pela soma dos itens — ninguém digita total.
 - **Total gastos = Mão de obra & pessoal + soma das 5 categorias**; alimenta a "hora total" (`totalGastos ÷ horasMes`).
 - **Hora pessoa = só o item Salário ÷ horasMes**. Impostos do salário (INSS, IR) e freelas **não** entram na hora pessoa — entram no total gastos (hora total).
@@ -94,7 +94,7 @@ Entrada (carregamento — do `storage`):
 - `insumos`: `[{ nome, unidade, preco }]`
 - `embalagens`: `[{ nome, categoria, preco }]`
 - `taxas`: `{ imposto, marketplace, maquina, taxaPerda }`
-- `fatoresDificuldade`: `{ [nivel: 1|2|3|4|5]: number }`
+- `niveis`: `{ aprendiz: 0.6, profissional: 1.0, especialista: 1.5 }` (percentual da hora pessoa) — **sem "fator de dificuldade"**; cada etapa escolhe o nível de quem executa
 - `margensPeca`: `[{ nome, margem }]`
 - `linhasProduto`: `[{ nome, multiplicador }]`
 
@@ -115,7 +115,8 @@ Erros:
 - Nome de item duplicado na mesma categoria → permitido (ex.: "Internet" na casa e no ateliê).
 - Campo de valor vazio → conta como inválido (não como 0).
 - Todas as categorias vazias → total gastos `R$ 0,00`; hora total `R$ 0,00` (cálculo continua determinístico).
-- Fator de dificuldade fora de faixa razoável (0.5–3) → aviso `tinta-suave` "Valor fora do comum", mas permitido.
+- Fator de dificuldade não existe; os **níveis** (Aprendiz 60% · Profissional 100% · Especialista 150% da hora pessoa) são percentuais da hora pessoa e geram o R$/h na tela (`horaPessoa × %`). Percentual fora de faixa razoável (0,3–2,0) → aviso `tinta-suave` "Valor fora do comum", mas permitido.
+- **Aprendiz só aparece no precificador** se houver ajudante cadastrado em `maoDeObra` (item cujo nome contém aprendiz/estagiário/ajudante com valor > 0).
 - Remover todos os itens da Mão de obra (salário, impostos) → hora pessoa vira `R$ 0,00` (sem erro).
 - Mover item para categoria que já tem item com o mesmo nome → permitido (não sobrescreve; cria outro item).
 - Excluir a última categoria de despesa → lista de despesas fica vazia, sem erro; total gastos recalculado.

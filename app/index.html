@@ -630,6 +630,48 @@
     padding: 5px 12px;
   }
 
+  /* quem faz por etapa */
+  .etapa-quem {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--linha);
+  }
+  .etapa-quem .eq-rotulo {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--tinta-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-right: 2px;
+  }
+  .etapa-quem .eq-btn {
+    border: 1px solid var(--linha);
+    background: var(--cartao);
+    color: var(--tinta-suave);
+    border-radius: 8px;
+    padding: 4px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .etapa-quem .eq-btn.selecionado {
+    background: var(--argila);
+    border-color: var(--argila);
+    color: var(--cartao);
+  }
+  .etapa-quem .eq-hora {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--argila);
+    font-variant-numeric: tabular-nums;
+  }
+
   /* dificuldade */
   .chips { display: flex; gap: 8px; }
 
@@ -1540,15 +1582,6 @@
                 <span class="feedback vazio" id="fb-padrao"></span>
               </div>
               <div class="etapas" id="lista-etapas"></div>
-<div class="field">
-                <label>Nível de habilidade <span class="dica">(quem dá conta dessa peça)</span></label>
-                <div class="chips" id="chips-nivel">
-                  <button type="button" class="chip nivel" data-nivel="aprendiz"><span class="n">Aprendiz</span><span class="r" id="nivel-r-aprendiz"></span></button>
-                  <button type="button" class="chip nivel" data-nivel="profissional"><span class="n">Profissional</span><span class="r" id="nivel-r-profissional"></span></button>
-                  <button type="button" class="chip nivel" data-nivel="especialista"><span class="n">Especialista</span><span class="r" id="nivel-r-especialista"></span></button>
-                </div>
-                <div class="dificuldade-desc" id="nivel-desc"></div>
-              </div>
             </div>
           </div>
 
@@ -1706,6 +1739,14 @@
                     </div>
                   </div>
                 </div>
+                <div class="field" style="margin-top:10px">
+                  <label>Quem monta? <span class="dica" id="mn-rate"></span></label>
+                  <div class="chips" id="mont-nivel">
+                    <button type="button" class="chip nivel" data-nivel="aprendiz"><span class="n">Aprendiz</span></button>
+                    <button type="button" class="chip nivel" data-nivel="profissional"><span class="n">Profissional</span></button>
+                    <button type="button" class="chip nivel" data-nivel="especialista"><span class="n">Especialista</span></button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1760,7 +1801,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>08/09/26 14:07</span>
+          <span class="versao-tag" data-ver>08/09/26 14:16</span>
         </div>
         <h1>Orçamentos</h1>
       </header>
@@ -1783,7 +1824,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>08/09/26 14:07</span>
+          <span class="versao-tag" data-ver>08/09/26 14:16</span>
         </div>
         <h1>Custos de referência</h1>
       </header>
@@ -1888,7 +1929,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>08/09/26 14:07</span>
+          <span class="versao-tag" data-ver>08/09/26 14:16</span>
         </div>
         <h1>Fornos &amp; queima</h1>
       </header>
@@ -2197,7 +2238,7 @@ function totalCustosFixos() {
     const preco = precoAtualParaRascunho();
     const catLabel = { utilitario: "utilitário", escultura: "escultura", outros: "outros" }[estado.categoria] || estado.categoria;
     const metaBase = tipo === "peca"
-      ? catLabel + " · " + (CONFIG.niveisNome && CONFIG.niveisNome[estado.nivel] ? CONFIG.niveisNome[estado.nivel] : estado.nivel) + " · " + fmtTempo(estado.tempoTotalMin)
+      ? catLabel + " · " + resumoQuemFaz() + " · " + fmtTempo(estado.tempoTotalMin)
       : (estado.receita.length + " insumos · " + fmtTempo(estado.prodH * 60 + estado.prodM));
     const cliente = (document.getElementById("cliente-peca") ? document.getElementById("cliente-peca").value.trim() : "");
     const meta = metaBase + (cliente ? " · " + cliente : "") + " · rascunho auto";
@@ -2267,8 +2308,8 @@ function totalCustosFixos() {
         freteModo: estado.freteModo,
         fretePagante: estado.fretePagante,
         argilaSelecionada: estado.argilaSelecionada,
-        dificuldade: estado.dificuldade,
-        nivel: estado.nivel,
+        etapaNivel: estado.etapaNivel,
+        montagemNivel: estado.montagemNivel,
         formatoPeca: estado.formatoPeca,
         queimas: estado.queimas,
         semQueima: estado.semQueima,
@@ -2300,6 +2341,11 @@ function totalCustosFixos() {
     if (!r) return;
     const e = r.estado || {};
     Object.keys(e).forEach((k) => { if (k !== "selecionadaLinha") estado[k] = e[k]; });
+    if (!estado.etapaNivel) {
+      estado.etapaNivel = {};
+      ETAPAS.forEach((et) => { estado.etapaNivel[et.id] = "profissional"; });
+    }
+    if (!estado.montagemNivel) estado.montagemNivel = "profissional";
     const setv = (id, v) => {
       const el = document.getElementById(id);
       if (el && v !== undefined && v !== null && v !== "") el.value = v;
@@ -2320,7 +2366,7 @@ function totalCustosFixos() {
     if (typeof atualizarArgilaInfo === "function") atualizarArgilaInfo();
     if (typeof renderEtapas === "function") renderEtapas();
     if (typeof atualizarTempoTotal === "function") atualizarTempoTotal();
-    if (typeof setNivel === "function") setNivel(estado.nivel || "profissional");
+    if (typeof renderMontagemNivel === "function") renderMontagemNivel();
     if (typeof renderQueimas === "function") renderQueimas();
     if (typeof renderTamanho === "function") renderTamanho();
     if (typeof renderFornoSVG === "function") renderFornoSVG();
@@ -2458,8 +2504,8 @@ if (d.regimeFiscal) CONFIG.regimeFiscal = d.regimeFiscal;
     freteModo: "entrega",
     fretePagante: "cliente",
 argilaSelecionada: "Argila Comum",
-    dificuldade: 1,
-    nivel: "profissional",
+    etapaNivel: { projeto: "profissional", preparacao: "profissional", modelagem: "profissional", esmaltacao: "profissional", decoracao: "profissional", forno: "profissional" },
+    montagemNivel: "profissional",
     formatoPeca: "redonda",
     fornoRender: null,
     queimas: [{ tipo: "biscoito", forno: "forno1" }],
@@ -2483,7 +2529,6 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
   function custoHoraTotal() { return totalCustosFixos() / (CONFIG.horasDia * CONFIG.diasMes); }
   function horasMes() { return CONFIG.horasDia * CONFIG.diasMes; }
   function horaAtelie() { return (totalCustosFixos() - salarioMensal()) / Math.max(1, horasMes()); }
-  function horaNivel() { return custoHoraPessoa() * (CONFIG.niveis[estado.nivel] || 1); }
 
   /* ===== navegação ===== */
   function navegar(tela) {
@@ -2565,10 +2610,18 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
         '<button type="button" class="chip-mini' + (estado.etapas[et.id] === c ? " selecionado" : "") + '" data-etapa="' + et.id + '" data-min="' + c + '">' + (c === 0 ? "0" : fmtTempo(c)) + "</button>"
       ).join("") +
         '<button type="button" class="chip-mini chip-plus" data-plus="' + et.id + '">+</button>';
+      const cur = estado.etapaNivel[et.id] || "profissional";
+      const nomes = { aprendiz: "Aprendiz", profissional: "Profissional", especialista: "Especialista" };
+      const quemBtn = (id) => {
+        const on = id === cur ? " selecionado" : "";
+        const hide = id === "aprendiz" && !tieneAprendiz() ? ' style="display:none"' : "";
+        return '<button type="button" class="eq-btn' + on + '" data-etapa="' + et.id + '" data-nivel="' + id + '"' + hide + ">" + nomes[id] + "</button>";
+      };
       card.innerHTML =
         '<div class="etapa-cab"><div><div class="etapa-nome">' + et.nome + '</div><div class="etapa-sub">' + et.sub + "</div></div>" +
         '<span class="etapa-tempovalor">' + fmtTempo(estado.etapas[et.id]) + "</span></div>" +
-        '<div class="etapa-chips">' + chips + "</div>";
+        '<div class="etapa-chips">' + chips + "</div>" +
+        '<div class="etapa-quem"><span class="eq-rotulo">quem faz</span>' + quemBtn("aprendiz") + quemBtn("profissional") + quemBtn("especialista") + '<span class="eq-hora">' + nivelRateText(cur) + "</span></div>";
       el.appendChild(card);
     });
     el.querySelectorAll(".etapa-chips .chip-mini:not(.chip-plus)").forEach((b) => {
@@ -2591,6 +2644,12 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
         }
       });
     });
+    el.querySelectorAll(".etapa-quem .eq-btn").forEach((b) => {
+      b.addEventListener("click", () => {
+        estado.etapaNivel[b.dataset.etapa] = b.dataset.nivel;
+        renderEtapas();
+      });
+    });
   }
   function atualizarTempoTotal() {
     const total = ETAPAS.reduce((s, et) => s + (estado.etapas[et.id] || 0), 0);
@@ -2607,33 +2666,27 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     salvarFeedback("fb-padrao", "Padrão salvo");
   });
 
-/* ===== nível de habilidade ===== */
+/* ===== quem faz cada etapa / montagem ===== */
   function nivelRate(id) { return custoHoraPessoa() * (CONFIG.niveis[id] || 1); }
   function tieneAprendiz() {
     return CONFIG.maoDeObra && CONFIG.maoDeObra.itens.some((i) => /aprendiz|estagi|ajudante/i.test(i.nome) && i.valor > 0);
   }
-  function atualizarNivelRates() {
-    ["aprendiz", "profissional", "especialista"].forEach((id) => {
-      const el = document.getElementById("nivel-r-" + id);
-      if (el) el.textContent = "R$ " + nivelRate(id).toFixed(0).replace(".", ",") + "/h";
-    });
-    const chip = document.querySelector('#chips-nivel .chip[data-nivel="aprendiz"]');
-    if (chip) chip.style.display = tieneAprendiz() ? "" : "none";
+  function nivelRateText(id) { return "R$ " + nivelRate(id).toFixed(0).replace(".", ",") + "/h"; }
+  function resumoQuemFaz() {
+    const vals = ETAPAS.map((et) => estado.etapaNivel[et.id] || "profissional");
+    if (vals.includes("especialista")) return "autoral";
+    if (vals.includes("aprendiz")) return "com ajudante";
+    return "só você";
   }
-  const NIVEL_DESC = {
-    aprendiz: "Dá pra delegar — uma pessoa em treinamento dá conta dessa peça.",
-    profissional: "É a sua mão — peça que você faz no dia a dia.",
-    especialista: "Só você ou alguém de domínio raro — exige habilidade alta.",
-  };
-  function setNivel(n) {
-    estado.nivel = n;
-    document.querySelectorAll("#chips-nivel .chip").forEach((c) => c.classList.toggle("selecionado", c.dataset.nivel === n));
-    const el = document.getElementById("nivel-desc");
-    if (el) el.textContent = (NIVEL_DESC[n] || "") + " Sua hora aqui: R$ " + nivelRate(n).toFixed(0).replace(".", ",") + "/h.";
+  function renderMontagemNivel() {
+    const cur = estado.montagemNivel || "profissional";
+    document.querySelectorAll("#mont-nivel .chip").forEach((c) => c.classList.toggle("selecionado", c.dataset.nivel === cur));
+    const a = document.querySelector('#mont-nivel .chip[data-nivel="aprendiz"]');
+    if (a) a.style.display = tieneAprendiz() ? "" : "none";
+    const el = document.getElementById("mn-rate");
+    if (el) el.textContent = nivelRateText(cur);
   }
-  document.querySelectorAll("#chips-nivel .chip").forEach((c) => c.addEventListener("click", () => setNivel(c.dataset.nivel)));
-  atualizarNivelRates();
-  setNivel("profissional");
+  document.querySelectorAll("#mont-nivel .chip").forEach((c) => c.addEventListener("click", () => { estado.montagemNivel = c.dataset.nivel; renderMontagemNivel(); }));
 
   /* ===== tamanho da peça + render no forno ===== */
   function lerMedidas() {
@@ -3332,11 +3385,16 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     const esmalte = Number(document.getElementById("esmalte").value) || 0;
     const frete = fretePeca();
     const inputs = {
-      peso, esmalteReais: esmalte, frete, tempoHoras: estado.tempoTotalMin / 60,
+      peso, esmalteReais: esmalte, frete,
       argilaPreco: argilaPreco(),
       acessorios: itensSelecionados(selAcessorios, CATALOGO_ACESSORIOS),
       embalagem: itensSelecionados(selPeca, CATALOGO_EMBALAGEM),
-      horaNivel: horaNivel(), horaAtelie: horaAtelie(),
+      etapas: ETAPAS.map((et) => ({
+        id: et.id,
+        tempoH: (estado.etapas[et.id] || 0) / 60,
+        horaNivel: nivelRate(estado.etapaNivel[et.id] || "profissional"),
+      })),
+      horaAtelie: horaAtelie(),
       queima: custoQueimaTotal(),
       taxaPerda: taxaPerda(),
       fretePagante: estado.fretePagante,
@@ -3409,7 +3467,7 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
       tempoMontagemHoras: estado.prodH + estado.prodM / 60,
       receita: estado.receita.map((r) => ({ gramas: r.gramas, precoKg: CATALOGO_INSUMOS[r.insumo].preco })),
       embalagem: itensSelecionados(selProd, CATALOGO_EMBALAGEM),
-      custoHoraTotal: custoHoraTotal(),
+      montagemHoraNivel: nivelRate(estado.montagemNivel || "profissional"),
       taxaPerda: taxaPerda(),
       imposto: impostoPorRegime(), canalPct: canalTotal(estado.canal),
     };
@@ -3488,7 +3546,7 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     estado.cliente = document.getElementById("cliente-peca").value.trim();
     const catLabel = { utilitario: "utilitário", escultura: "escultura", outros: "outros" }[estado.categoria] || "outros";
     const data = pegarData();
-    const meta = catLabel + " · " + (CONFIG.niveisNome[estado.nivel] || estado.nivel) + " · " + fmtTempo(estado.tempoTotalMin) + (estado.cliente ? " · " + estado.cliente : "");
+    const meta = catLabel + " · " + resumoQuemFaz() + " · " + fmtTempo(estado.tempoTotalMin) + (estado.cliente ? " · " + estado.cliente : "");
     // promove rascunho → vira orçamento definitivo; guarda o snapshot p/ reabrir
     salvos = salvos.filter((s) => !s.rascunho);
     const snapPeca = capturarRascunho(); snapPeca.foto = null;
@@ -4079,7 +4137,7 @@ document.getElementById("btn-salvar-custos").addEventListener("click", () => {
         populateFornoRender();
         renderQueimas();
         renderTamanho();
-        atualizarNivelRates();
+        renderMontagemNivel();
         renderFornoSVG();
         calcularPeca();
         calcularProduto();

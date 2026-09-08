@@ -50,9 +50,9 @@ quadrado / naoCabe / esmalte: {"total":0,"porNivel":0,"niveis":1,"mode":"pratele
 peca §3.4 — custoTotal: 35.23
 peca §3.4 — custoComTaxas: 37.08
 peca §3.4 — linhas: Exclusiva=92.70 | Padrão=67.42 | Revenda=52.97
-produto — custoTotal: 22.48
-produto — custoComTaxas: 25.55
-produto — linhas: Autoral=76.64 | Profissional=63.86 | Essencial=51.09
+produto — custoTotal: 13.32
+produto — custoComTaxas: 15.14
+produto — linhas: Autoral=45.41 | Profissional=37.84 | Essencial=30.27
 === storage (frescor salvoEm) ===
 local mais novo: local
 nuvem mais nova: nuvem
