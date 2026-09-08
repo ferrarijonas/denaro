@@ -16,7 +16,7 @@ Esta feature existe para que **a ceramista** consiga **ver o custo e os preços 
 
 O `pricingPanel` é a tela principal do Denaro. A ceramista escolhe o **tipo** (Peça ou Produto) e preenche as seções do formulário:
 
-- **Peça**: Insumos (argila kg + seletor de argila, esmalte em R$, tamanho/medidas + render no forno, acessórios), Mão de obra (tempo horas/minutos, dificuldade 1–5, nível), Queima (chips de tipo + seletor de forno + "sem queima"), Canais de venda, Entrega (método + quem paga + rateio).
+- **Peça**: seção **0. A peça** (identidade: galeria de fotos, nome, "pra quem é", categoria) + Insumos (argila kg + seletor de argila, esmalte em R$, tamanho/medidas + render no forno, acessórios), Mão de obra (tempo horas/minutos, dificuldade 1–5, nível), Queima (chips de tipo + seletor de forno + "sem queima"), Canais de venda, Entrega (método + quem paga + rateio).
 - **Produto**: Receita (insumos em gramas + unidades produzidas) + Embalagem & montagem.
 
 O painel mostra, abaixo, o **custo detalhado** (linha a linha) e o **preço por linha comercial** (Exclusiva/Padrão/Revenda para peças; Autoral/Profissional/Essencial para produtos). Ela escolhe uma linha, salva e segue.
@@ -96,13 +96,20 @@ Erros:
 
 ```
 ┌──────────────────────────────┐
-│  [logo] Denaro               │  ← marca/aplicação
-│  ← Orçamentos                │  ← link de volta à lista
-│  Lustre  ☁ Tudo em ordem     │  ← nome do objeto + status (doc-centric)
-│  Vamos precificar?           │
+│  [logo] Denaro        ☁      │  ← marca/aplicação + status de salvamento
+│  Vamos precificar?           │  ← (1ª visita) escolha de tipo, inalterado
 │  [Peças] [Acabam.] [Mat.] …  │  ← cards de tipo
-│  Peças & Objetos  (trocar)   │
 ├──────────────────────────────┤
+│  ▼ 0. A PEÇA                 │
+│  ┌────────────────────────┐  │
+│  │  [ foto principal ]    │  │  ← galeria: capa grande (4:3)
+│  │        [+]  ·trocar·   │  │    + "+ adicionar" / "trocar"
+│  │  [ ▸][ ▸][ ▸][ + ]     │  │    miniaturas (capa, remover, ordenar)
+│  └────────────────────────┘  │
+│  NOME DA PEÇA  [ Prato      ]│
+│  PRA QUEM É    [ Ana · enc. ]│
+│  CATEGORIA [Utilitário] [Esc.] [Outros]│
+│                              │
 │  ▼ 1. INSUMOS                │
 │  ARGILA (KG)  [ 0.4 ] kg ▾   │
 │  ESMALTE (R$) [ 5.00 ] R$    │
@@ -150,19 +157,19 @@ Erros:
 
 ### Variantes por tipo
 
-- **Peça**: seções Insumos / Mão de obra / Queima / Canais / Entrega. Resultado com linhas Exclusiva · Padrão · Revenda.
+- **Peça**: seções **0. A peça** (identidade + fotos) / Insumos / Mão de obra / Queima / Canais / Entrega. Resultado com linhas Exclusiva · Padrão · Revenda.
 - **Produto**: seções Receita (seletor de insumo + gramas, "+ adicionar insumo", total da receita, unidades produzidas) / Embalagem & montagem. Resultado com linhas Autoral · Profissional · Essencial.
 
 ### Hierarquia visual
 
-- Marca/aplicação: `tinta`, 18px, peso 600 (inalterado).
-- Link de volta (`doc-voltar`): `argila`, 12px, peso 600, `← Orçamentos`.
-- Nome do objeto (`doc-titulo`): `tinta`, 18px, peso 700, reflete `nome-peca`/`nome-produto` ao vivo; padrão `Novo orçamento` em `tinta-suave` peso 400.
-- Botão de foto (`doc-icone-foto`): 28×28px circular, borda `1.5px dashed linha`; vazio: placeholder `i-foto` 14px; com foto: thumbnail `cover`.
-- Ação do título: `✎` editar (`doc-acao-editar`) quando sem foto; `⋯` opções (`doc-acao-menu`) quando com foto.
-- Linha de metadados (`doc-meta`): `tinta-suave`, 12px, peso 500, indentada 36px; só aparece quando preenchido.
-- Abas de navegação (`doc-tabs`): flex, separador `1px linha` inferior, abas `13px` peso 600, `tinta-suave`; aba ativa `argila` com borda inferior `2px argila`.
-- Status de salvamento (`doc-status`): `tinta-suave`, 14px, na barra de marca; idle: ícone sozinho; salvando: `Salvando…` + ponto pulsante; salvo: `Salvo HH:MM`.
+- Marca/aplicação: `logo.webp` 44px à esquerda, `tinta`, seguido só do **status de salvamento** à direita (`doc-status`). Sem voltar, sem título espelhado, sem metadados nem abas no topo: navegação é a barra inferior; a identidade da peça vive no cartão **0. A peça** (uma fonte por tela).
+- Cartão **0. A peça**: seção numerada como as demais; é a **única** identidade — foto, nome, "pra quem é" e categoria não se repetem em outro lugar da tela.
+- Galeria (capa): área `100%` da coluna, proporção **4:3**, cantos `14px`; vazia mostra `+ Foto da peça` tracejado em `tinta-suave`; com foto mostra a capa (`cover`).
+- Ação sobre a capa: chip fantasma `· trocar ·` (`12px`, `tinta-suave`, fundo `cartao`) no canto inferior direito — abre o seletor e **substitui** a capa.
+- Miniaturas: fileira de quadrados `64px`, `1px linha`, cantos `8px`; última é o tile `+` (adiciona, aceita múltiplas). Cada miniatura tem `✕` `14px` `terracota` no canto para remover.
+- Capa indicada: miniatura ativa com borda `1.5px argila`; tocar numa miniatura a torna capa.
+- Nome da peça: rótulo `13px peso 600 uppercase tinta-suave`; input grande de identidade (`16px peso 600 tinta`).
+- Status de salvamento (`doc-status`): `tinta-suave`, na barra de marca; idle: ícone sozinho; salvando: `Salvando…` + ponto pulsante; salvo: `Salvo HH:MM`.
 - Cabeçalhos de seção: `tinta-suave`, 13px, peso 600, uppercase, com `▼` colapsável + número da seção.
 - Rótulos de campo: `tinta-suave`, 13px, peso 600, uppercase.
 - `CUSTO TOTAL`/`CUSTO C/ TAXAS`: `tinta`, 26px, peso 600; c/taxas em `argila`.
@@ -185,17 +192,16 @@ Erros:
 | `doc-status: salvo nuvem` | nuvem ok `14px` + texto `Salvo HH:MM` `11px tinta-suave`; após 2.5s → idle |
 | `doc-status: offline`    | nuvem off `14px terracota` + texto `Sem nuvem` `11px tinta-suave` |
 | `doc-status: idle`      | nuvem ok `14px tinta-suave` sem texto, sem ponto |
-| foto vazia              | `doc-icone-foto` 28×28 circular, borda `1.5px dashed linha`; placeholder `i-foto` 14px |
-| foto com conteúdo       | `doc-icone-foto` 28×28 circular, borda transparente; `doc-foto-thumb` `cover` |
-| aba de navegação        | `doc-tab` `13px` peso 600 `tinta-suave`; aba ativa `argila` com borda inferior `2px argila` |
+| galeria vazia           | área `4:3` tracejada `1.5px linha`, ícone `+` 20px + rótulo `Foto da peça`, tudo `tinta-suave`; toque abre o seletor |
+| galeria com capa        | capa `cover` em área `4:3`, cantos `14px`; chip `·trocar·` canto inferior direito (`cartao`, `12px`) |
+| miniatura               | `64px`, `1px linha`, cantos `8px`, botão `✕` circular translúcido (`rgba(46,42,37,.55)`, texto `cartao`) no canto superior direito; remover pede confirmação |
+| miniatura capa          | borda `1.5px argila` + tag `capa` (`argila`/`cartao`, `8px`) |
 
 ### Interações
 
 - `doc-status` é só informativo (`aria-live="polite"`), sem card nem borda; reflete o `storage.gravar` (autosave 700ms, flush no `pagehide`/`visibilitychange`/troca de tela).
-- `doc-icone-foto`: vazio → abre file picker (adicionar); com foto → abre file picker (substituir). `doc-acao-menu` (⋯) → confirma para remover.
-- `doc-tabs` navega entre telas via `navegar(tela)`, atualiza aba ativa e salva estado.
-- `doc-meta` só aparece quando `Cliente` ou `Categoria` está preenchido.
-- `doc-titulo` usa peso 400 + `tinta-suave` quando vazio (placeholder), peso 700 + `tinta` quando preenchido.
+- Galeria: `+` / capa vazia abre o seletor; o seletor aceita **várias** fotos (append). `·trocar·` substitui a capa no lugar. `✕` na miniatura remove (confirmado); remover a capa promove a próxima. Tocar numa miniatura a torna capa. A **capa** é a única foto persistida no v1 (`foto` no doc; ver persistência).
+- Nome/cliente/categoria alimentam o salvamento e o rascunho automático; sem espelho no cabeçalho.
 - Campos numéricos usam teclado numérico no celular (`inputmode="decimal"/"numeric"`).
 - Steppers de tempo: toques `−`/`+` (passo 15min nos minutos); atalhos rápidos preenchem horas/minutos.
 - Toggle de tipo preserva o estado do tipo não ativo.
@@ -206,4 +212,5 @@ Erros:
 
 - Chips de dificuldade funcionam como radio group (um por vez, navegável por seta).
 - Steppers e checkboxes são alvos ≥ 44px.
+- Botões principais da galeria (capa, `+`, `trocar`) são alvos ≥ 44px; o `✕` de remoção é compacto (22px) e sempre pede confirmação antes de remover.
 - Contraste de texto sobre `cartao`/`papel`: sempre ≥ 4.5:1.

@@ -22,6 +22,9 @@
     --papel: #F7F4EF;
     --cartao: #ffffff;
     --linha: #E8E0D4;
+    --linha-forte: #D9CDBB;
+    --fundo: var(--papel);
+    --fundo-alt: #EFE9E0;
     --tinta: #664b38;
     --tinta-suave: #9c8b7c;
     --argila: #5b4432;
@@ -98,7 +101,7 @@
     letter-spacing: -0.01em;
     color: var(--tinta);
     margin: 0;
-    display: none; /* substituído por .doc-titulo */
+    display: none; /* título das telas sai da .marca/nav */
   }
 
   main { flex: 1; padding: 0 20px 120px; }
@@ -168,28 +171,68 @@
     margin-top: 22px;
   }
 
-  .ficha {
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-  }
-  .ficha-foto { flex: 0 0 92px; }
-  .foto-botao {
-    width: 92px; height: 92px;
-    border: 1.5px dashed var(--linha-forte);
+  /* galeria da peça — seção 0. A PEÇA */
+  .galeria { display: flex; flex-direction: column; gap: 10px; }
+  .gal-main {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
     border-radius: 14px;
+    overflow: hidden;
     background: var(--fundo);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 4px; cursor: pointer; color: var(--tinta-suave);
+    border: 1px solid var(--linha);
   }
-  .foto-botao:active { background: var(--fundo-alt); }
-  .foto-icone { font-size: 24px; }
-  .foto-texto { font-size: 10px; font-weight: 600; text-align: center; line-height: 1.2; padding: 0 4px; }
-  .foto-preview {
-    width: 92px; height: 92px; object-fit: cover; border-radius: 14px;
-    border: 1px solid var(--linha-forte);
+  .gal-main img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .gal-main.vazia {
+    border: 1.5px dashed var(--linha-forte);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
   }
-  .ficha-campos { flex: 1; min-width: 0; }
+  .gal-main.vazia:active { background: var(--fundo-alt); }
+  .gal-cta-vazia {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    color: var(--tinta-suave); font-family: inherit;
+  }
+  .gal-cta-vazia svg { width: 26px; height: 26px; color: var(--tinta-suave); }
+  .gal-cta-vazia span { font-size: 12px; font-weight: 600; }
+  .gal-trocar {
+    position: absolute; right: 8px; bottom: 8px;
+    background: var(--cartao); color: var(--tinta-suave);
+    border: 1px solid var(--linha); border-radius: 999px;
+    font-size: 12px; font-weight: 600; font-family: inherit;
+    padding: 8px 12px; cursor: pointer;
+  }
+  .gal-trocar:active { opacity: 0.7; }
+  .gal-tiras { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
+  .gal-thumb {
+    position: relative; flex: 0 0 64px; width: 64px; height: 64px;
+    border: 1px solid var(--linha); border-radius: 10px; overflow: hidden;
+    padding: 0; cursor: pointer; background: var(--cartao);
+  }
+  .gal-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .gal-thumb.capa { border-color: var(--argila); border-width: 1.5px; }
+  .gal-tag-capa {
+    position: absolute; left: 2px; bottom: 2px;
+    font-size: 8px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    background: var(--argila); color: var(--cartao); border-radius: 4px; padding: 1px 4px;
+    pointer-events: none;
+  }
+  .gal-x {
+    position: absolute; top: 2px; right: 2px;
+    width: 22px; height: 22px; border: none; border-radius: 50%;
+    background: rgba(46,42,37,0.55); color: #fff;
+    font-size: 11px; line-height: 1; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .gal-x:active { opacity: 0.7; }
+  .gal-add {
+    flex: 0 0 64px; width: 64px; height: 64px;
+    border: 1.5px dashed var(--linha-forte); border-radius: 10px;
+    background: none; color: var(--tinta-suave); cursor: pointer;
+    font-size: 24px; line-height: 1; font-weight: 400; font-family: inherit;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .gal-add:active { background: var(--fundo-alt); }
 
   .sec-titulo {
     display: flex;
@@ -1055,99 +1098,6 @@
   .sheet .btn { margin: 0; flex: 1; }
   .sheet .btn.ghost { background: var(--cartao); border: 1px solid var(--linha); color: var(--tinta); }
   .marca-direita { display: flex; align-items: center; gap: 10px; }
-  /* ── doc-centric ── */
-  .doc-voltar {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 10px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--argila);
-    text-decoration: none;
-    cursor: pointer;
-    background: none;
-    border: none;
-    font-family: inherit;
-    padding: 0;
-  }
-  .doc-voltar:active { opacity: 0.6; }
-
-  /* title row: [photo] [title] [spacer] [action] */
-  .doc-identidade {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 8px;
-  }
-  .doc-icone-foto {
-    flex: 0 0 28px;
-    width: 28px; height: 28px;
-    border: 1.5px dashed var(--linha);
-    border-radius: 50%;
-    background: var(--papel);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    overflow: hidden;
-    padding: 0;
-    transition: border-color 150ms;
-  }
-  .doc-icone-foto:hover { border-color: var(--argila); }
-  .doc-icone-foto:active { background: var(--cartao); }
-  .doc-icone-foto.tem-foto { border-style: solid; border-color: transparent; }
-  .doc-icone-foto.tem-foto:hover { border-color: var(--linha); }
-  .doc-foto-thumb { width: 28px; height: 28px; object-fit: cover; border-radius: 50%; display: block; }
-  .doc-foto-placeholder { width: 14px; height: 14px; color: var(--tinta-suave); }
-
-  .doc-titulo {
-    flex: 1;
-    font-family: "Plus Jakarta Sans", sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--tinta);
-    margin: 0;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    line-height: 1.2;
-  }
-  .doc-titulo.placeholder {
-    font-weight: 400;
-    color: var(--tinta-suave);
-  }
-
-  .doc-acao-titulo {
-    flex: 0 0 auto;
-    border: none;
-    background: none;
-    cursor: pointer;
-    padding: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--tinta-suave);
-    font-size: 16px;
-    font-weight: 600;
-    font-family: inherit;
-    line-height: 1;
-    border-radius: 4px;
-    transition: color 150ms;
-  }
-  .doc-acao-titulo:hover { color: var(--argila); }
-  .doc-acao-titulo:active { opacity: 0.6; }
-  .doc-acao-titulo .icone { width: 16px; height: 16px; }
-
-  /* subtitle */
-  .doc-meta {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--tinta-suave);
-    margin: 2px 0 0 36px;
-  }
-  .doc-meta:empty, .doc-meta.escondido { display: none; }
-  .doc-meta .doc-meta-texto { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* save status */
   .doc-status {
@@ -1181,31 +1131,6 @@
   }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
 
-  /* tabs */
-  .doc-tabs {
-    display: flex;
-    gap: 0;
-    margin-top: 14px;
-    border-bottom: 1px solid var(--linha);
-    overflow-x: auto;
-  }
-  .doc-tab {
-    flex: 1;
-    border: none;
-    background: none;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--tinta-suave);
-    padding: 10px 4px;
-    cursor: pointer;
-    text-align: center;
-    white-space: nowrap;
-    border-bottom: 2px solid transparent;
-    transition: color 150ms, border-color 150ms;
-  }
-  .doc-tab.ativo { color: var(--argila); border-bottom-color: var(--argila); }
-  .doc-tab:active { opacity: 0.7; }
   .item-salvo.rascunho { border-style: dashed; background: var(--papel); }
   .badge-rascunho {
     font-size: 9px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
@@ -1400,25 +1325,6 @@
             </div>
           </div>
         </div>
-        <button type="button" class="doc-voltar" id="doc-voltar" data-ir="salvos">← Orçamentos</button>
-        <div class="doc-identidade">
-          <button type="button" class="doc-icone-foto" id="doc-foto-btn" title="Adicionar foto">
-            <img id="doc-foto-thumb" class="doc-foto-thumb escondido" alt="" />
-            <svg class="doc-foto-placeholder" id="doc-foto-placeholder"><use href="#i-foto"></use></svg>
-          </button>
-          <h1 class="doc-titulo" id="doc-titulo">Novo orçamento</h1>
-          <button type="button" class="doc-acao-titulo" id="doc-acao-editar" title="Editar nome"><svg class="icone"><use href="#i-ilustracao"></use></svg></button>
-          <button type="button" class="doc-acao-titulo escondido" id="doc-acao-menu" title="Opções da foto">⋯</button>
-        </div>
-        <div class="doc-meta escondido" id="doc-meta">
-          <span class="doc-meta-texto" id="doc-meta-texto"></span>
-        </div>
-        <nav class="doc-tabs" id="doc-tabs">
-          <button type="button" class="doc-tab ativo" data-tela="precificar">Precificar</button>
-          <button type="button" class="doc-tab" data-tela="salvos">Orçamentos</button>
-          <button type="button" class="doc-tab" data-tela="fornos">Fornos</button>
-          <button type="button" class="doc-tab" data-tela="custos">Custos</button>
-        </nav>
       </header>
       <main>
         <div class="intro" id="intro-inicio">
@@ -1462,28 +1368,20 @@
             </button>
           </div>
         </div>
-      </header>
-      <main>
 
         <!-- ===== MODO PEÇA ===== -->
         <div id="corpo-peca" class="escondido">
-
-          <div class="sec ficha">
-            <div class="ficha-foto">
-              <input type="file" id="foto-peca" accept="image/*" hidden />
-              <button type="button" class="foto-botao" id="btn-foto-peca">
-                <svg class="icone foto-icone g"><use href="#i-foto"></use></svg>
-                <span class="foto-texto" id="foto-texto">Foto / rascunho</span>
-              </button>
-              <img id="foto-preview" class="foto-preview escondido" alt="" />
-            </div>
-            <div class="ficha-campos">
+          <div class="sec" data-sec>
+            <div class="sec-titulo"><span class="chev">▼</span> <span class="sec-num">0</span> A peça</div>
+            <div class="sec-corpo">
+              <input type="file" id="foto-peca" accept="image/*" multiple hidden />
+              <div class="galeria" id="galeria-peca"></div>
               <div class="field">
                 <label for="nome-peca">Nome da peça <span class="dica">(obrigatório)</span></label>
                 <input type="text" id="nome-peca" placeholder="Ex.: Prato médio Entrelinhas" maxlength="60" />
               </div>
               <div class="field">
-                <label>Pra quem é <span class="dica">(cliente)</span></label>
+                <label for="cliente-peca">Pra quem é <span class="dica">(opcional — encomenda, presente, vitrine)</span></label>
                 <input type="text" id="cliente-peca" placeholder="Ex.: Ana · encomenda" />
               </div>
               <div class="field">
@@ -1796,7 +1694,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>05/09/26 13:09</span>
+          <span class="versao-tag" data-ver>08/09/26 13:32</span>
         </div>
         <h1>Orçamentos</h1>
       </header>
@@ -1819,7 +1717,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>05/09/26 13:09</span>
+          <span class="versao-tag" data-ver>08/09/26 13:32</span>
         </div>
         <h1>Custos de referência</h1>
       </header>
@@ -1924,7 +1822,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>05/09/26 13:09</span>
+          <span class="versao-tag" data-ver>08/09/26 13:32</span>
         </div>
         <h1>Fornos &amp; queima</h1>
       </header>
@@ -2140,60 +2038,6 @@ function totalCustosFixos() {
     return d;
   }
 
-  /* ===== doc-centric: título = nome do objeto ===== */
-  function atualizarTituloDoc() {
-    const el = document.getElementById("doc-titulo");
-    const meta = document.getElementById("doc-meta");
-    const metaTxt = document.getElementById("doc-meta-texto");
-    if (!el) return;
-    const nomePeca = (document.getElementById("nome-peca") || {}).value || "";
-    const nomeProd = (document.getElementById("nome-produto") || {}).value || "";
-    const nome = nomePeca.trim() || nomeProd.trim();
-    el.textContent = nome || "Novo orçamento";
-    /* placeholder style when empty */
-    el.classList.toggle("placeholder", !nome);
-    /* metadados: só quando preenchido */
-    if (meta && metaTxt) {
-      const cliente = ((document.getElementById("cliente-peca") || {}).value || "").trim();
-      const catLabel = { utilitario: "Utilitário", escultura: "Escultura", outros: "Outros" }[estado.categoria] || "";
-      if (cliente || catLabel) {
-        const partes = [];
-        if (cliente) partes.push(cliente);
-        if (catLabel) partes.push(catLabel);
-        metaTxt.textContent = partes.join("  ·  ");
-        meta.classList.remove("escondido");
-      } else {
-        metaTxt.textContent = "";
-        meta.classList.add("escondido");
-      }
-    }
-    /* foto: toggle icon + action button */
-    const thumb = document.getElementById("doc-foto-thumb");
-    const placeholder = document.getElementById("doc-foto-placeholder");
-    const btn = document.getElementById("doc-foto-btn");
-    const editar = document.getElementById("doc-acao-editar");
-    const menu = document.getElementById("doc-acao-menu");
-    if (thumb) {
-      if (estado.foto) {
-        thumb.src = estado.foto;
-        thumb.classList.remove("escondido");
-        if (placeholder) placeholder.classList.add("escondido");
-        if (btn) btn.classList.add("tem-foto");
-        if (editar) editar.classList.add("escondido");
-        if (menu) menu.classList.remove("escondido");
-      } else {
-        thumb.classList.add("escondido");
-        if (placeholder) placeholder.classList.remove("escondido");
-        if (btn) btn.classList.remove("tem-foto");
-        if (editar) editar.classList.remove("escondido");
-        if (menu) menu.classList.add("escondido");
-      }
-    }
-  }
-  document.getElementById("nome-peca").addEventListener("input", atualizarTituloDoc);
-  document.getElementById("nome-produto").addEventListener("input", atualizarTituloDoc);
-  document.getElementById("cliente-peca").addEventListener("input", atualizarTituloDoc);
-
   /* ===== autosave: grava sozinho após cada mudança (debounce 700ms) ===== */
   let suprimindoAutosave = false;
   function sincronizarCustosDoForm() {
@@ -2375,12 +2219,8 @@ function totalCustosFixos() {
     if (r.selAcessorios) Object.keys(r.selAcessorios).forEach((k) => { selAcessorios[k] = r.selAcessorios[k]; });
     if (r.selPeca) Object.keys(r.selPeca).forEach((k) => { selPeca[k] = r.selPeca[k]; });
     if (r.selProd) Object.keys(r.selProd).forEach((k) => { selProd[k] = r.selProd[k]; });
-    if (r.foto) {
-      estado.foto = r.foto;
-      const p = document.getElementById("foto-preview");
-      const bt = document.getElementById("btn-foto-peca");
-      if (p && bt) { p.src = r.foto; p.classList.remove("escondido"); bt.classList.add("escondido"); }
-    }
+    estado.foto = r.foto || null;
+    estado.fotos = estado.foto ? [estado.foto] : [];
     /* re-render com o estado restaurado */
     const selArg = document.getElementById("argila-select");
     if (selArg) selArg.value = estado.argilaSelecionada;
@@ -2411,7 +2251,7 @@ function totalCustosFixos() {
     if (typeof renderReceita === "function") renderReceita();
     const ph = document.getElementById("p-h"); if (ph) ph.textContent = estado.prodH;
     const pm = document.getElementById("p-m"); if (pm) pm.textContent = estado.prodM;
-    atualizarTituloDoc();
+    renderGaleria();
   }
 
   async function carregarLocalStorage() {
@@ -2517,6 +2357,7 @@ if (d.regimeFiscal) CONFIG.regimeFiscal = d.regimeFiscal;
     tipo: "peca",
     categoria: "utilitario",
     foto: null,
+    fotos: [],
     nomePeca: "",
     cliente: "",
     canal: "direto",
@@ -2553,19 +2394,12 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
   /* ===== navegação ===== */
   function navegar(tela) {
     document.querySelectorAll(".nav-item").forEach((i) => i.classList.toggle("ativo", i.dataset.tela === tela));
-    document.querySelectorAll(".doc-tab").forEach((i) => i.classList.toggle("ativo", i.dataset.tela === tela));
     document.querySelectorAll(".tela").forEach((t) => t.classList.toggle("ativa", t.id === "tela-" + tela));
     if (tela === "salvos") renderSalvos();
     autosaveFlush();
   }
   document.querySelectorAll(".nav-item").forEach((b) => b.addEventListener("click", () => navegar(b.dataset.tela)));
   document.querySelectorAll("[data-ir]").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); navegar(a.dataset.ir); }));
-  /* doc-tabs: navegação do documento */
-  document.querySelectorAll(".doc-tab").forEach((b) => b.addEventListener("click", () => {
-    document.querySelectorAll(".doc-tab").forEach((x) => x.classList.remove("ativo"));
-    b.classList.add("ativo");
-    navegar(b.dataset.tela);
-  }));
 
   /* ===== seções colapsáveis ===== */
   document.querySelectorAll(".sec[data-sec] .sec-titulo").forEach((t) => {
@@ -3053,35 +2887,105 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
   document.querySelectorAll("#chips-regime-produto .chip").forEach((c) => c.addEventListener("click", () => setRegime(c.dataset.regime)));
   renderRegime();
 
-  /* ===== ficha da peça: categoria, foto, cliente ===== */
+  /* ===== 0. A peça: categoria, galeria de fotos ===== */
   document.querySelectorAll("#chips-categoria .chip").forEach((c) => c.addEventListener("click", () => {
     document.querySelectorAll("#chips-categoria .chip").forEach((x) => x.classList.remove("selecionado"));
     c.classList.add("selecionado");
     estado.categoria = c.dataset.cat;
-    atualizarTituloDoc();
   }));
-  document.getElementById("btn-foto-peca").addEventListener("click", () => document.getElementById("foto-peca").click());
-  document.getElementById("doc-foto-btn").addEventListener("click", () => document.getElementById("foto-peca").click());
-  document.getElementById("doc-acao-menu").addEventListener("click", () => {
-    if (confirm("Remover foto?")) {
-      estado.foto = null;
-      document.getElementById("foto-preview").classList.add("escondido");
-      document.getElementById("btn-foto-peca").classList.remove("escondido");
-      atualizarTituloDoc();
+
+  function abrirSeletorFotos(modo) {
+    const inp = document.getElementById("foto-peca");
+    inp.setAttribute("data-modo", modo);
+    inp.value = "";
+    inp.click();
+  }
+  function lerArquivosComoDataURL(files) {
+    return Promise.all(Array.prototype.map.call(files, (f) => new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.onerror = rej;
+      r.readAsDataURL(f);
+    })));
+  }
+  function sincronizarCapa() { estado.foto = estado.fotos.length ? estado.fotos[0] : null; }
+  function renderGaleria() {
+    const gal = document.getElementById("galeria-peca");
+    if (!gal) return;
+    sincronizarCapa();
+    gal.innerHTML = "";
+    const main = document.createElement("div");
+    if (estado.fotos.length) {
+      main.className = "gal-main";
+      const img = document.createElement("img");
+      img.src = estado.fotos[0];
+      img.alt = "Foto principal da peça";
+      main.appendChild(img);
+      const trocar = document.createElement("button");
+      trocar.type = "button";
+      trocar.className = "gal-trocar";
+      trocar.textContent = "trocar";
+      trocar.addEventListener("click", () => abrirSeletorFotos("trocar"));
+      main.appendChild(trocar);
+    } else {
+      main.className = "gal-main vazia";
+      main.innerHTML = '<span class="gal-cta-vazia"><svg class="icone"><use href="#i-foto"></use></svg><span>Foto da peça</span></span>';
+      main.addEventListener("click", () => abrirSeletorFotos("add"));
     }
-  });
-  document.getElementById("foto-peca").addEventListener("change", (ev) => {
-    const f = ev.target.files && ev.target.files[0];
-    if (!f) return;
-    const r = new FileReader();
-    r.onload = () => {
-      estado.foto = r.result;
-      document.getElementById("foto-preview").src = r.result;
-      document.getElementById("foto-preview").classList.remove("escondido");
-      document.getElementById("btn-foto-peca").classList.add("escondido");
-      atualizarTituloDoc();
-    };
-    r.readAsDataURL(f);
+    gal.appendChild(main);
+    if (estado.fotos.length) {
+      const tiras = document.createElement("div");
+      tiras.className = "gal-tiras";
+      estado.fotos.forEach((src, i) => {
+        const t = document.createElement("button");
+        t.type = "button";
+        t.className = "gal-thumb" + (i === 0 ? " capa" : "");
+        t.title = i === 0 ? "Foto de capa" : "Usar como capa";
+        t.innerHTML = '<img src="' + src + '" alt="" />' +
+          (i === 0 ? '<span class="gal-tag-capa">capa</span>' : "") +
+          '<span class="gal-x" title="Remover foto">✕</span>';
+        t.querySelector(".gal-x").addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          if (confirm("Remover esta foto?")) {
+            estado.fotos.splice(i, 1);
+            renderGaleria();
+            agendarAutosave();
+          }
+        });
+        t.addEventListener("click", () => {
+          if (i === 0) return;
+          const f = estado.fotos.splice(i, 1)[0];
+          estado.fotos.unshift(f);
+          renderGaleria();
+          agendarAutosave();
+        });
+        tiras.appendChild(t);
+      });
+      const addBtn = document.createElement("button");
+      addBtn.type = "button";
+      addBtn.className = "gal-add";
+      addBtn.title = "Adicionar fotos";
+      addBtn.textContent = "+";
+      addBtn.addEventListener("click", () => abrirSeletorFotos("add"));
+      tiras.appendChild(addBtn);
+      gal.appendChild(tiras);
+    }
+  }
+  document.getElementById("foto-peca").addEventListener("change", async (ev) => {
+    const files = ev.target.files || [];
+    if (!files.length) return;
+    const modo = ev.target.getAttribute("data-modo") || "add";
+    try {
+      const imgs = await lerArquivosComoDataURL(files);
+      if (modo === "trocar") {
+        estado.fotos[0] = imgs[0];
+        if (imgs.length > 1) estado.fotos = estado.fotos.concat(imgs.slice(1));
+      } else {
+        estado.fotos = estado.fotos.concat(imgs);
+      }
+      renderGaleria();
+      agendarAutosave();
+    } catch (e) { /* arquivo não lido — ignora */ }
   });
 
   /* ===== catálogo em checkboxes com qtd ===== */
@@ -4062,7 +3966,7 @@ document.getElementById("btn-salvar-custos").addEventListener("click", () => {
         calcularProduto();
         // heurística rascunho: ao abrir já reflete nos Orçamentos
         if (temConteudoParaRascunho()) garantirRascunhoOrcamento();
-        atualizarTituloDoc();
+        renderGaleria();
         atualizarSaveBar("Tudo em ordem", false);
       } finally {
         suprimindoAutosave = false;
