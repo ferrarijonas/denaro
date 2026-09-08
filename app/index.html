@@ -171,12 +171,18 @@
     margin-top: 22px;
   }
 
-  /* galeria da peça — seção 0. A PEÇA */
+  /* galeria da peça — seção 0. A PEÇA (nome primeiro, fotos como suporte) */
+  .input-hero {
+    font-size: 19px;
+    font-weight: 600;
+    padding: 14px;
+    border-radius: 12px;
+  }
   .galeria { display: flex; flex-direction: column; gap: 10px; }
   .gal-main {
     position: relative;
     width: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 3 / 2;
     border-radius: 14px;
     overflow: hidden;
     background: var(--fundo);
@@ -184,17 +190,20 @@
   }
   .gal-main img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .gal-main.vazia {
+    aspect-ratio: auto;
+    min-height: 120px;
     border: 1.5px dashed var(--linha-forte);
+    background: var(--fundo-alt);
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
   }
-  .gal-main.vazia:active { background: var(--fundo-alt); }
   .gal-cta-vazia {
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
     color: var(--tinta-suave); font-family: inherit;
   }
-  .gal-cta-vazia svg { width: 26px; height: 26px; color: var(--tinta-suave); }
-  .gal-cta-vazia span { font-size: 12px; font-weight: 600; }
+  .gal-cta-vazia svg { width: 30px; height: 30px; color: var(--argila); margin-bottom: 2px; }
+  .gal-cta-vazia .titulo { font-size: 12px; font-weight: 600; color: var(--tinta-suave); }
+  .gal-cta-vazia .sub { font-size: 10.5px; font-weight: 400; color: var(--tinta-suave); }
   .gal-trocar {
     position: absolute; right: 8px; bottom: 8px;
     background: var(--cartao); color: var(--tinta-suave);
@@ -1374,11 +1383,9 @@
           <div class="sec" data-sec>
             <div class="sec-titulo"><span class="chev">▼</span> <span class="sec-num">0</span> A peça</div>
             <div class="sec-corpo">
-              <input type="file" id="foto-peca" accept="image/*" multiple hidden />
-              <div class="galeria" id="galeria-peca"></div>
               <div class="field">
                 <label for="nome-peca">Nome da peça <span class="dica">(obrigatório)</span></label>
-                <input type="text" id="nome-peca" placeholder="Ex.: Prato médio Entrelinhas" maxlength="60" />
+                <input type="text" id="nome-peca" class="input-hero" placeholder="Ex.: Prato médio Entrelinhas" maxlength="60" />
               </div>
               <div class="field">
                 <label for="cliente-peca">Pra quem é <span class="dica">(opcional — encomenda, presente, vitrine)</span></label>
@@ -1391,6 +1398,11 @@
                   <button type="button" class="chip" data-cat="escultura"><span class="n">Escultura</span></button>
                   <button type="button" class="chip" data-cat="outros"><span class="n">Outros</span></button>
                 </div>
+              </div>
+              <div class="field">
+                <label>Fotos <span class="dica">(opcional — a 1ª vira a capa)</span></label>
+                <input type="file" id="foto-peca" accept="image/*" multiple hidden />
+                <div class="galeria" id="galeria-peca"></div>
               </div>
             </div>
           </div>
@@ -1694,7 +1706,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>08/09/26 13:32</span>
+          <span class="versao-tag" data-ver>08/09/26 13:49</span>
         </div>
         <h1>Orçamentos</h1>
       </header>
@@ -1717,7 +1729,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>08/09/26 13:32</span>
+          <span class="versao-tag" data-ver>08/09/26 13:49</span>
         </div>
         <h1>Custos de referência</h1>
       </header>
@@ -1822,7 +1834,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>08/09/26 13:32</span>
+          <span class="versao-tag" data-ver>08/09/26 13:49</span>
         </div>
         <h1>Fornos &amp; queima</h1>
       </header>
@@ -2929,7 +2941,7 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
       main.appendChild(trocar);
     } else {
       main.className = "gal-main vazia";
-      main.innerHTML = '<span class="gal-cta-vazia"><svg class="icone"><use href="#i-foto"></use></svg><span>Foto da peça</span></span>';
+      main.innerHTML = '<span class="gal-cta-vazia"><svg class="icone"><use href="#i-peca"></use></svg><span class="titulo">Adicionar foto</span><span class="sub">ajuda a reconhecer a peça depois</span></span>';
       main.addEventListener("click", () => abrirSeletorFotos("add"));
     }
     gal.appendChild(main);

@@ -101,14 +101,15 @@ Erros:
 │  [Peças] [Acabam.] [Mat.] …  │  ← cards de tipo
 ├──────────────────────────────┤
 │  ▼ 0. A PEÇA                 │
+│  NOME DA PEÇA                │
+│  [ Prato médio Entrelinhas ] │  ← nome primeiro (título da etiqueta)
+│  PRA QUEM É  [ Ana · enc. ]  │
+│  CATEGORIA [Utilitário][Esc.] [Outros]│
+│  FOTOS (opcional · 1ª vira capa)       │
 │  ┌────────────────────────┐  │
-│  │  [ foto principal ]    │  │  ← galeria: capa grande (4:3)
-│  │        [+]  ·trocar·   │  │    + "+ adicionar" / "trocar"
-│  │  [ ▸][ ▸][ ▸][ + ]     │  │    miniaturas (capa, remover, ordenar)
-│  └────────────────────────┘  │
-│  NOME DA PEÇA  [ Prato      ]│
-│  PRA QUEM É    [ Ana · enc. ]│
-│  CATEGORIA [Utilitário] [Esc.] [Outros]│
+│  │  [ capa 3:2 ]    trocar│  │  ← vazio: painel quente ilustrado
+│  └────────────────────────┘  │    com ícone + microcopy (não um vão)
+│  [ ▸][ ▸][ ▸][ + ]           │  ← miniaturas / adicionar
 │                              │
 │  ▼ 1. INSUMOS                │
 │  ARGILA (KG)  [ 0.4 ] kg ▾   │
@@ -163,12 +164,12 @@ Erros:
 ### Hierarquia visual
 
 - Marca/aplicação: `logo.webp` 44px à esquerda, `tinta`, seguido só do **status de salvamento** à direita (`doc-status`). Sem voltar, sem título espelhado, sem metadados nem abas no topo: navegação é a barra inferior; a identidade da peça vive no cartão **0. A peça** (uma fonte por tela).
-- Cartão **0. A peça**: seção numerada como as demais; é a **única** identidade — foto, nome, "pra quem é" e categoria não se repetem em outro lugar da tela.
-- Galeria (capa): área `100%` da coluna, proporção **4:3**, cantos `14px`; vazia mostra `+ Foto da peça` tracejado em `tinta-suave`; com foto mostra a capa (`cover`).
-- Ação sobre a capa: chip fantasma `· trocar ·` (`12px`, `tinta-suave`, fundo `cartao`) no canto inferior direito — abre o seletor e **substitui** a capa.
-- Miniaturas: fileira de quadrados `64px`, `1px linha`, cantos `8px`; última é o tile `+` (adiciona, aceita múltiplas). Cada miniatura tem `✕` `14px` `terracota` no canto para remover.
-- Capa indicada: miniatura ativa com borda `1.5px argila`; tocar numa miniatura a torna capa.
-- Nome da peça: rótulo `13px peso 600 uppercase tinta-suave`; input grande de identidade (`16px peso 600 tinta`).
+- Cartão **0. A peça**: seção numerada como as demais; é a **única** identidade — foto, nome, "pra quem é" e categoria não se repetem em outro lugar da tela. Ordem: **nome primeiro**, depois "pra quem é" e categoria, e **Fotos** como campo final (foto é suporte, não porta de entrada).
+- Nome da peça: rótulo `13px peso 600 uppercase tinta-suave`; input de identidade (`input-hero`: `19px peso 600 tinta`, padding `14px`, cantos `12px`) — o título da etiqueta.
+- Galeria (campo **Fotos**, rótulo com dica "opcional — a 1ª vira capa"): capa `3:2`, cantos `14px`; **vazia** mostra um painel quente (`--fundo-alt`) com ícone da peça (`argila`, 30px) + microcopy "Adicionar foto / ajuda a reconhecer a peça depois" (min-height `120px`, nunca um vão de 4:3 vazio); com foto mostra a capa (`cover`).
+- Ação sobre a capa: chip fantasma `trocar` (`12px`, `tinta-suave`, fundo `cartao`) no canto inferior direito — abre o seletor e **substitui** a capa.
+- Miniaturas: fileira de quadrados `64px`, `1px linha`, cantos `8px`; última é o tile `+` (adiciona, aceita múltiplas). Cada miniatura tem `✕` circular translúcido para remover.
+- Capa indicada: miniatura ativa com borda `1.5px argila` + tag `capa`; tocar numa miniatura a torna capa.
 - Status de salvamento (`doc-status`): `tinta-suave`, na barra de marca; idle: ícone sozinho; salvando: `Salvando…` + ponto pulsante; salvo: `Salvo HH:MM`.
 - Cabeçalhos de seção: `tinta-suave`, 13px, peso 600, uppercase, com `▼` colapsável + número da seção.
 - Rótulos de campo: `tinta-suave`, 13px, peso 600, uppercase.
@@ -192,8 +193,8 @@ Erros:
 | `doc-status: salvo nuvem` | nuvem ok `14px` + texto `Salvo HH:MM` `11px tinta-suave`; após 2.5s → idle |
 | `doc-status: offline`    | nuvem off `14px terracota` + texto `Sem nuvem` `11px tinta-suave` |
 | `doc-status: idle`      | nuvem ok `14px tinta-suave` sem texto, sem ponto |
-| galeria vazia           | área `4:3` tracejada `1.5px linha`, ícone `+` 20px + rótulo `Foto da peça`, tudo `tinta-suave`; toque abre o seletor |
-| galeria com capa        | capa `cover` em área `4:3`, cantos `14px`; chip `·trocar·` canto inferior direito (`cartao`, `12px`) |
+| galeria vazia           | painel `--fundo-alt` (min-height `120px`), borda tracejada `1.5px linha-forte`, ícone da peça `argila` 30px + `Adicionar foto` / `ajuda a reconhecer a peça depois` `tinta-suave`; toque abre o seletor |
+| galeria com capa        | capa `cover` em área `3:2`, cantos `14px`; chip `trocar` canto inferior direito (`cartao`, `12px`) |
 | miniatura               | `64px`, `1px linha`, cantos `8px`, botão `✕` circular translúcido (`rgba(46,42,37,.55)`, texto `cartao`) no canto superior direito; remover pede confirmação |
 | miniatura capa          | borda `1.5px argila` + tag `capa` (`argila`/`cartao`, `8px`) |
 
