@@ -12,6 +12,25 @@ function cubagemDe(medidas) {
   return Math.PI * Math.pow((medidas.diametro || 0) / 2, 2) * (medidas.altura || 0);
 }
 
+/* Escala LINEAR das medidas por um fator (ex.: retração). Aplica em cada dimensão. */
+function escalaLinear(medidas, fator) {
+  if (!medidas || fator === 1) return medidas;
+  const r = (v) => (v || 0) * fator;
+  return {
+    formato: medidas.formato,
+    diametro: r(medidas.diametro), altura: r(medidas.altura),
+    largura: r(medidas.largura), profundidade: r(medidas.profundidade), alturaQ: r(medidas.alturaQ),
+  };
+}
+
+/* Footprint da peça POR PERNA — fonte única (cálculo + render nunca divergem).
+   Biscoito usa a peça crua; as demais queimas usam a peça encolhida (× 1−retracao). */
+function medidasDaPerna(tipo, medidas, retracao) {
+  if (tipo === "biscoito") return medidas;
+  const s = retracao == null ? CONFIG.retracaoPadrao : retracao;
+  return escalaLinear(medidas, 1 - s);
+}
+
 /* Empacotamento: círculos em círculo — tabela de packing ótimo (PACKING, config.js). */
 function getNCircles(circleRadius, containerRadius) {
   if (!circleRadius || !containerRadius) return 0;
@@ -88,42 +107,67 @@ function porNivelNoPiso(kilnShape, dims, pecaShape, pW, pH, folgaLat) {
   if (pecaShape === "quadrada") return rectsEmDisco(w, h, discD);
   return circulosEmDisco(Math.max(w, h) / 2, discD / 2);
 }
+/* Níveis verticais por PERNA.
+   Esmalte (peça já biscoitada): prateleiras reais (espessura + folga vertical 8cm).
+   Biscoito: o que empilha/encaixa vai em coluna direta até o teto (sem
+   prateleira); o que não empilha ganha níveis em prateleiras SIMPLES — só a
+   espessura da prateleira, sem a folga de segurança do esmalte. */
 function calcNiveis(tipo, alt, pieceAlt, mode) {
   const U = OCUPACAO;
   const usable = alt - U.gapBase - U.gapTopo;
   if (usable <= 0) return 0;
+  if (tipo !== "biscoito") {
+    const slot = U.prateleiraEsp + Math.max(1, pieceAlt) + U.folgaVerticalEsmalte;
+    return Math.max(0, Math.floor(usable / Math.max(1, slot)));
+  }
   if (mode === "empilha") return Math.max(0, Math.floor(usable / Math.max(1, pieceAlt)));
   if (mode === "encaixa") {
     const hAdd = Math.max(1, pieceAlt * U.fatorEncaixe);
     return Math.max(0, Math.floor((usable - pieceAlt) / hAdd) + 1);
   }
-  const folgaVert = tipo === "esmalte" ? U.folgaVerticalEsmalte : U.folgaVerticalBiscoito;
-  const slot = U.prateleiraEsp + pieceAlt + folgaVert;
+  /* solto: não empilha nem encaixa → prateleira simples entre níveis */
+  const slot = U.prateleiraEsp + Math.max(1, pieceAlt);
   return Math.max(0, Math.floor(usable / Math.max(1, slot)));
 }
-function estimarCabem(tipo, forno, m) {
+/* Ocupação por PERNA de queima — porta única de "quantas cabem".
+   `tipo` "biscoito" → peça crua em pilha solta; demais (esmalte/baixa/alta/3fogo)
+   → peça encolhida (× 1−retracao) em prateleiras com folga mínima.
+   `m` = medidas CRUAS; `retracao` opcional (default CONFIG.retracaoPadrao). */
+function estimarCabem(tipo, forno, m, retracao) {
   const kilnShape = forno && forno.formato === "quadrada" ? "quadrada" : "cilindrico";
   const dims = kilnShape === "quadrada"
     ? { L: (forno && forno.larguraCm) || 0, P: (forno && forno.profundidadeCm) || 0 }
     : { D: (forno && forno.diametroCm) || 0 };
   const alt = (forno && forno.alturaCm) || 0;
   const pecaShape = m.formato === "quadrada" ? "quadrada" : "redonda";
-  const pW = pecaShape === "quadrada" ? m.largura : m.diametro;
-  const pH = pecaShape === "quadrada" ? m.profundidade : m.diametro;
-  const pieceAlt = pecaShape === "quadrada" ? m.alturaQ : m.altura;
+  const leg = medidasDaPerna(tipo, m, retracao);
+  const pW = pecaShape === "quadrada" ? leg.largura : leg.diametro;
+  const pH = pecaShape === "quadrada" ? leg.profundidade : leg.diametro;
+  const pieceAlt = pecaShape === "quadrada" ? leg.alturaQ : leg.altura;
   if (!alt || !pW || !pH || !pieceAlt) return null;
   if (kilnShape === "quadrada" && (!dims.L || !dims.P)) return null;
   if (kilnShape === "cilindrico" && !dims.D) return null;
   const U = OCUPACAO;
-  const folgaLat = tipo === "esmalte" ? U.folgaLateralEsmalte : U.folgaLateralBiscoito;
-  const porNivel = porNivelNoPiso(kilnShape, dims, pecaShape, pW, pH, folgaLat);
+  const esmalte = tipo !== "biscoito";
+  const folgaLat = esmalte ? U.folgaPecaPecaEsmalte : U.folgaLateralBiscoito;
+  let porNivel = porNivelNoPiso(kilnShape, dims, pecaShape, pW, pH, folgaLat);
   let mode = "prateleira";
-  if (tipo === "biscoito") {
+  if (!esmalte) {
     const ratio = (pecaShape === "quadrada" ? Math.max(pW, pH) : pW) / Math.max(1, pieceAlt);
     if (ratio >= U.pecaPlana) mode = "empilha";
     else if (pecaShape === "redonda" && ratio >= U.pecaEncaixe) mode = "encaixa";
+    else mode = "solto";
+    /* Peça plana larga que não cabe DEITADA no piso mas cabe em altura: em pé,
+       apoiada na borda (contagem ~1 — peça no limite da câmara; sem espessura,
+       sem falsa precisão). ponytail: fixo ~1 por carga; upgrade: packing por
+       inclinação/espessura só se esse caso virar frequente no ateliê. */
+    if (porNivel <= 0 && mode === "empilha") {
+      const maior = pecaShape === "quadrada" ? Math.max(pW, pH) : pW;
+      const usableAlt = alt - U.gapBase - U.gapTopo;
+      if (maior > 0 && maior <= usableAlt) { porNivel = 1; mode = "em_pe"; }
+    }
   }
-  const niveis = calcNiveis(tipo, alt, pieceAlt, mode);
+  const niveis = mode === "em_pe" ? 1 : calcNiveis(tipo, alt, pieceAlt, mode);
   if (porNivel <= 0 || niveis <= 0) return { total: 0, porNivel, niveis, mode };
   return { total: porNivel * niveis, porNivel, niveis, mode };
 }

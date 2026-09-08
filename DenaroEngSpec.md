@@ -23,6 +23,8 @@ Este documento segue o template de `ZenSpecKit/ZenEngSpec.md` e é derivado de `
 | `Dificuldade`      | Nível artístico 1–5 (UI) mapeado para multiplicador interno 1,0–1,8 que ajusta a mão de obra. |
 | `Margem`           | Percentual que, subtraído do preço de venda, deixa o custo: `preco = custoComTaxas ÷ (1 − margem)`. |
 | `Esmalte (R$)`     | Custo do esmalte da peça informado em **reais** (não em %). |
+| `Retração`         | Encolhimento linear da argila entre cru e queimado (`ARGILAS[].retracaoLinear`, default `CONFIG.retracaoPadrao` 0,10). Deriva a peça do esmalte (`crua × (1 − s)`) e o tamanho final estimado. |
+| `Medidas cruas`    | Medidas digitadas no formulário = tamanho **como moldado** (o que entra no biscoito), consistente com o peso cru. Tamanho final é derivado e mostrado, nunca digitado. |
 | `Cálculo`          | Resultado determinístico dos motores `calcularCustoPeca`/`calcularCustoProduto` a partir do modelo em `07-modelo-de-precificacao.md`. |
 | `Armazenamento`    | Onde os dados vivem: o **Firestore** (doc `alice/estado`) com **`localStorage`** como cache/fallback local. A UI usa o SDK do Firebase compat direto no navegador — sem servidor. |
 
@@ -65,18 +67,18 @@ O modelo exato de cálculo vive em `Specs/precificacao/07-modelo-de-precificacao
   Computa o custo de um **produto** (receita em gramas ÷ unidades + embalagem + montagem + taxas) e os preços por linha (Autoral/Profissional/Essencial). Função pura.
   `Contrato: Specs/precificacao/06-calcularCustoProduto.md`.
 
-- `lerMedidas` (+ leitura do formulário) — **tradutor**
-  Lê os campos do formulário e devolve objetos planos validados (peso, esmalte em R$, tempo h:min → decimal, medidas da peça). É a fronteira entre DOM e núcleo.
-  `Contrato: Specs/precificacao/02-lerMedidas.md`.
-
 - `estimarCabem` — **"quantas cabem"**
-  Estima quantas peças como a atual ocupam um forno (por prateleira × níveis, empilhamento e encaixe), usando o config `OCUPACAO`. Função pura. Fonte única de "quantas cabem" — usada pelo custo de queima **e** pelo render.
+  Estima quantas peças como a atual ocupam um forno **por perna de queima**: biscoito = peça crua em **pilha solta** (prato/bowl empilha ou encaixa direto até o teto; demais em prateleiras simples, sem a folga de segurança do esmalte); esmalte = peça **encolhida** (`× (1 − retracao)`) em prateleiras com folga mínima. Função pura: `(tipo, forno, medidas, retracao)`. Fonte única de "quantas cabem" — usada pelo custo de queima **e** pelo render (footprint via `medidasDaPerna`/`escalaLinear`).
   `Contrato: Specs/queima/01-estimarCabem.md`.
+
+- `lerMedidas` (+ leitura do formulário) — **tradutor**
+  Lê os campos do formulário e devolve objetos planos validados (peso, esmalte em R$, tempo h:min → decimal, medidas **cruas** da peça, retração da argila resolvida). É a fronteira entre DOM e núcleo.
+  `Contrato: Specs/precificacao/02-lerMedidas.md`.
 
 ### 4.2 Desenho (domínio `queima`) — programa puro em `app/js/desenho.js`
 
 - `desenharForno` — **ilustrador do forno**
-  Recebe `(medidas, forno)` e devolve a **string SVG** das duas vistas (biscoito/esmalte) com a peça principal + cópias, determinístico, nada fora do forno. Não toca DOM.
+  Recebe `(medidas, forno, retracao)` e devolve a **string SVG** das duas vistas (biscoito cru / esmalte encolhido, footprint por perna) com a peça principal + cópias, determinístico, nada fora do forno. Não toca DOM.
   `Contrato: Specs/precificacao/04-desenharForno.md`.
 
 ### 4.3 Config — `app/js/config.js`
@@ -128,8 +130,8 @@ formulário → lerMedidas → estimarCabem (ocupação) → desenharForno (SVG)
 | `pricingPanel`         | toques da usuária                     | lê campos + `lerMedidas` → monta `inputs`    | `calcularCustoPeca`/`calcularCustoProduto` |
 | `calcularCustoPeca`    | `inputs` + config                     | calcula custo e preços por linha de peça     | `pricingPanel` (render)     |
 | `calcularCustoProduto` | `inputs` + config                     | calcula custo e preços por linha de produto  | `pricingPanel` (render)     |
-| `estimarCabem`         | tipo + forno + medidas                | peças por prateleira × níveis (empilha/encaixa) | `desenharForno` + custo de queima |
-| `desenharForno`        | medidas + forno + `estimarCabem`      | gera a string SVG das 2 vistas               | `pricingPanel` (injeção)    |
+| `estimarCabem`         | tipo + forno + medidas cruas + retracao | peças por perna (biscoito: pilha solta; esmalte: prateleiras, encolhido) | `desenharForno` + custo de queima |
+| `desenharForno`        | medidas + forno + retracao + `estimarCabem` | gera a string SVG das 2 vistas (footprint por perna) | `pricingPanel` (injeção)    |
 | `storage`              | comandos de salvar/carregar           | nuvem vs local mais recente (`salvoEm`); fotos no Storage | — (persistência)            |
 | `costsPanel`/`fornosPanel` | toques da usuária                 | edita config e grava via `storage`           | `storage`                   |
 | `piecesListPanel`      | toques da usuária                     | lista/abre/copia/edita itens salvos          | `storage`                   |
@@ -180,6 +182,10 @@ Regra: toda situação de erro listada é rastreável a um programa ou estado do
 > **Decisão:** Dois motores (`calcularCustoPeca` para peças, `calcularCustoProduto` para produtos) em vez de um único.
 > **Alternativa descartada:** um engine genérico único com flag de tipo.
 > **Motivo:** as contas diferem em estrutura (peça soma argila+risco; produto divide receita por unidades), e manter cada um com seu contrato deixa o trio ZenSpec→Código→Teste mais direto.
+
+> **Decisão:** Ocupação do forno tem **duas pernas** com geometrias diferentes dentro de um mesmo `estimarCabem` (porta única): biscoito = peça **crua** em pilha solta até o teto (sem prateleira); esmalte = peça **encolhida** (`× (1 − retração)`) em prateleiras com folga mínima de 5mm. O footprint por perna vive em `medidasDaPerna`/`escalaLinear` (fonte única, usada pelo cálculo e pelo render).
+> **Alternativa descartada:** um único "modo" compartilhado com prateleiras nas duas queimas e a mesma medida crua.
+> **Motivo:** biscoito não tem prateleira (é pilha/encaixe até o teto) e a peça já saiu menor do biscoito quando vai ao esmalte — a perna do esmalte é a que precisa ser honesta (folga, encolhimento), e esconder a retração nela geraria custo por peça otimista.
 
 > **Decisão:** Programas puros (sem DOM) em arquivos separados (`app/js/config.js`, `modelo.js`, `desenho.js`); a UI é uma camada fina de fiação.
 > **Alternativa descartada:** lógica de cálculo espalhada e duplicada entre custo e render, com estado em dois lugares.

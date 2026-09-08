@@ -1,8 +1,8 @@
 /* =====================================================================
  * Denaro — desenho.js
  * Programa puro (regra DenaroEngSpec §3): gera a string SVG do forno.
- * desenharForno(medidas, forno) → string. Não toca DOM.
- * Depende de estimarCabem/OCUPACAO/RENDER (modelo.js/config.js).
+ * desenharForno(medidas, forno, retracao) → string. Não toca DOM.
+ * Depende de medidasDaPerna/estimarCabem/OCUPACAO/RENDER (modelo.js/config.js).
  * ===================================================================== */
 
 function pecaRedonda(x, baseY, w, h, mode) {
@@ -38,8 +38,10 @@ function pecaQuadrado(x, baseY, w, h, mode) {
 }
 
 /* Gera a string SVG do render-duplo (biscoito/esmalte) para um forno.
-   `medidas` = objeto do tamanho da peça; `forno` = objeto do forno resolvido. */
-function desenharForno(medidas, forno) {
+   `medidas` = medidas CRUAS da peça; `forno` = objeto do forno resolvido;
+   `retracao` (0..1) = retração linear da argila — define o footprint da vista
+   esmalte (peça encolhida). Mesma regra de `medidasDaPerna` do modelo. */
+function desenharForno(medidas, forno, retracao) {
   const m = medidas;
   const fornoDiam = forno && forno.formato === "quadrada"
     ? (Math.max(forno.larguraCm || 0, forno.profundidadeCm || 0) || 40)
@@ -49,6 +51,7 @@ function desenharForno(medidas, forno) {
   const R = RENDER;
 
   function umRender(tipo, W, H, topoY, chaoY) {
+    const leg = medidasDaPerna(tipo, m, retracao);
     const cx = W / 2, rx = W / 2 - R.raioMargem;
     const ryLid = rx * R.ryLidFator;
     const bodyTop = topoY + ryLid;
@@ -56,9 +59,9 @@ function desenharForno(medidas, forno) {
     const interiorH = chaoY - interiorTop;
     const usableW = (rx - R.paredeMargem) * 2;
     const usableH = interiorH - R.interiorFolga;
-    const propPW = Math.max(R.minPW, (((m.formato === "quadrada" ? Math.max(m.largura, m.profundidade) : m.diametro) || 1) / Math.max(1, fornoDiam)) * usableW);
-    const propPH = Math.max(R.minPH, (((m.formato === "quadrada" ? m.alturaQ : m.altura) || 1) / Math.max(1, fornoAlt)) * usableH);
-    const est = estimarCabem(tipo, forno, m);
+    const propPW = Math.max(R.minPW, (((leg.formato === "quadrada" ? Math.max(leg.largura, leg.profundidade) : leg.diametro) || 1) / Math.max(1, fornoDiam)) * usableW);
+    const propPH = Math.max(R.minPH, (((leg.formato === "quadrada" ? leg.alturaQ : leg.altura) || 1) / Math.max(1, fornoAlt)) * usableH);
+    const est = estimarCabem(tipo, forno, m, retracao);
     const draw = (m.formato === "quadrada" ? pecaQuadrado : pecaRedonda);
     let s = '<svg viewBox="0 0 ' + W + " " + H + '" aria-hidden="true">';
     if (forno && forno.formato === "quadrada") {
@@ -78,6 +81,13 @@ function desenharForno(medidas, forno) {
       const topE = (m.formato === "quadrada" ? colW * R.isoTopo : 0);
       const maxOff = Math.max(0, rx - halfW - R.margemLateral);
       if (tipo === "biscoito") {
+        if (est.mode === "em_pe") {
+          /* peça plana larga apoiada na borda: silhueta única, alta e estreita */
+          const maior = m.formato === "quadrada" ? Math.max(leg.largura || 0, leg.profundidade || 0) : (leg.diametro || 0);
+          const hStand = Math.max(R.minPH, Math.min(((maior || 1) / Math.max(1, fornoAlt)) * usableH, usableH));
+          const yBase = chaoY - R.yBaseFolga;
+          if (yBase - hStand - topE >= interiorTop) s += draw(cx, yBase, Math.min(propPW, R.minPW * 2), hStand, "main");
+        } else {
         const encaixaDenso = est.mode === "empilha" || est.mode === "encaixa";
         const layerH = encaixaDenso ? Math.max(R.layerDensoMin, slotY - R.layerDensoFolga) : Math.min(propPH, Math.max(R.layerNormalMin, slotY - R.layerNormalFolga));
         const centro = Math.floor(nCol / 2);
@@ -91,6 +101,7 @@ function desenharForno(medidas, forno) {
             const main = (c === centro && r === 0);
             s += draw(x, yBase, colW, layerH, main ? "main" : "copy");
           }
+        }
         }
       } else {
         const porV = Math.max(1, Math.min(est.porNivel || 1, R.capColsNiveis));
@@ -110,21 +121,22 @@ function desenharForno(medidas, forno) {
     }
     s += "</svg>";
     const rotulo = tipo === "biscoito" ? "Biscoito" : "Esmalte";
-    let leg = "—";
+    let legenda = "—";
     if (est) {
       if (est.total <= 0) {
-        leg = "<b>não cabe</b><span class=\"render-det\">peça maior que o forno</span>";
+        legenda = "<b>não cabe</b><span class=\"render-det\">peça maior que o forno (nessa queima)</span>";
       } else {
         const num = est.total > 12 ? "12+" : est.total;
         const detalhe = tipo === "esmalte"
           ? est.porNivel + " por prateleira × " + est.niveis + " prateleiras"
           : est.mode === "empilha" ? "empilhado em coluna"
             : est.mode === "encaixa" ? "tigelas encaixadas"
-              : est.porNivel + " por prateleira × " + est.niveis + " níveis";
-        leg = "~<b>" + num + "</b> no forno<span class=\"render-det\">" + detalhe + "</span>";
+              : est.mode === "em_pe" ? "em pé, apoiado na borda"
+                : est.porNivel + " por piso × " + est.niveis + " níveis";
+        legenda = "~<b>" + num + "</b> no forno<span class=\"render-det\">" + detalhe + "</span>";
       }
     }
-    return '<div class="render-item"><div class="render-item-rotulo">' + rotulo + "</div>" + s + '<div class="render-legenda">' + leg + "</div></div>";
+    return '<div class="render-item"><div class="render-item-rotulo">' + rotulo + "</div>" + s + '<div class="render-legenda">' + legenda + "</div></div>";
   }
 
   return '<div class="render-duplo">' + umRender("biscoito", VB.W, VB.H, VB.topoY, VB.chaoY) + umRender("esmalte", VB.W, VB.H, VB.topoY, VB.chaoY) + "</div>";

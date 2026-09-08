@@ -34,7 +34,8 @@ pricingPanel → raw do formulário → normalizar → PricingInput | error com 
 - **Esmalte**: `number ≥ 0`, em **reais** (R$), `step 0.50`.
 - **Tempo**: entrado em **horas e minutos** (steppers/atalhos); interno = `h + m/60` (decimal).
 - **Dificuldade**: 1–5 na UI → fator interno `CONFIG.fatores` (1,0/1,2/1,4/1,6/1,8).
-- **Medidas (`lerMedidas`)**: lê os inputs do formato ativo e devolve `{ formato, diametro?, altura?, largura?, profundidade?, alturaQ? }` (number ≥ 0, cm). Ver `03-cubagemDe.md`.
+- **Medidas (`lerMedidas`)**: lê os inputs do formato ativo e devolve `{ formato, diametro?, altura?, largura?, profundidade?, alturaQ? }` (number ≥ 0, cm). As medidas são **cruas** — o tamanho que a ceramista molda, consistente com o peso (também cru). Ver `03-cubagemDe.md`.
+- **Retração**: resolvida na fronteira a partir do select de argila — `ARGILAS[].retracaoLinear`, fallback `CONFIG.retracaoPadrao` (0,10). Sai como `retracao` (0..1, linear) no objeto normalizado e alimenta `estimarCabem`/`desenharForno` (o esmalte usa a peça encolhida `× (1 − s)`). A ceramista nunca digita retração nem tamanho final — o final é derivado (`escalaLinear`) e mostrado.
 - **Seleções**: acessórios/embalagem viram `{ item, qtd }` (qtd ≥ 1) com o preço do catálogo.
 - **Queima**: `queimas: [{ tipo, forno }]` + flag `semQueima`.
 - **Frete**: `fretePagante` (`cliente|atele`) + `pecasNoEnvio ≥ 1`.
@@ -57,6 +58,7 @@ Erros:
 
 - Campo vazio/`NaN` → 0 (campos com default preenchido) ou erro conforme regra do campo.
 - `peso = 0` → permitido (material 0); `medidas = 0` → cubagem 0 (ocupação não calcula).
+- Argila sem `retracaoLinear` ou nenhuma argila selecionada → usa `CONFIG.retracaoPadrao`.
 - `unidadesProduzidas = 0` → erro (não divide por zero).
 - `taxas ≥ 1` → erro.
 

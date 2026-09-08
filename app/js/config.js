@@ -5,11 +5,15 @@
  * Carregado antes de modelo.js e desenho.js (e do script de UI).
  * ===================================================================== */
 
-/* Catálogos (valores reais das planilhas) */
+/* Catálogos (valores reais das planilhas).
+   retracaoLinear = encolhimento LINEAR da argila entre cru e queimado (0..1).
+   Usado para derivar a peça do esmalte (crua × (1−s)) e o tamanho final estimado.
+   Default global quando ausente: CONFIG.retracaoPadrao. Defaults por corpo:
+   terracota/comum ~8–9%, grês ~10–12%, porcelana ~12–15% — ajustável por argila. */
 const ARGILAS = [
-  { nome: "Argila Comum", preco: 7.00, fornecedor: "Terra Nova" },
-  { nome: "Argila São Simão em Pó", preco: 13.00, fornecedor: "São Simão" },
-  { nome: "Argila São Simão (terranova)", preco: 13.00, fornecedor: "São Simão" },
+  { nome: "Argila Comum", preco: 7.00, fornecedor: "Terra Nova", retracaoLinear: 0.09 },
+  { nome: "Argila São Simão em Pó", preco: 13.00, fornecedor: "São Simão", retracaoLinear: 0.11 },
+  { nome: "Argila São Simão (terranova)", preco: 13.00, fornecedor: "São Simão", retracaoLinear: 0.11 },
 ];
 
 /* Matérias-primas organizadas por seção — fonte única que alimentará
@@ -74,6 +78,7 @@ const CATALOGO_INSUMOS = [
 const CONFIG = {
   horasDia: 8, diasMes: 22,
   argilaPreco: 7.00,
+  retracaoPadrao: 0.10,       /* retração linear default quando a argila não declara (grês ~10–12%) */
   marketplace: 0.0, maquina: 0.0,
   perdaNivel: "media",
   perdas: { baixa: 0.15, media: 0.30, alta: 0.45 },
@@ -201,17 +206,19 @@ const RENDER = {
   yBaseFolga: 3,          /* primeira peça sobe 3px do piso */
 };
 
-/* --- Ocupação do forno — parâmetros declarados (nosso algoritmo, auditável) --- */
+/* --- Ocupação do forno — parâmetros declarados (nosso algoritmo, auditável).
+   Duas pernas: BISCOITO = peça CRUA em pilha solta até o teto (sem prateleira);
+   ESMALTE (baixa/alta/3fogo) = peça ENCOLHIDA (× (1−retracao)) em prateleiras
+   reais com folga mínima entre peças. --- */
 const OCUPACAO = {
-  usarDiametro: 0.9,      /* % do diâmetro/lado do forno aproveitada pela prateleira (parede) */
-  gapBase: 4,             /* cm do piso até a 1ª peça */
-  gapTopo: 4,             /* cm da última peça ao teto */
-  prateleiraEsp: 2,       /* cm de espessura de cada prateleira */
-  folgaLateralBiscoito: 1,
-  folgaLateralEsmalte: 2,
-  folgaVerticalBiscoito: 2,
-  folgaVerticalEsmalte: 8,
-  pecaPlana: 2.5,         /* diâmetro >= 2,5× altura => empilha em coluna (biscoito) */
-  pecaEncaixe: 1.1,       /* diâmetro >= 1,1× altura => tigela encaixa (biscoito) */
-  fatorEncaixe: 0.7,      /* cada tigela encaixada ocupa 70% da altura da peça */
+  usarDiametro: 0.9,          /* % do diâmetro/lado do forno aproveitada pela prateleira (parede) */
+  gapBase: 4,                 /* cm do piso até a 1ª peça */
+  gapTopo: 4,                 /* cm da última peça ao teto */
+  prateleiraEsp: 2,           /* cm de espessura de cada prateleira (só esmalte) */
+  folgaLateralBiscoito: 0.5,  /* biscoito: peças podem encostar (pilha solta) */
+  folgaPecaPecaEsmalte: 0.5,  /* esmalte: distância mínima peça-peça ~5mm (norma) */
+  folgaVerticalEsmalte: 8,    /* folga vertical de cada prateleira no esmalte */
+  pecaPlana: 2.5,             /* diâmetro >= 2,5× altura => plana: empilha (biscoito) ou pode ficar em pé */
+  pecaEncaixe: 1.1,           /* diâmetro >= 1,1× altura => tigela encaixa (biscoito) */
+  fatorEncaixe: 0.7,          /* cada tigela encaixada ocupa 70% da altura da peça */
 };

@@ -33,6 +33,7 @@ const MEDIDAS = {
   tigela: { formato: "redonda", diametro: 12, altura: 10, largura: 0, profundidade: 0, alturaQ: 0 },
   vaso: { formato: "redonda", diametro: 20, altura: 30, largura: 0, profundidade: 0, alturaQ: 0 },
   caixa: { formato: "quadrada", diametro: 0, altura: 0, largura: 20, profundidade: 20, alturaQ: 10 },
+  pratoLargo: { formato: "redonda", diametro: 39, altura: 5, largura: 0, profundidade: 0, alturaQ: 0 }, /* não cabe deitado (piso ~36); em pé no biscoito; encolhido ~35 cabe no esmalte */
   naoCabe: { formato: "redonda", diametro: 55, altura: 30, largura: 0, profundidade: 0, alturaQ: 0 },
 };
 
@@ -42,7 +43,7 @@ function carregarProgramas() {
   const context = { window: {} };
   context.globalThis = context;
   vm.createContext(context);
-  const ex = code + "\n;globalThis.__d = { cubagemDe, estimarCabem, desenharForno, calcularCustoPeca, calcularCustoProduto, criaStorage, CONFIG };";
+  const ex = code + "\n;globalThis.__d = { cubagemDe, escalaLinear, medidasDaPerna, estimarCabem, desenharForno, calcularCustoPeca, calcularCustoProduto, criaStorage, CONFIG };";
   vm.runInContext(ex, context, { filename: "denaro-puros.js" });
   return context.__d;
 }
@@ -53,6 +54,11 @@ async function snapshotDe(p) {
   out.push("=== cubagemDe (cm3) ===");
   for (const [n, m] of Object.entries(MEDIDAS)) {
     out.push(`${n}: ${p.cubagemDe(m)}`);
+  }
+
+  out.push("=== medidasDaPerna (pratoRedondo, sem retracao → default CONFIG) ===");
+  for (const tipo of ["biscoito", "esmalte"]) {
+    out.push(`${tipo}: ${JSON.stringify(p.medidasDaPerna(tipo, MEDIDAS.pratoRedondo))}`);
   }
 
   out.push("=== estimarCabem ===");
