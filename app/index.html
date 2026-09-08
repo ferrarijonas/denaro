@@ -1108,6 +1108,54 @@
   .sheet .btn.ghost { background: var(--cartao); border: 1px solid var(--linha); color: var(--tinta); }
   .marca-direita { display: flex; align-items: center; gap: 10px; }
 
+  /* topo do precificador: voltar + nome do orçamento/peça em edição */
+  .doc-topo {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+  }
+  .doc-voltar {
+    flex: 0 0 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-left: -8px;
+    background: none;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--argila);
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0 8px;
+  }
+  .doc-voltar:active { opacity: 0.55; }
+  .doc-titulo-btn {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+    text-align: left;
+  }
+  .doc-titulo {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--tinta);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .doc-titulo.placeholder { font-weight: 500; color: var(--tinta-suave); }
+
   /* save status */
   .doc-status {
     display: flex;
@@ -1333,6 +1381,12 @@
               <span class="save-ponto" id="save-ponto"></span>
             </div>
           </div>
+        </div>
+        <div class="doc-topo">
+          <button type="button" class="doc-voltar" id="doc-voltar" data-ir="salvos" aria-label="Voltar para Orçamentos">←</button>
+          <button type="button" class="doc-titulo-btn" id="doc-titulo-btn" title="Ir para o nome da peça">
+            <span class="doc-titulo placeholder" id="doc-titulo">Nova peça</span>
+          </button>
         </div>
       </header>
       <main>
@@ -1706,7 +1760,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>08/09/26 13:49</span>
+          <span class="versao-tag" data-ver>08/09/26 13:56</span>
         </div>
         <h1>Orçamentos</h1>
       </header>
@@ -1729,7 +1783,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>08/09/26 13:49</span>
+          <span class="versao-tag" data-ver>08/09/26 13:56</span>
         </div>
         <h1>Custos de referência</h1>
       </header>
@@ -1834,7 +1888,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>08/09/26 13:49</span>
+          <span class="versao-tag" data-ver>08/09/26 13:56</span>
         </div>
         <h1>Fornos &amp; queima</h1>
       </header>
@@ -2050,6 +2104,33 @@ function totalCustosFixos() {
     return d;
   }
 
+  /* ===== topo: seta voltar + nome do orçamento/peça em edição ===== */
+  function fluxoEhPeca() {
+    const cp = document.getElementById("corpo-peca");
+    if (cp && !cp.classList.contains("escondido")) return true;
+    const pr = document.getElementById("corpo-produto");
+    if (pr && !pr.classList.contains("escondido")) return false;
+    return estado.tipo !== "produto";
+  }
+  function atualizarTituloDoc() {
+    const el = document.getElementById("doc-titulo");
+    if (!el) return;
+    const isPeca = fluxoEhPeca();
+    const nome = ((document.getElementById(isPeca ? "nome-peca" : "nome-produto") || {}).value || "").trim();
+    el.textContent = nome || (isPeca ? "Nova peça" : "Novo produto");
+    el.classList.toggle("placeholder", !nome);
+  }
+  document.getElementById("nome-peca").addEventListener("input", atualizarTituloDoc);
+  document.getElementById("nome-produto").addEventListener("input", atualizarTituloDoc);
+  const btnTituloDoc = document.getElementById("doc-titulo-btn");
+  if (btnTituloDoc) btnTituloDoc.addEventListener("click", () => {
+    const el = document.getElementById(fluxoEhPeca() ? "nome-peca" : "nome-produto");
+    if (el) {
+      el.focus();
+      try { el.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) { /* jsdom */ }
+    }
+  });
+
   /* ===== autosave: grava sozinho após cada mudança (debounce 700ms) ===== */
   let suprimindoAutosave = false;
   function sincronizarCustosDoForm() {
@@ -2264,6 +2345,7 @@ function totalCustosFixos() {
     const ph = document.getElementById("p-h"); if (ph) ph.textContent = estado.prodH;
     const pm = document.getElementById("p-m"); if (pm) pm.textContent = estado.prodM;
     renderGaleria();
+    atualizarTituloDoc();
   }
 
   async function carregarLocalStorage() {
@@ -3979,6 +4061,7 @@ document.getElementById("btn-salvar-custos").addEventListener("click", () => {
         // heurística rascunho: ao abrir já reflete nos Orçamentos
         if (temConteudoParaRascunho()) garantirRascunhoOrcamento();
         renderGaleria();
+        atualizarTituloDoc();
         atualizarSaveBar("Tudo em ordem", false);
       } finally {
         suprimindoAutosave = false;

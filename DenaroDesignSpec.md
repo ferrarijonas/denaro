@@ -46,7 +46,7 @@ Fonte do site (mantém a identidade da marca):
 
 Hierarquia construída com **peso e opacidade**, não só com tamanho:
 
-- Nome do documento aberto (`doc-titulo`): `20px`, peso 700, `tinta` — título principal, reflete a entidade atual. *Removido da precificação:* a identidade da peça (foto + nome + para quem) vive em **um único cartão — seção "A peça"**; o topo mostra só a marca + status de salvamento.
+- Nome do item aberto (`doc-titulo`): `17px`, peso 700, `tinta` — fica na **linha de navegação** do precificador (`←` voltar + nome ao vivo, espelhando o campo da peça). A identidade visual completa (foto + categoria) vive no cartão "A peça".
 - Título de tela: `18px`, peso 600, `tinta`.
 - Rótulo de campo: `13px`, peso 600, `tinta-suave`, uppercase.
 - Valor/preço principal: `26px`, peso 600, `tinta` (ou `button-background` no preço selecionado).

@@ -163,7 +163,7 @@ Erros:
 
 ### Hierarquia visual
 
-- Marca/aplicação: `logo.webp` 44px à esquerda, `tinta`, seguido só do **status de salvamento** à direita (`doc-status`). Sem voltar, sem título espelhado, sem metadados nem abas no topo: navegação é a barra inferior; a identidade da peça vive no cartão **0. A peça** (uma fonte por tela).
+- Marca/aplicação: `logo.webp` 44px à esquerda + status de salvamento (`doc-status`) à direita. Abaixo, uma **linha de navegação** (`doc-topo`): seta `←` (`doc-voltar`, volta para a tela **Orçamentos**) + nome do item em edição (`doc-titulo`, espelha `nome-peca`/`nome-produto` ao vivo; padrão `Nova peça` em peso 500 quando vazio; tocar no título foca o campo do nome). Sem mini-foto, sem metadados, sem abas no topo: a identidade visual (fotos, categoria) vive no cartão **0. A peça** — uma fonte por tela.
 - Cartão **0. A peça**: seção numerada como as demais; é a **única** identidade — foto, nome, "pra quem é" e categoria não se repetem em outro lugar da tela. Ordem: **nome primeiro**, depois "pra quem é" e categoria, e **Fotos** como campo final (foto é suporte, não porta de entrada).
 - Nome da peça: rótulo `13px peso 600 uppercase tinta-suave`; input de identidade (`input-hero`: `19px peso 600 tinta`, padding `14px`, cantos `12px`) — o título da etiqueta.
 - Galeria (campo **Fotos**, rótulo com dica "opcional — a 1ª vira capa"): capa `3:2`, cantos `14px`; **vazia** mostra um painel quente (`--fundo-alt`) com ícone da peça (`argila`, 30px) + microcopy "Adicionar foto / ajuda a reconhecer a peça depois" (min-height `120px`, nunca um vão de 4:3 vazio); com foto mostra a capa (`cover`).
