@@ -171,13 +171,7 @@
     margin-top: 22px;
   }
 
-  /* galeria da peça — seção 0. A PEÇA (nome primeiro, fotos como suporte) */
-  .input-hero {
-    font-size: 19px;
-    font-weight: 600;
-    padding: 14px;
-    border-radius: 12px;
-  }
+  /* galeria da peça — seção 0. A PEÇA (nome display, fotos como suporte) */
   .galeria { display: flex; flex-direction: column; gap: 10px; }
   .gal-main {
     position: relative;
@@ -363,6 +357,33 @@
     border: 1.5px solid var(--argila);
     box-shadow: 0 0 0 3px rgba(91,68,50,0.12);
   }
+
+  /* nome da peça: display real fora de foco, campo de edição ao focar */
+  input[type="text"].nome-display {
+    width: 100%;
+    background: transparent;
+    border: 1.5px solid transparent;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    color: var(--tinta);
+  }
+  input[type="text"].nome-display::placeholder { color: var(--tinta-suave); font-weight: 500; opacity: 1; }
+  input[type="text"].nome-display:focus {
+    background: var(--cartao);
+    border-color: var(--argila);
+    box-shadow: 0 0 0 3px rgba(91,68,50,0.12);
+  }
+  input[type="text"].nome-display + .obrigatorio-dica {
+    display: none;
+    font-size: 11px;
+    color: var(--tinta-suave);
+    margin: 2px 0 0 12px;
+  }
+  input[type="text"].nome-display:focus + .obrigatorio-dica { display: block; }
 
   .suffix { position: relative; }
   .suffix input, .suffix select { padding-right: 40px; }
@@ -739,6 +760,8 @@
   .render-forno-cab { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
   .render-forno-cab select { flex: 1; padding: 9px 12px; font-size: 13px; }
   .render-forno-dica { font-size: 10px; color: var(--tinta-suave); white-space: nowrap; }
+  .render-final { font-size: 11px; color: var(--tinta-suave); margin-top: 6px; }
+  .render-final b { color: var(--argila); font-weight: 700; }
   .tamanho-slider { margin-top: 10px; display: flex; flex-direction: column; gap: 2px; }
   .tamanho-slider .rotulo-slider { font-size: 11px; color: var(--tinta-suave); font-weight: 600; }
   .tamanho-slider input[type="range"] { width: 100%; accent-color: var(--argila); height: 26px; margin: 0; }
@@ -1480,23 +1503,25 @@
             <div class="sec-titulo"><span class="chev">▼</span> <span class="sec-num">0</span> A peça</div>
             <div class="sec-corpo">
               <div class="field">
-                <label for="nome-peca">Nome da peça <span class="dica">(obrigatório)</span></label>
-                <input type="text" id="nome-peca" class="input-hero" placeholder="Ex.: Prato médio Entrelinhas" maxlength="60" />
+                <label for="nome-peca" class="escondido">Nome da peça</label>
+                <input type="text" id="nome-peca" class="nome-display" placeholder="Nome da peça…" aria-label="Nome da peça (obrigatório)" maxlength="60" />
+                <span class="obrigatorio-dica">Obrigatório — é o nome que aparece no catálogo.</span>
               </div>
               <div class="field">
-                <label for="cliente-peca">Pra quem é <span class="dica">(opcional — encomenda, presente, vitrine)</span></label>
+                <label for="cliente-peca">Cliente <span class="dica">(opcional)</span></label>
                 <input type="text" id="cliente-peca" placeholder="Ex.: Ana · encomenda" />
               </div>
               <div class="field">
                 <label>Categoria</label>
                 <div class="chips" id="chips-categoria">
                   <button type="button" class="chip selecionado" data-cat="utilitario"><span class="n">Utilitário</span></button>
+                  <button type="button" class="chip" data-cat="decorativo"><span class="n">Decorativo</span></button>
                   <button type="button" class="chip" data-cat="escultura"><span class="n">Escultura</span></button>
                   <button type="button" class="chip" data-cat="outros"><span class="n">Outros</span></button>
                 </div>
               </div>
               <div class="field">
-                <label>Fotos <span class="dica">(opcional — a 1ª vira a capa)</span></label>
+                <label>Fotos <span class="dica">(opcional — a 1ª é a principal)</span></label>
                 <input type="file" id="foto-peca" accept="image/*" multiple hidden />
                 <div class="galeria" id="galeria-peca"></div>
               </div>
@@ -1529,7 +1554,7 @@
                 </div>
               </div>
               <div class="field">
-                <label>Tamanho <span class="dica">(pra cubar a queima)</span></label>
+                <label>Tamanho <span class="dica">(cru — o que você molda)</span></label>
                 <div class="tamanho-bloco">
                   <div class="tamanho-campos">
                     <div class="chips" id="chips-formato">
@@ -1549,6 +1574,7 @@
                       <select id="forno-render" aria-label="Forno"></select>
                       <span class="render-forno-dica">onde a peça queima</span>
                     </div>
+                    <div class="render-final" id="render-final"></div>
                     <div class="tamanho-slider">
                       <label class="rotulo-slider" for="tamanho-slider">Ajustar tamanho</label>
                       <input type="range" id="tamanho-slider" min="5" max="60" step="1" value="25" />
@@ -1801,7 +1827,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>08/09/26 15:44</span>
+          <span class="versao-tag" data-ver>08/09/26 16:35</span>
         </div>
         <h1>Orçamentos</h1>
       </header>
@@ -1824,7 +1850,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>08/09/26 15:44</span>
+          <span class="versao-tag" data-ver>08/09/26 16:35</span>
         </div>
         <h1>Custos de referência</h1>
       </header>
@@ -1929,7 +1955,7 @@
             <img class="logo" src="logo.webp" alt="Alice" />
             <span class="nome-app">Denaro</span>
           </div>
-          <span class="versao-tag" data-ver>08/09/26 15:44</span>
+          <span class="versao-tag" data-ver>08/09/26 16:35</span>
         </div>
         <h1>Fornos &amp; queima</h1>
       </header>
@@ -2026,6 +2052,12 @@ function totalCustosFixos() {
       : null;
     return sel ? sel.preco : CONFIG.argilaPreco;
   }
+  function retracaoAtual() {
+    const sel = estado.argilaSelecionada
+      ? ARGILAS.find((a) => a.nome === estado.argilaSelecionada)
+      : null;
+    return (sel && sel.retracaoLinear != null) ? sel.retracaoLinear : (CONFIG.retracaoPadrao || 0.1);
+  }
 
   /* ===== seletor de argila ===== */
   function initArgilaSelect() {
@@ -2042,6 +2074,8 @@ function totalCustosFixos() {
       estado.argilaSelecionada = sel.value;
       atualizarArgilaInfo();
       calcularPeca();
+      renderFornoSVG();
+      renderQueimas();
     });
   }
   function atualizarArgilaInfo() {
@@ -2236,7 +2270,7 @@ function totalCustosFixos() {
     const nomeProd = (document.getElementById("nome-produto") ? document.getElementById("nome-produto").value.trim() : "");
     const nome = (tipo === "peca" ? nomePeca : nomeProd) || (tipo === "peca" ? "Rascunho · peça sem nome" : "Rascunho · produto sem nome");
     const preco = precoAtualParaRascunho();
-    const catLabel = { utilitario: "utilitário", escultura: "escultura", outros: "outros" }[estado.categoria] || estado.categoria;
+    const catLabel = { utilitario: "utilitário", decorativo: "decorativo", escultura: "escultura", outros: "outros" }[estado.categoria] || estado.categoria;
     const metaBase = tipo === "peca"
       ? catLabel + " · " + resumoQuemFaz() + " · " + fmtTempo(estado.tempoTotalMin)
       : (estado.receita.length + " insumos · " + fmtTempo(estado.prodH * 60 + estado.prodM));
@@ -2697,8 +2731,8 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
       largura: g("t-largura"), profundidade: g("t-profundidade"), alturaQ: g("t-altura-q"),
     };
   }
-  function cubagem() {
-    return cubagemDe(lerMedidas());
+  function cubagemDaPerna(tipo) {
+    return cubagemDe(medidasDaPerna(tipo, lerMedidas(), retracaoAtual()));
   }
   function pesoPeca() { return Number(document.getElementById("peso") ? document.getElementById("peso").value : 0) || 0; }
   function renderTamanho() {
@@ -2719,7 +2753,24 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     const fornoBase = CONFIG.fornos[0] || CONFIG.servicosFora[0];
     const fornoSel = estado.fornoRender ? acharForno(estado.fornoRender) : null;
     const forno = fornoSel || fornoBase;
-    host.innerHTML = desenharForno(m, forno);
+    host.innerHTML = desenharForno(m, forno, retracaoAtual());
+    atualizarFinalEstimado();
+  }
+  function atualizarFinalEstimado() {
+    const el = document.getElementById("render-final");
+    if (!el) return;
+    const m = lerMedidas();
+    const tem = m.formato === "quadrada"
+      ? (m.largura && m.profundidade && m.alturaQ)
+      : (m.diametro && m.altura);
+    if (!tem) { el.innerHTML = ""; return; }
+    const s = retracaoAtual();
+    const final = escalaLinear(m, 1 - s);
+    const fmt = (v) => (Number(v) || 0).toFixed(1).replace(".", ",");
+    const dims = m.formato === "quadrada"
+      ? fmt(final.largura) + " × " + fmt(final.profundidade) + " × " + fmt(final.alturaQ) + " cm"
+      : "Ø " + fmt(final.diametro) + " × " + fmt(final.altura) + " cm";
+    el.innerHTML = "final estimado ≈ <b>" + dims + "</b> · retração " + Math.round(s * 100) + "%";
   }
   document.querySelectorAll("#chips-formato .chip").forEach((c) => c.addEventListener("click", () => { estado.formatoPeca = c.dataset.formato; renderTamanho(); }));
   ["t-diametro", "t-altura", "t-largura", "t-profundidade", "t-altura-q"].forEach((id) => {
@@ -2821,7 +2872,7 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     const f = acharForno(q.forno);
     if (!f) return 0;
     if (f.unidade === "carga") {
-      const cabem = estimarCabem(q.tipo, f, lerMedidas());
+      const cabem = estimarCabem(q.tipo, f, lerMedidas(), retracaoAtual());
       const pecas = (cabem && cabem.total) || Math.max(1, Math.round((f.capacidadeKg || 10) / Math.max(pesoPeca(), 0.1)));
       return (f.custos[q.tipo] || 0) / pecas;
     }
@@ -2831,7 +2882,7 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
       const cap = Math.max(1, volumeUtil(f));
       precoUnidade = custoCarga / cap;
     }
-    if (f.unidade === "cm3") return precoUnidade * cubagem();
+    if (f.unidade === "cm3") return precoUnidade * cubagemDaPerna(q.tipo);
     if (f.unidade === "kg") return precoUnidade * pesoPeca();
     return precoUnidade; /* peça */
   }
@@ -2892,7 +2943,7 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
       const custo = document.createElement("div");
       custo.className = "custo";
       const fQ = acharForno(q.forno);
-      const cabemQ = fQ ? estimarCabem(q.tipo, fQ, lerMedidas()) : null;
+      const cabemQ = fQ ? estimarCabem(q.tipo, fQ, lerMedidas(), retracaoAtual()) : null;
       custo.textContent = fmt(custoQueimaLinha(q)) + (cabemQ ? " · " + (cabemQ.total <= 0 ? "não cabe" : "~" + (cabemQ.total > 12 ? "12+" : cabemQ.total) + " pç") : "");
       linha.appendChild(topo);
       linha.appendChild(custo);
@@ -3544,7 +3595,7 @@ function custoHoraPessoa() { return salarioMensal() / (CONFIG.horasDia * CONFIG.
     }
     estado.nomePeca = nome;
     estado.cliente = document.getElementById("cliente-peca").value.trim();
-    const catLabel = { utilitario: "utilitário", escultura: "escultura", outros: "outros" }[estado.categoria] || "outros";
+    const catLabel = { utilitario: "utilitário", decorativo: "decorativo", escultura: "escultura", outros: "outros" }[estado.categoria] || "outros";
     const data = pegarData();
     const meta = catLabel + " · " + resumoQuemFaz() + " · " + fmtTempo(estado.tempoTotalMin) + (estado.cliente ? " · " + estado.cliente : "");
     // promove rascunho → vira orçamento definitivo; guarda o snapshot p/ reabrir

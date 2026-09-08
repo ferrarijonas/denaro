@@ -72,6 +72,7 @@ Metáfora: em vez de abrir a **planilha no computador**, a ceramista abre o **ce
 
 - **Importar das planilhas atuais** (custos de aquarelas/esmaltes já existentes).  
 - **Lista de peças com filtro** por material, dificuldade ou data.  
+- **Cadastro de clientes** (novo, localizar, importar do WhatsApp) com dados para finanças — hoje o precificador guarda só o campo `cliente` em texto livre.
 - **Cliente acompanhando orçamento** por link compartilhado.
 
 Metáfora: começa como uma **etiquetadora de preços**, evolui para um **caderno de receitas do ateliê**.

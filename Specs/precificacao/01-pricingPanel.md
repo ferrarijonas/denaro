@@ -51,7 +51,7 @@ toggle Peça/Produto → seções → (cálculo local, ao vivo ou botão) → cu
 - Tocando em **"Salvar peça"** sem selecionar linha → seleciona a linha padrão (Padrão p/ peça, Essencial p/ produto) e salva.
 - Após salvar → feedback curto (`verde-argila`): "Peça salva" / "Produto salvo" por 2s.
 - Seções são colapsáveis; estado de abertura não afeta o cálculo.
-- **Tamanho da peça**: chips de formato + medidas em cm + seletor de forno + slider de ajuste (proporcional, com bind à dimensão tocada) + render-duplo do forno (ver `cubagemDe` e `desenharForno`).
+- **Tamanho da peça**: chips de formato + medidas **cruas** em cm (o que a ceramista molda; a dica do campo deixa explícito) + seletor de forno + slider de ajuste (proporcional, com bind à dimensão tocada) + render-duplo do forno (ver `cubagemDe`, `estimarCabem` e `desenharForno`). Uma linha derivada mostra o **tamanho final estimado** ao lado das medidas: `final estimado ≈ Ø 22,5 × 4,5 cm · retração 10%` (vem da retração da argila; a ceramista nunca calcula — o app entrega o número do produto).
 
 ### Contrato
 
@@ -80,7 +80,7 @@ Erros:
 - Resultado com custo 0 → cartões mostram `—` em vez de R$ 0,00.
 - Linha de preço com divisão por zero (margem = 100%) → erro de validação em `costsPanel`; linha não é exibida.
 - Toggle de tipo com campos preenchidos do outro tipo → estado do tipo não usado fica preservado (não perde o que a ceramista digitou).
-- Peça maior que o forno → render "não cabe"; custo de queima segue pela unidade do forno.
+- Peça maior que o forno → render "não cabe" **naquela perna** (a outra pode caber: crua em pé no biscoito / encolhida no esmalte); custo de queima segue pela unidade do forno.
 
 ### Critérios de aceitação
 
@@ -101,11 +101,13 @@ Erros:
 │  [Peças] [Acabam.] [Mat.] …  │  ← cards de tipo
 ├──────────────────────────────┤
 │  ▼ 0. A PEÇA                 │
-│  NOME DA PEÇA                │
-│  [ Prato médio Entrelinhas ] │  ← nome primeiro (título da etiqueta)
-│  PRA QUEM É  [ Ana · enc. ]  │
-│  CATEGORIA [Utilitário][Esc.] [Outros]│
-│  FOTOS (opcional · 1ª vira capa)       │
+│  Prato médio Entrelinhas      │  ← display real (título, não input)
+│                               │    vazio: "Nome da peça…" suave
+│  CLIENTE (opcional)           │
+│  [ Ana · encomenda          ] │
+│  CATEGORIA [Utilitário][Decorativo]│
+│            [Escultura][Outros]│
+│  FOTOS (opcional · 1ª principal)  │
 │  ┌────────────────────────┐  │
 │  │  [ capa 3:2 ]    trocar│  │  ← vazio: painel quente ilustrado
 │  └────────────────────────┘  │    com ícone + microcopy (não um vão)
@@ -117,6 +119,7 @@ Erros:
 │  TAMANHO                     │
 │  [Redonda] [Quadrada]        │
 │  Diâmetro [25]cm Altura[5]cm │
+│  final estimado ≈ Ø 22,5×4,5 │  ← readout derivado (retração)
 │  Forno: [Meu forno ▾]        │
 │  Ajustar tamanho [──●──]     │
 │  ┌──┐ ┌──┐  (render-duplo)   │
@@ -170,9 +173,11 @@ Erros:
 ### Hierarquia visual
 
 - Marca/aplicação: `logo.webp` 44px à esquerda + status de salvamento (`doc-status`) à direita. Abaixo, uma **linha de navegação** (`doc-topo`): seta `←` (`doc-voltar`, volta para a tela **Orçamentos**) + nome do item em edição (`doc-titulo`, espelha `nome-peca`/`nome-produto` ao vivo; padrão `Nova peça` em peso 500 quando vazio; tocar no título foca o campo do nome). Sem mini-foto, sem metadados, sem abas no topo: a identidade visual (fotos, categoria) vive no cartão **0. A peça** — uma fonte por tela.
-- Cartão **0. A peça**: seção numerada como as demais; é a **única** identidade — foto, nome, "pra quem é" e categoria não se repetem em outro lugar da tela. Ordem: **nome primeiro**, depois "pra quem é" e categoria, e **Fotos** como campo final (foto é suporte, não porta de entrada).
-- Nome da peça: rótulo `13px peso 600 uppercase tinta-suave`; input de identidade (`input-hero`: `19px peso 600 tinta`, padding `14px`, cantos `12px`) — o título da etiqueta.
-- Galeria (campo **Fotos**, rótulo com dica "opcional — a 1ª vira capa"): capa `3:2`, cantos `14px`; **vazia** mostra um painel quente (`--fundo-alt`) com ícone da peça (`argila`, 30px) + microcopy "Adicionar foto / ajuda a reconhecer a peça depois" (min-height `120px`, nunca um vão de 4:3 vazio); com foto mostra a capa (`cover`).
+- Cartão **0. A peça**: seção numerada como as demais; é a **única** identidade — nome, cliente, categoria e fotos não se repetem em outro lugar da tela. Ordem: **nome (display) primeiro**, depois cliente e categoria, e **Fotos** como campo final (foto é suporte, não porta de entrada).
+- Nome da peça (**display real**): sem caixa de campo — tipografia display `22px peso 700 tinta`, sem borda/fundo fora de foco; `::placeholder` `"Nome da peça…"` em `tinta-suave`; ao **focar**, assume o estado de campo (fundo `cartao`, borda `1.5px argila`, halo). É o mesmo `<input id="nome-peca">` — o estado de edição é CSS, não um componente novo; autosave/snapshot intactos.
+- Cliente: rótulo **Cliente** (`13px peso 600 uppercase`), campo texto livre com placeholder `Ex.: Ana · encomenda`. No registro é o campo `cliente` (texto por ora). **Futuro (registro de clientes):** novo cliente, localizar, importar do WhatsApp e dados financeiros viram entidade própria — só documentado, não construído no v1.
+- Categoria: chips **Utilitário · Decorativo · Escultura · Outros** (taxonomia ouro; `decorativo` entra nos mapas de label de rascunho/meta). Protótipo/ilustração e outros tipos de trabalho ficam adiados (entram pela grade inicial de tipos).
+- Galeria (campo **Fotos**, rótulo com dica "opcional — a 1ª é a principal"): capa `3:2`, cantos `14px`; **vazia** mostra um painel quente (`--fundo-alt`) com ícone da peça (`argila`, 30px) + microcopy "Adicionar foto / ajuda a reconhecer a peça depois" (min-height `120px`, nunca um vão de 4:3 vazio); com foto mostra a capa (`cover`).
 - Ação sobre a capa: chip fantasma `trocar` (`12px`, `tinta-suave`, fundo `cartao`) no canto inferior direito — abre o seletor e **substitui** a capa.
 - Miniaturas: fileira de quadrados `64px`, `1px linha`, cantos `8px`; última é o tile `+` (adiciona, aceita múltiplas). Cada miniatura tem `✕` circular translúcido para remover.
 - Capa indicada: miniatura ativa com borda `1.5px argila` + tag `capa`; tocar numa miniatura a torna capa.
