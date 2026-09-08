@@ -22,6 +22,8 @@ O `storage` guarda **um doc único** (config + `salvos` + `rascunho`) em duas fo
 
 Metáfora: é o **arquivo local + nuvem** — a mesma pasta em dois lugares, e quem abre é a versão mais nova.
 
+> **Escala futura (não implementar agora):** o doc único vale enquanto for **1 ateliê**. Quando **auth/multi-tenant** entrar em escopo, migrar para **coleção por ateliê** — `atelies/{id}/config` + `atelies/{id}/orcamentos/{id}` (1 doc por orçamento) + **índice leve** para a lista. O formato do item (`{ resumo, foto, snap }`) **já é o do doc por item**; o contrato `carregar/gravar/autosave` (DOM-free, `salvoEm`) **não muda** — só o endereço/escopo da escrita. Migração única (script) converte `alice/estado` → coleção. Ver `DenaroEngSpec.md` §decisões (multi-tenancy).
+
 ---
 
 ## Lógica
@@ -85,7 +87,7 @@ Erros:
 
 ## Escopo fora
 
-- Auth/permisões por usuário (as regras do Firestore hoje limitam ao doc `alice/estado`).
+- Auth/permisões por usuário (as regras do Firestore hoje limitam ao doc `alice/estado`) — quando auth/multi-tenant entrar, executar a nota de escala do `## Conceito`.
 - Conflitos de edição simultânea em dois aparelhos (sincronização por doc, última escrita vence).
 - Migração de schema entre versões (`salvoEm` é a única metadada; sem controle de versão do doc).
 - Gerenciamento das fotos no Storage (apagar órfãs) — vive na UI (`normalizarFotosParaNuvem`/`paraNuvem`/`reanexarFotos`).

@@ -213,7 +213,7 @@ Regra: toda situação de erro listada é rastreável a um programa ou estado do
 
 ## 10. Escopo fora
 
-- Multi-tenancy, autenticação por usuário e permissões (o Firestore hoje usa regras que restringem ao doc `alice/estado`; auth entra numa versão futura).  
+- Multi-tenancy, autenticação por usuário e permissões (o Firestore hoje usa regras que restringem ao doc `alice/estado`; auth entra numa versão futura). Formato alvo quando auth entrar: **coleção por ateliê**, 1 doc por orçamento (ver `Specs/persistencia/00-storage.md`).  
 - Conflitos de edição simultânea real-time (o Firestore sincroniza por documento; editar ao mesmo tempo em dois aparelhos pode sobrescrever).  
 - Controle de quais fotos podem ser apagadas no Storage (hoje o arquivo é mantido mesmo se o orçamento for apagado, por segurança).  
 - Importação das planilhas atuais (fica no escopo futuro do conceito; os valores de referência do v1 vêm de `07-modelo-de-precificacao.md`).  
